@@ -10,7 +10,7 @@ import coockieParser from "cookie-parser";
 dotenv.config();
 const app = express();
 
-// const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000;
 
 app.use(express.json());
 app.use(coockieParser());
@@ -24,7 +24,7 @@ app.use(coockieParser());
 // app.use("/api/auth", authRoutes);
 // app.use("/api/messages", messageRoutes);
 
-// app.listen(PORT, () => {
-//   console.log("Server is running on PORT:" + PORT);
-//   connectDB();
-// });
+app.listen(PORT, () => {
+  console.log("Server is running on PORT:" + PORT);
+  connectDB();
+});

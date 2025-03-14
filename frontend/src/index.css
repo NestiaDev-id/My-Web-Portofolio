@@ -14,7 +14,26 @@
 
   --bg-primary: #E3FDFD;              /* Background utama */
   --bg-secondary: #CBF1F5;            /* Background alternatif */
-  --bg-secondary-light: #A6E3E9;     /* Background section */
+  --bg-secondary-light: #A6E3E9;      /* Background section */
+  --bg-accent: #00ADB5;               /* Untuk card, highlight */
+
+  --text-error: #FF6B6B;              /* Error color */
+}
+
+/* ================================
+   Custom Color Variables (Dark Mode)
+=================================== */
+.dark {
+  --color-primary: #EEEEEE;           /* Utama untuk teks, navbar */
+  --color-secondary: #A6E3E9;         /* Teks sekunder */
+  --color-accent: #71C9CE;            /* Tombol, link utama */
+  --color-accent-hover: #00ADB5;      /* Hover tombol/link */
+  --color-neutral-light: #202136;     /* Putih netral */
+  --color-neutral-dark: #393E46;      /* Gelap tambahan */
+
+  --bg-primary: #202136;              /* Background utama */
+  --bg-secondary: #393E46;            /* Background alternatif */
+  --bg-secondary-light: #222831;      /* Background section */
   --bg-accent: #00ADB5;               /* Untuk card, highlight */
 
   --text-error: #FF6B6B;              /* Error color */
@@ -107,4 +126,3 @@
 .border-accent {
   border-color: var(--color-accent);
 }
-

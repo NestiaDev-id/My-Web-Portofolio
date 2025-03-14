@@ -4,6 +4,9 @@ import { Loader } from "lucide-react";
 import HomePage from "./pages/HomePage";
 import LoadingPage from "./components/LoadingPage";
 import Navbar from "./components/Navbar";
+import AboutPage from "./pages/AboutPage";
+import ProjectPage from "./pages/ProjectPage";
+import BlogPage from "./pages/BlogPage";
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -25,6 +28,9 @@ function App() {
       <Navbar />
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/projects" element={<ProjectPage />} />
+        <Route path="/blog" element={<BlogPage />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </div>

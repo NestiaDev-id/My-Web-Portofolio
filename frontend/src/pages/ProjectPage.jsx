@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Github, Globe } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
+import ScrollToTop from "../components/ScrollToTop";
 
 const projects = [
   {
@@ -44,6 +47,36 @@ const projects = [
     demo: "#",
   },
   {
+    title: "Data Analisis Penjualan",
+    category: "Data Analysis",
+    description:
+      "Analisis penjualan menggunakan Python dan Pandas untuk mendapatkan insight dari data transaksi.",
+    image: "https://source.unsplash.com/400x300/?data,analytics",
+    status: "Completed",
+    github: "#",
+    demo: "#",
+  },
+  {
+    title: "Data Analisis Penjualan",
+    category: "Data Analysis",
+    description:
+      "Analisis penjualan menggunakan Python dan Pandas untuk mendapatkan insight dari data transaksi.",
+    image: "https://source.unsplash.com/400x300/?data,analytics",
+    status: "Completed",
+    github: "#",
+    demo: "#",
+  },
+  {
+    title: "Data Analisis Penjualan",
+    category: "Data Analysis",
+    description:
+      "Analisis penjualan menggunakan Python dan Pandas untuk mendapatkan insight dari data transaksi.",
+    image: "https://source.unsplash.com/400x300/?data,analytics",
+    status: "Completed",
+    github: "#",
+    demo: "#",
+  },
+  {
     title: "Prediksi Harga Saham",
     category: "Data Analysis",
     description:
@@ -57,6 +90,7 @@ const projects = [
 
 export default function ProjectPage() {
   const [filter, setFilter] = useState("All");
+  const navigate = useNavigate();
 
   const filteredProjects =
     filter === "All" ? projects : projects.filter((p) => p.category === filter);
@@ -92,13 +126,19 @@ export default function ProjectPage() {
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
             className="bg-gray-900 p-6 rounded-lg shadow-lg"
+            onClick={() => navigate("/projects/detail")}
           >
             <img
               src={project.image}
               alt={project.title}
               className="w-full h-48 object-cover rounded-md mb-4"
             />
-            <h3 className="text-xl font-bold mb-2">{project.title}</h3>
+            <h3
+              className="text-xl font-bold mb-2 cursor-pointer hover:text-blue-400"
+              onClick={() => navigate("/projects/detail")}
+            >
+              {project.title}
+            </h3>{" "}
             <p className="text-gray-400 mb-4">{project.description}</p>
             <span
               className={`px-3 py-1 text-sm font-semibold rounded-lg ${
@@ -130,6 +170,8 @@ export default function ProjectPage() {
           </motion.div>
         ))}
       </div>
+      {/* Scroll To Top */}
+      <ScrollToTop />
     </div>
   );
 }

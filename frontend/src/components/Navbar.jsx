@@ -2,10 +2,17 @@ import React, { useEffect, useState } from "react";
 import { Moon, Sun, User, FolderKanban, BookOpen, Home } from "lucide-react";
 import { Link } from "react-router-dom";
 
-export const Navbar = () => {
-  const [darkMode, setDarkMode] = useState(
-    localStorage.getItem("theme") === "dark"
-  );
+const Navbar = () => {
+  // Cek apakah ada setting di localStorage, jika tidak gunakan preferensi sistem
+  const getInitialTheme = () => {
+    const storedTheme = localStorage.getItem("theme");
+    if (storedTheme) {
+      return storedTheme === "dark";
+    }
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  };
+
+  const [darkMode, setDarkMode] = useState(getInitialTheme);
 
   useEffect(() => {
     if (darkMode) {
@@ -39,7 +46,7 @@ export const Navbar = () => {
             className="flex items-center gap-2 px-3 py-2 rounded-lg text-secondary dark:text-white hover:bg-secondary-light hover:text-primary dark:hover:bg-secondary/30 transition-all text-sm"
           >
             <User className="w-4 h-4" />
-            <span className="hidden sm:inline">About me</span>
+            <span className="hidden sm:inline">About Me</span>
           </Link>
           <Link
             to="/projects"

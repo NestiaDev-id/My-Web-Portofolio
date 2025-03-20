@@ -7,6 +7,7 @@ import Navbar from "./components/Navbar";
 import AboutPage from "./pages/AboutPage";
 import ProjectPage from "./pages/ProjectPage";
 import BlogPage from "./pages/BlogPage";
+import DetailProject from "./pages/DetailProject";
 
 function App() {
   const [loading, setLoading] = useState(true);

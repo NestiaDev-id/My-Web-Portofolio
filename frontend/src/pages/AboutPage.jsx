@@ -1,42 +1,107 @@
-import React, { useState } from "react";
-import { Briefcase, Award } from "lucide-react";
 import { motion } from "framer-motion";
+import { Award, Briefcase } from "lucide-react";
+import { useState } from "react";
 
-export default function AboutPage() {
+export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("competitions");
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const data = {
     competitions: [
-      { id: 1, content: "Juara 1 Hackathon Nasional 2023." },
-      { id: 2, content: "Finalis Data Science Challenge 2022." },
-      { id: 3, content: "Juara 3 UI/UX Design Competition." },
+      { id: 1, content: "Winner of AI Hackathon 2023" },
+      { id: 2, content: "Top 10 Finalist in Data Science Challenge" },
     ],
     internships: [
-      { id: 1, content: "Frontend Developer di PT. Teknologi AI." },
-      { id: 2, content: "Data Analyst di Startup XYZ." },
+      { id: 1, content: "Data Scientist Intern at XYZ Company" },
+      { id: 2, content: "Machine Learning Engineer Intern at ABC Tech" },
     ],
   };
 
   return (
     <div className="container mx-auto mt-16 p-4 text-gray-200">
       {/* Profile Section */}
-      <section className="flex flex-col xl:flex-row items-center xl:items-start gap-6 text-center xl:text-left">
-        {/* Profile Image */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-          className="w-32 h-32 rounded-full overflow-hidden"
-        >
-          <img
-            src="https://avatars.githubusercontent.com/u/43261171?v=4"
-            alt="Profile Picture"
-            className="w-full h-full object-cover"
-          />
-        </motion.div>
+      <section className="container flex flex-col xl:flex-row items-center xl:items-start gap-6 text-center xl:text-left">
+        {/* Profile Image & Details */}
+        <section className="flex flex-col items-center text-center gap-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5 }}
+            className="w-32 h-32 rounded-full overflow-hidden border-4 border-gray-700"
+          >
+            <img
+              src="https://avatars.githubusercontent.com/u/43261171?v=4"
+              alt="Profile Picture"
+              className="w-full h-full object-cover"
+            />
+          </motion.div>
+
+          <h1 className="text-2xl font-bold">Yohanes Christian Devano</h1>
+          <p className="text-gray-400">Mahasiswa Sanata Dharma</p>
+
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            transition={{ duration: 0.3 }}
+            className="mt-2 px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-gray-300 hover:bg-gray-700"
+          >
+            Chat with My AI Assistant
+          </motion.button>
+        </section>
 
         {/* Skills Section */}
-        <div>
+        <section className="mt-8 xl:mt-0 xl:ml-12 text-center xl:text-left container">
+          {/* Deskripsi Singkat (dipindahkan ke bawah My Skills) */}
+          <h3 className="text-2xl font-bold">About Me</h3>
+          <section className="mt-2 mb-4 text-gray-400 relative">
+            <motion.div
+              initial={false}
+              animate={{ height: isExpanded ? "auto" : "100px" }} // Batasi tinggi awal
+              transition={{ duration: 0.5 }}
+              className={`overflow-hidden relative`}
+            >
+              <p>
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Quod,
+                nobis optio quaerat distinctio in sunt quam voluptas, commodi,
+                minus dicta deleniti! Animi corrupti, exercitationem odio
+                adipisci iste natus officiis iure ea error. Ad eum nisi fugit
+                deleniti quasi! Voluptate aut dolore quaerat accusantium
+                excepturi pariatur eos perspiciatis mollitia, distinctio ducimus
+                sequi consequatur id. Sed nemo, saepe possimus voluptate
+                repellendus dolorem non nihil assumenda illo tempora? Quis,
+                dolores dolorem. Numquam dolorem quasi neque velit quas, autem
+                nam ut sit sint laborum modi vero, quaerat architecto ea odio
+                quia asperiores omnis dolore necessitatibus porro illum animi
+                labore? Commodi harum tempore error, ea illum, laboriosam
+                consequatur temporibus qui exercitationem aut ratione
+                cupiditate, animi inventore dignissimos facere ab asperiores at!
+                Eum quos sapiente neque labore voluptatibus incidunt, cumque
+                earum commodi amet ea perspiciatis, qui aperiam id suscipit unde
+                quaerat quisquam beatae facere ipsa itaque, dolorem tenetur
+                temporibus atque? Magnam ad, accusantium eius eum rem cupiditate
+                perferendis explicabo expedita minima! Assumenda, maxime
+                corrupti optio saepe perspiciatis vero ad temporibus, delectus
+                odio eos, eligendi error harum magnam! Natus reiciendis facere
+                impedit molestias consequuntur voluptatem adipisci officia quod
+                inventore accusantium sint, nihil vero eius deserunt
+                reprehenderit ab labore repellat quasi autem in assumenda illum
+                blanditiis. Officia, maxime.
+              </p>
+
+              {/* Efek Fade-Out jika belum di-expand */}
+              {!isExpanded && (
+                <div className="absolute bottom-0 left-0 w-full h-16 "></div>
+              )}
+            </motion.div>
+
+            {/* Tombol Show More / Show Less */}
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="mt-3 text-blue-400 hover:underline focus:outline-none"
+            >
+              {isExpanded ? "Show Less" : "Show More"}
+            </button>
+          </section>
+
           <h3 className="text-2xl font-bold mb-4">My Skills</h3>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -62,15 +127,15 @@ export default function AboutPage() {
               </motion.span>
             ))}
           </motion.div>
-        </div>
-      </section>
-
-      {/* Education Section */}
-      <section className="mt-8">
-        <h4 className="text-2xl font-bold mb-4">Education</h4>
-        <p>
-          Sanata Dharma University Yogyakarta <br /> Informatika, 2020 - 2024
-        </p>
+          {/* Education Section */}
+          <section className="mt-8">
+            <h4 className="text-2xl font-bold mb-4">Education</h4>
+            <p>
+              Sanata Dharma University Yogyakarta <br /> Informatika, 2020 -
+              2024
+            </p>
+          </section>
+        </section>
       </section>
 
       {/* Experience Section */}

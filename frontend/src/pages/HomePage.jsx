@@ -155,7 +155,9 @@ function HomePage() {
           {/* Isi dari quote */}
           <p className="text-lg font-semibold">
             I am a{" "}
-            <span className="text-accent font-bold">Fullstack Development</span>{" "}
+            <span className="text-accent font-bold">
+              lorem ipsum dolor sit amet
+            </span>{" "}
             and <span className="text-accent font-bold">lorem ipsum</span>{" "}
             enthusiast with a passion for{" "}
             <span className="text-accent font-bold">lorem ipsum</span>.

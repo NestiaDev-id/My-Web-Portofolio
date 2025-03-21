@@ -17,7 +17,7 @@ const BlogPage = () => {
     <div className="flex min-h-screen mt-16 p-4 bg-gray-900 text-gray-200 relative">
       {/* Hamburger Button */}
       <button
-        className="md:hidden fixed top-4 left-4 z-50 bg-gray-800 p-2 rounded-lg"
+        className="lg:hidden fixed top-4 left-4 z-50 bg-gray-800 p-2 rounded-lg"
         onClick={() => setIsOpen(true)}
       >
         <Menu size={24} className="text-white" />
@@ -26,7 +26,7 @@ const BlogPage = () => {
       {/* Overlay untuk mode mobile */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black opacity-50 z-40 md:hidden"
+          className="fixed inset-0 bg-black opacity-50 z-40 lg:hidden"
           onClick={() => setIsOpen(false)}
         ></div>
       )}
@@ -35,11 +35,11 @@ const BlogPage = () => {
       <aside
         className={`fixed top-0 left-0 h-screen w-64 bg-gray-800 p-6 shadow-lg z-50 transform transition-transform duration-300 ${
           isOpen ? "translate-x-0" : "-translate-x-full"
-        } md:relative md:translate-x-0`}
+        } lg:relative lg:translate-x-0`}
       >
         {/* Tombol Close di Mode Mobile */}
         <button
-          className="md:hidden absolute top-4 right-4 text-white"
+          className="lg:hidden absolute top-4 right-4 text-white"
           onClick={() => setIsOpen(false)}
         >
           <X size={24} />
@@ -126,7 +126,7 @@ const BlogPage = () => {
       </main>
 
       {/* Right Panel - Dihilangkan di Mobile */}
-      <aside className="hidden md:block w-64 bg-gray-800 p-6">
+      <aside className="hidden lg:block w-64 bg-gray-800 p-6">
         <h2 className="text-lg font-bold mb-4">Syarat:</h2>
         <ul className="space-y-2">
           <li>

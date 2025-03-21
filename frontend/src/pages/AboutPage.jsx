@@ -18,7 +18,7 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="container mx-auto mt-16 p-4 text-gray-200">
+    <div className="container mx-auto mt-20 p-4 text-gray-200">
       {/* Profile Section */}
       <section className="container flex flex-col xl:flex-row items-center xl:items-start gap-6 text-center xl:text-left">
         {/* Profile Image & Details */}
@@ -30,14 +30,14 @@ export default function ProfilePage() {
             className="w-32 h-32 rounded-full overflow-hidden border-4 border-gray-700"
           >
             <img
-              src="https://avatars.githubusercontent.com/u/43261171?v=4"
+              src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
               alt="Profile Picture"
               className="w-full h-full object-cover"
             />
           </motion.div>
 
           <h1 className="text-2xl font-bold">Yohanes Christian Devano</h1>
-          <p className="text-gray-400">Mahasiswa Sanata Dharma</p>
+          <p className="text-gray-400 container">Mahasiswa Sanata Dharma</p>
 
           <motion.button
             whileHover={{ scale: 1.05 }}

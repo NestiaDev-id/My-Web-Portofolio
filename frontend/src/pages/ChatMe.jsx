@@ -8,7 +8,7 @@ const ChatApp = () => {
   const [input, setInput] = useState("");
   const messagesEndRef = useRef(null);
 
-  // Fungsi untuk otomatis scroll ke bawah saat ada pesan baru
+  // Auto scroll ke bawah saat ada pesan baru
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -25,15 +25,21 @@ const ChatApp = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.GROG_API}`,
+          Authorization: `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`, // ✅ Perbaiki variabel env
         },
         body: JSON.stringify({
-          model: "llama3-8b-8192", // Atau model lain seperti mixtral
+          model: "mixtral-8x7b-32768", // ✅ Coba model lain jika diperlukan
           messages: [{ role: "user", content: input }],
         }),
       });
 
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
+      }
+
       const data = await response.json();
+      console.log("Groq Response:", data); // ✅ Debugging
+
       const botMessage = {
         id: messages.length + 2,
         sender: "NestiaDev",
@@ -50,7 +56,7 @@ const ChatApp = () => {
         {
           id: messages.length + 2,
           sender: "NestiaDev",
-          text: "Maaf, terjadi kesalahan.",
+          text: "Terjadi kesalahan. Coba lagi nanti.",
         },
       ]);
     }

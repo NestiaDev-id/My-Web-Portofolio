@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Award, Briefcase } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 import {
   FaPython,
@@ -40,6 +41,7 @@ const techStack = [
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("competitions");
   const [isExpanded, setIsExpanded] = useState(false);
+  const navigate = useNavigate();
 
   const data = {
     competitions: [
@@ -78,6 +80,7 @@ export default function ProfilePage() {
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.3 }}
             className="mt-2 px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-gray-300 hover:bg-gray-700"
+            onClick={() => navigate("/chat-me")}
           >
             Chat with My AI Assistant
           </motion.button>

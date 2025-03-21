@@ -1,29 +1,24 @@
-import React from "react";
 import { motion } from "framer-motion";
-import { TypeAnimation } from "react-type-animation";
 import { Github, Linkedin, Mail, Phone } from "lucide-react";
-
+import { TypeAnimation } from "react-type-animation";
 import reactLogo from "../assets/react.svg";
 
 function HomePage() {
   return (
-    <div className="h-screen bg-primary flex flex-col items-center justify-center px-4">
-      {/* Konten Utama */}
-      <div className="container flex flex-col-reverse md:flex-row items-center justify-between gap-8 w-full max-w-6xl">
-        {/* Bagian Kiri */}
+    <div className="container mx-auto md:mt-16 flex flex-col items-center justify-center px-4">
+      {/* Hero Section */}
+      <section className="container mt-24 flex flex-col-reverse md:flex-row items-center justify-center md:justify-between gap-8 w-full max-w-6xl px-6">
+        {/* Left Side */}
         <div className="text-center md:text-left text-xl md:text-2xl">
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
-            className="lg:col-start-1"
           >
             <h1 className="text-4xl font-bold text-primary">Hi 👋</h1>
             <h2 className="mt-2 text-3xl font-semibold text-secondary">
               I'm Yohanes Christian Devano
             </h2>
-
-            {/* Animasi Teks */}
             <TypeAnimation
               sequence={[
                 "Fullstack Development",
@@ -42,7 +37,6 @@ function HomePage() {
             />
           </motion.div>
 
-          {/* Batas */}
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: "100%" }}
@@ -50,49 +44,29 @@ function HomePage() {
             className="w-full h-0.5 bg-secondary mt-4"
           ></motion.div>
 
-          <p className="mt-4">Contact me:</p>
-          <div className="flex gap-4 mt-2">
-            <motion.a
+          <p className="mt-4 text-center md:text-left">Contact me:</p>
+          <div className="flex gap-4 mt-2 justify-center md:justify-start">
+            <ContactIcon
               href="https://github.com/NestiaDev-id"
-              target="_blank"
-              rel="noopener noreferrer"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              className="p-3 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-            >
-              <Github className="w-6 h-6" />
-            </motion.a>
-            <motion.a
+              icon={<Github className="w-6 h-6" />}
+            />
+            <ContactIcon
               href="https://www.linkedin.com/in/yohanes-christian-devano/"
-              target="_blank"
-              rel="noopener noreferrer"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              className="p-3 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-            >
-              <Linkedin className="w-6 h-6" />
-            </motion.a>
-            <motion.a
+              icon={<Linkedin className="w-6 h-6" />}
+            />
+            <ContactIcon
               href="mailto:yohanesdevano90@gmail.com"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              className="p-3 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-            >
-              <Mail className="w-6 h-6" />
-            </motion.a>
-            <motion.a
-              href="https://api.whatsapp.com/send/?phone=6281325720265&text&type=phone_number&app_absent=0"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              className="p-3 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-            >
-              <Phone className="w-6 h-6" />
-            </motion.a>
+              icon={<Mail className="w-6 h-6" />}
+            />
+            <ContactIcon
+              href="https://api.whatsapp.com/send/?phone=6281325720265"
+              icon={<Phone className="w-6 h-6" />}
+            />
           </div>
         </div>
 
-        {/* Bagian Kanan */}
-        <div className="relative flex justify-center items-center">
+        {/* Right Side */}
+        <div className="relative flex justify-center items-center mt-12">
           <motion.svg
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -107,8 +81,6 @@ function HomePage() {
               transform="translate(100 100)"
             />
           </motion.svg>
-
-          {/* Logo React */}
           <motion.img
             initial={{ opacity: 0, rotate: -180 }}
             animate={{ opacity: 1, rotate: 0 }}
@@ -118,22 +90,20 @@ function HomePage() {
             className="w-32 md:w-48 relative"
           />
         </div>
-      </div>
+      </section>
 
-      <div className="mt-24 flex flex-col">
-        {/* Judul */}
+      {/* Motivation Section */}
+      <section className="mt-24 flex flex-col">
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5 }}
           className="flex justify-center"
         >
-          <a className="text-3xl md:text-2xl font-bold text-primary">
+          <h2 className="text-3xl md:text-2xl font-bold text-primary">
             Motivation
-          </a>
+          </h2>
         </motion.div>
-
-        {/* icon tanda petik tapi textnya pojok kiri dan bukan text-center */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -144,15 +114,12 @@ function HomePage() {
             &ldquo;
           </span>
         </motion.div>
-
-        {/* Motivation */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5 }}
           className="text-left text-secondary"
         >
-          {/* Isi dari quote */}
           <p className="text-lg font-semibold">
             I am a{" "}
             <span className="text-accent font-bold">
@@ -162,7 +129,6 @@ function HomePage() {
             enthusiast with a passion for{" "}
             <span className="text-accent font-bold">lorem ipsum</span>.
           </p>
-
           <p className="text-lg font-semibold mt-6">
             -- <span className="text-accent font-bold">Unknown</span>
           </p>
@@ -177,9 +143,22 @@ function HomePage() {
             &rdquo;
           </span>
         </motion.div>
-      </div>
+      </section>
     </div>
   );
 }
+
+const ContactIcon = ({ href, icon }) => (
+  <motion.a
+    href={href}
+    target="_blank"
+    rel="noopener noreferrer"
+    whileHover={{ scale: 1.1 }}
+    whileTap={{ scale: 0.95 }}
+    className="p-3 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+  >
+    {icon}
+  </motion.a>
+);
 
 export default HomePage;

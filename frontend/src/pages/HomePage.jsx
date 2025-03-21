@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Github, Linkedin, Mail, Phone } from "lucide-react";
 import { TypeAnimation } from "react-type-animation";
 import reactLogo from "../assets/react.svg";
+import CertificationCard from "../components/CertificationCarousel";
 
 function HomePage() {
   return (
@@ -144,6 +145,9 @@ function HomePage() {
           </span>
         </motion.div>
       </section>
+
+      {/* Certification Card Section */}
+      {/* <CertificationCard /> */}
     </div>
   );
 }

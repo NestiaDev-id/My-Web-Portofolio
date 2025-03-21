@@ -1,6 +1,41 @@
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Award, Briefcase } from "lucide-react";
-import { useState } from "react";
+
+import {
+  FaPython,
+  FaReact,
+  FaNodeJs,
+  FaJava,
+  FaFigma,
+  FaGitAlt,
+} from "react-icons/fa";
+import {
+  SiFastapi,
+  SiDjango,
+  SiPytorch,
+  SiTypescript,
+  SiNextdotjs,
+  SiTableau,
+  SiPostgresql,
+  SiTensorflow,
+  SiHuggingface,
+} from "react-icons/si";
+
+const techStack = [
+  { name: "Figma", icon: <FaFigma />, color: "text-purple-400" },
+  { name: "TypeScript", icon: <SiTypescript />, color: "text-blue-400" },
+  { name: "Next.js", icon: <SiNextdotjs />, color: "text-gray-300" },
+  { name: "Git", icon: <FaGitAlt />, color: "text-orange-500" },
+  { name: "Python", icon: <FaPython />, color: "text-yellow-400" },
+  { name: "FastAPI", icon: <SiFastapi />, color: "text-teal-400" },
+  { name: "Django", icon: <SiDjango />, color: "text-green-500" },
+  { name: "Tableau", icon: <SiTableau />, color: "text-indigo-400" },
+  { name: "PyTorch", icon: <SiPytorch />, color: "text-red-500" },
+  { name: "Hugging Face", icon: <SiHuggingface />, color: "text-yellow-500" },
+  { name: "TensorFlow", icon: <SiTensorflow />, color: "text-orange-400" },
+  { name: "PostgreSQL", icon: <SiPostgresql />, color: "text-blue-500" },
+];
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("competitions");
@@ -48,14 +83,13 @@ export default function ProfilePage() {
           </motion.button>
         </section>
 
-        {/* Skills Section */}
+        {/* About Me Section */}
         <section className="mt-8 xl:mt-0 xl:ml-12 text-center xl:text-left container">
-          {/* Deskripsi Singkat (dipindahkan ke bawah My Skills) */}
           <h3 className="text-2xl font-bold">About Me</h3>
           <section className="mt-2 mb-4 text-gray-400 relative">
             <motion.div
               initial={false}
-              animate={{ height: isExpanded ? "auto" : "100px" }} // Batasi tinggi awal
+              animate={{ height: isExpanded ? "auto" : "100px" }}
               transition={{ duration: 0.5 }}
               className={`overflow-hidden relative`}
             >
@@ -128,14 +162,34 @@ export default function ProfilePage() {
             ))}
           </motion.div>
           {/* Education Section */}
-          <section className="mt-8">
-            <h4 className="text-2xl font-bold mb-4">Education</h4>
+          <h4 className="text-2xl font-bold mt-4">Education</h4>
+          <section className="flex flex-col xl:flex-row gap-12 mt-4">
             <p>
               Sanata Dharma University Yogyakarta <br /> Informatika, 2020 -
               2024
             </p>
+            <p>
+              SMP <br /> Informatika, 2020 - 2024
+            </p>
           </section>
         </section>
+      </section>
+
+      {/* Tech Stack Section */}
+      <section className="container mx-auto mt-8">
+        <h2 className="text-3xl font-bold text-white mb-6">Tech Stack</h2>
+        <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-6">
+          {techStack.map((tech, index) => (
+            <motion.div
+              key={index}
+              className="flex flex-col items-center bg-gray-800 p-4 rounded-lg shadow-lg hover:bg-gray-700 transition duration-300"
+              whileHover={{ scale: 1.1 }}
+            >
+              <div className={`text-4xl ${tech.color}`}>{tech.icon}</div>
+              <p className="text-gray-300 mt-2">{tech.name}</p>
+            </motion.div>
+          ))}
+        </div>
       </section>
 
       {/* Experience Section */}

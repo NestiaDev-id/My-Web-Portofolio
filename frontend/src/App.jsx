@@ -8,6 +8,7 @@ import AboutPage from "./pages/AboutPage";
 import ProjectPage from "./pages/ProjectPage";
 import BlogPage from "./pages/BlogPage";
 import DetailProject from "./pages/DetailProject";
+import ChatMe from "./pages/ChatMe";
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -34,6 +35,7 @@ function App() {
         <Route path="/projects/detail" element={<DetailProject />} />
         {/* <Route path="/projects/:id" element={<ProjectPage />} /> */}
         <Route path="/blog" element={<BlogPage />} />
+        <Route path="/chat-me" element={<ChatMe />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </div>

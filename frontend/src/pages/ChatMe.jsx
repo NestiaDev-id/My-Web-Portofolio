@@ -46,7 +46,7 @@ const ChatApp = () => {
         hour: "2-digit",
         minute: "2-digit",
       }),
-      avatar: "/user-avatar.png",
+      avatar: "https://img.daisyui.com/images/profile/demo/3@94.webp",
     };
 
     setMessages((prev) => [...prev, userMessage]);
@@ -86,16 +86,18 @@ const ChatApp = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center p-6">
-      <h2 className="text-xl font-semibold">🕒 Jam Jakarta: {time}</h2>
-
-      <h1 className="text-3xl font-bold mt-4">Ask anything</h1>
-      <p className="text-gray-400">
+    <section className="min-h-screen mt-16 bg-gray-900 text-white flex flex-col items-center p-4">
+      <h1 className="text-2xl sm:text-3xl font-bold mt-4 text-center">
+        Ask anything
+      </h1>
+      <p className="text-gray-400 text-sm sm:text-base text-center">
         Kamu bisa menanyakan apa saja soal diriku...
       </p>
 
-      <div className="w-full max-w-xl mt-6 bg-gray-800 p-4 rounded-lg shadow-md">
-        <div className="h-80 overflow-y-auto space-y-4 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-700 p-2">
+      {/* Chat Container */}
+      <div className="w-full sm:w-[90%] md:w-[80%] lg:w-[60%] xl:w-[50%] mt-6 bg-gray-800 p-4 rounded-lg shadow-md flex flex-col h-[450px] sm:h-[500px] md:h-[600px]">
+        {/* Chat Messages */}
+        <div className="flex-grow overflow-y-auto space-y-4 p-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-700">
           {messages.map((msg) => (
             <motion.div
               key={msg.id}
@@ -131,25 +133,25 @@ const ChatApp = () => {
           <div ref={messagesEndRef} />
         </div>
 
-        <div className="flex items-center mt-3 bg-gray-700 rounded-lg">
+        {/* Chat Input */}
+        <div className="flex items-center bg-gray-700 rounded-lg mt-3">
           <input
             type="text"
-            className="w-full p-2 bg-transparent outline-none"
+            className="w-full p-2 bg-transparent outline-none text-sm sm:text-base"
             placeholder="Adakah yang ingin ditanyakan?"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && sendMessage()}
           />
           <button
-            className="p-2 bg-blue-500 rounded-r-lg"
+            className="p-2 bg-blue-500 rounded-r-lg text-sm sm:text-base"
             onClick={sendMessage}
           >
             Kirim
           </button>
         </div>
       </div>
-    </div>
+    </section>
   );
 };
-
 export default ChatApp;

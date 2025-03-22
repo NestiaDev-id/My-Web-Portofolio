@@ -3,6 +3,7 @@ import { Github, Linkedin, Mail, Phone } from "lucide-react";
 import { TypeAnimation } from "react-type-animation";
 import reactLogo from "../assets/react.svg";
 import CertificationCard from "../components/CertificationCarousel";
+import { ContactIcon } from "../components/ContactIcon";
 
 function HomePage() {
   return (
@@ -49,19 +50,19 @@ function HomePage() {
           <div className="flex gap-4 mt-2 justify-center md:justify-start">
             <ContactIcon
               href="https://github.com/NestiaDev-id"
-              icon={<Github className="w-6 h-6" />}
+              icon={<Github className="size-6" />}
             />
             <ContactIcon
               href="https://www.linkedin.com/in/yohanes-christian-devano/"
-              icon={<Linkedin className="w-6 h-6" />}
+              icon={<Linkedin className="size-6" />}
             />
             <ContactIcon
               href="mailto:yohanesdevano90@gmail.com"
-              icon={<Mail className="w-6 h-6" />}
+              icon={<Mail className="size-6" />}
             />
             <ContactIcon
               href="https://api.whatsapp.com/send/?phone=6281325720265"
-              icon={<Phone className="w-6 h-6" />}
+              icon={<Phone className="size-6" />}
             />
           </div>
         </div>
@@ -151,18 +152,5 @@ function HomePage() {
     </div>
   );
 }
-
-const ContactIcon = ({ href, icon }) => (
-  <motion.a
-    href={href}
-    target="_blank"
-    rel="noopener noreferrer"
-    whileHover={{ scale: 1.1 }}
-    whileTap={{ scale: 0.95 }}
-    className="p-3 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
-  >
-    {icon}
-  </motion.a>
-);
 
 export default HomePage;

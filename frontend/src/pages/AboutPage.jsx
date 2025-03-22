@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
+import { splitText } from "motion-plus";
+
 import { Award, Briefcase } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 

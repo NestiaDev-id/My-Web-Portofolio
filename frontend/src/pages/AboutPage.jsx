@@ -2,8 +2,14 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { splitText } from "motion-plus";
 
-import { Award, Briefcase } from "lucide-react";
+import { Award, Briefcase, Circle, GraduationCap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+
+import {
+  VerticalTimeline,
+  VerticalTimelineElement,
+} from "react-vertical-timeline-component";
+import "react-vertical-timeline-component/style.min.css";
 
 import {
   FaPython,
@@ -39,6 +45,133 @@ const techStack = [
   { name: "TensorFlow", icon: <SiTensorflow />, color: "text-orange-400" },
   { name: "PostgreSQL", icon: <SiPostgresql />, color: "text-blue-500" },
 ];
+
+const timelineData = [
+  {
+    id: 1,
+    title: "Graduated from University",
+    description:
+      "Completed my Bachelor's degree in Computer Science.Lorem ipsum dolor sit amet consecteturadipisicing elit. Labore cum accusamus, magni eveniet sapiente corrupti sunt, dolorem ipsa eligendi ad, necessitatibus temporacommodi ex natus deserunt! Pariatur, autem incidunt molestias magnamsapiente provident iure illum exercitationem delectus voluptatemullam. Officia enim est unde eaque quidem! ",
+    date: "2020",
+    icon: <GraduationCap className="w-6 h-6 text-blue-500" />,
+  },
+  {
+    id: 2,
+    title: "First Job at TechCorp",
+    description: "Started my career as a Software Engineer.",
+    date: "2021",
+    icon: <Briefcase className="w-6 h-6 text-green-500" />,
+  },
+  {
+    id: 3,
+    title: "Promoted to Senior Engineer",
+    description: "Led a team of developers on major projects.",
+    date: "2023",
+    icon: <Briefcase className="w-6 h-6 text-yellow-500" />,
+  },
+];
+
+const experiences = [
+  {
+    img: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
+    role: "Software Engineer",
+    company: "TechCorp",
+    date: "Jan 2020 - Present",
+    desc: "Developing and maintaining web applications.     Completed my Bachelor's degree in Computer Science.Lorem ipsum dolor sit amet consecteturadipisicing elit. Labore cum accusamus, magni eveniet sapiente corrupti sunt, dolorem ipsa eligendi ad, necessitatibus temporacommodi ex natus deserunt! Pariatur, autem incidunt molestias magnamsapiente provident iure illum exercitationem delectus voluptatemullam. Officia enim est unde eaque quidem! ",
+    skills: ["JavaScript", "React", "Node.js"],
+  },
+  {
+    img: "https://seeklogo.com/images/N/netlify-logo-BD8F8A77E2-seeklogo.com.png",
+    role: "Frontend Developer",
+    company: "Web Solutions",
+    date: "Jun 2018 - Dec 2019",
+    desc: "Building responsive UI components and optimizing performance.",
+    skills: ["HTML", "CSS", "Vue.js"],
+  },
+];
+
+const Experience = () => {
+  return (
+    <div id="Experience" className="flex flex-col items-center mt-12 z-10">
+      <div className="max-w-5xl w-full flex flex-col items-center gap-4">
+        <h2 className="text-4xl font-semibold text-center text-gray-100 sm:text-2xl">
+          Experience
+        </h2>
+        <p className="text-lg text-center text-gray-400 mb-10 sm:text-sm">
+          My work experience as a software engineer and working on different
+          companies and projects.
+        </p>
+        <VerticalTimeline>
+          {experiences.map((experience, index) => (
+            <ExperienceCard
+              key={`experience-${index}`}
+              experience={experience}
+            />
+          ))}
+        </VerticalTimeline>
+      </div>
+    </div>
+  );
+};
+
+const ExperienceCard = ({ experience }) => {
+  return (
+    <VerticalTimelineElement
+      icon={
+        <img
+          className="w-full h-full rounded-full object-cover"
+          src={experience?.img}
+          alt={experience?.company}
+        />
+      }
+      contentStyle={{
+        background: "#1d1836",
+        color: "#fff",
+        borderRadius: "6px",
+        border: "1px solid rgba(255, 255, 255, 0.125)",
+      }}
+      contentArrowStyle={{ borderRight: "7px solid rgba(255, 255, 255, 0.3)" }}
+      date={experience?.date}
+    >
+      <div className="flex gap-3">
+        <img
+          src={experience?.img}
+          alt={experience?.company}
+          className="h-12 w-12 rounded-lg sm:h-10 sm:w-10"
+        />
+        <div>
+          <h3 className="text-lg font-semibold text-gray-300 sm:text-base">
+            {experience?.role}
+          </h3>
+          <p className="text-sm font-medium text-gray-400 sm:text-xs">
+            {experience?.company}
+          </p>
+          <p className="text-xs text-gray-500 sm:text-[10px]">
+            {experience?.date}
+          </p>
+        </div>
+      </div>
+      <p className="text-gray-300 text-sm mt-2 sm:text-xs">
+        {experience?.desc}
+      </p>
+      {experience?.skills && (
+        <div className="mt-2">
+          <b className="text-gray-300">Skills:</b>
+          <div className="flex flex-wrap gap-2 mt-1">
+            {experience?.skills?.map((skill, index) => (
+              <span
+                key={index}
+                className="text-sm text-gray-400 bg-gray-700 px-2 py-1 rounded-md"
+              >
+                {skill}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </VerticalTimelineElement>
+  );
+};
 
 export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("competitions");
@@ -240,6 +373,115 @@ export default function ProfilePage() {
           ))}
         </div>
       </section>
+
+      {/* Timeline */}
+      <section className="mt-8">
+        <h2 className="text-3xl font-bold mb-6 text-white">Timeline</h2>
+        <div class="relative container mx-auto px-6 flex flex-col space-y-8">
+          <div class="absolute z-0 w-2 h-full bg-white shadow-md inset-0 left-17 md:mx-auto md:right-0 md:left-0"></div>
+          <div class="relative z-10">
+            <img
+              src="https://images.pexels.com/photos/885880/pexels-photo-885880.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=100"
+              alt=""
+              class="timeline-img"
+            />
+            <div class="timeline-container">
+              <div class="timeline-pointer" aria-hidden="true"></div>
+              <div class="bg-white p-6 rounded-md shadow-md">
+                <span class="font-bold text-indigo-600 text-sm tracking-wide">
+                  Jan 2021
+                </span>
+                <h1 class="text-2xl font-bold pt-1">An amazing travel</h1>
+                <p class="pt-1">
+                  Lorem ipsum dolor, sit amet consectetur adipisicing elit. Ex
+                  iste suscipit reiciendis, perferendis vel consequuntur
+                  cupiditate ad commodi provident, sapiente veniam sed autem.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="relative z-10">
+            <img
+              src="https://images.pexels.com/photos/3223552/pexels-photo-3223552.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=100"
+              alt=""
+              class="timeline-img"
+            />
+            <div class="timeline-container timeline-container-left">
+              <div
+                class="timeline-pointer timeline-pointer-left"
+                aria-hidden="true"
+              ></div>
+              <div class="bg-white p-6 rounded-md shadow-md">
+                <span class="font-bold text-indigo-600 text-sm tracking-wide">
+                  Aug 2020
+                </span>
+                <h1 class="text-2xl font-bold pt-1">A trip far away</h1>
+                <p class="pt-1">
+                  Lorem ipsum dolor, sit amet consectetur adipisicing elit. Ex
+                  iste suscipit reiciendis, perferendis vel consequuntur
+                  cupiditate ad commodi provident, sapiente veniam sed
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="relative z-10">
+            <img
+              src="https://images.pexels.com/photos/2906807/pexels-photo-2906807.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=100"
+              alt=""
+              class="timeline-img"
+            />
+            <div class="timeline-container">
+              <div class="timeline-pointer" aria-hidden="true"></div>
+              <div class="bg-white p-6 rounded-md shadow-md">
+                <span class="font-bold text-indigo-600 text-sm tracking-wide">
+                  March 2020
+                </span>
+                <h1 class="text-2xl font-bold pt-1">Solo Trip</h1>
+                <p class="pt-1">
+                  Lorem ipsum dolor, sit amet consectetur adipisicing elit. Ex
+                  iste suscipit reiciendis, perferendis vel consequuntur
+                  cupiditate ad commodi provident, sapiente veniam sed autem,
+                  perspiciatis
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mt-8">
+        <h2 className="text-3xl font-bold mb-6 text-white">Timeline</h2>
+        <div className="relative container mx-auto px-6 flex flex-col space-y-8">
+          <div className="absolute z-0 w-1 bg-gray-700 rounded-full h-full left-6 md:left-1/2 transform -translate-x-1/2"></div>
+          {timelineData.map((event, index) => (
+            <motion.div
+              key={event.id}
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5 }}
+              className={`relative flex items-center ${
+                index % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"
+              }`}
+            >
+              <div className="w-12 h-12 flex items-center justify-center bg-gray-800 rounded-full shadow-lg border-4 border-gray-700 text-white">
+                {event.icon}
+              </div>
+              <div className="bg-gray-800 p-6 rounded-lg shadow-md border border-gray-600 w-full md:w-1/2 ml-6 md:ml-0">
+                <span className="font-bold text-blue-400 text-sm tracking-wide">
+                  {event.date}
+                </span>
+                <h1 className="text-xl font-bold pt-1 text-white">
+                  {event.title}
+                </h1>
+                <p className="pt-1 text-gray-300">{event.description}</p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      <Experience />
 
       {/* Download CV & Resume Section */}
       <section className="mt-8 text-center">

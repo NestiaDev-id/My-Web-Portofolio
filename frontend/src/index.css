@@ -1,104 +1,114 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
+
 /* ================================
    Custom Color Variables (Light Mode)
 =================================== */
 :root {
-  --color-primary: #222831;           /* Utama untuk teks, navbar */
-  --color-secondary: #393E46;         /* Teks sekunder */
-  --color-accent: #00ADB5;            /* Tombol, link utama */
-  --color-accent-hover: #71C9CE;      /* Hover tombol/link */
-  --color-neutral-light: #EEEEEE;     /* Putih netral */
-  --color-neutral-dark: #202136;      /* Gelap tambahan */
+  --color-primary: #222831; /* Teks utama, navbar */
+  --color-secondary: #393E46; /* Teks sekunder */
+  --color-accent: #00ADB5; /* Tombol, link utama */
+  --color-accent-hover: #71C9CE; /* Hover tombol/link */
+  --color-neutral-light: #EEEEEE; /* Putih netral */
+  --color-neutral-dark: #202136; /* Warna gelap tambahan */
 
-  --bg-primary: #E3FDFD;              /* Background utama */
-  --bg-secondary: #CBF1F5;            /* Background alternatif */
-  --bg-secondary-light: #A6E3E9;      /* Background section */
-  --bg-accent: #00ADB5;               /* Untuk card, highlight */
+  --bg-primary: #E3FDFD; /* Latar utama */
+  --bg-secondary: #CBF1F5; /* Latar alternatif */
+  --bg-secondary-light: #A6E3E9; /* Latar section */
+  --bg-accent: #00ADB5; /* Card, highlight */
 
-  --text-error: #FF6B6B;              /* Error color */
+  --text-error: #FF6B6B; /* Warna error */
 }
 
 /* ================================
    Custom Color Variables (Dark Mode)
 =================================== */
 .dark {
-  --color-primary: #EEEEEE;           /* Utama untuk teks, navbar */
-  --color-secondary: #A6E3E9;         /* Teks sekunder */
-  --color-accent: #71C9CE;            /* Tombol, link utama */
-  --color-accent-hover: #00ADB5;      /* Hover tombol/link */
-  --color-neutral-light: #202136;     /* Putih netral */
-  --color-neutral-dark: #393E46;      /* Gelap tambahan */
+  --color-primary: #EEEEEE;
+  --color-secondary: #A6E3E9;
+  --color-accent: #71C9CE;
+  --color-accent-hover: #00ADB5;
+  --color-neutral-light: #202136;
+  --color-neutral-dark: #393E46;
 
-  --bg-primary: #202136;              /* Background utama */
-  --bg-secondary: #393E46;            /* Background alternatif */
-  --bg-secondary-light: #222831;      /* Background section */
-  --bg-accent: #00ADB5;               /* Untuk card, highlight */
+  --bg-primary: #202136;
+  --bg-secondary: #393E46;
+  --bg-secondary-light: #222831;
+  --bg-accent: #00ADB5;
 
-  --text-error: #FF6B6B;              /* Error color */
+  --text-error: #FF6B6B;
+}
+
+/* ================================
+   Timeline Components
+=================================== */
+.timeline-img {
+  height: 6rem;
+  width: 6rem;
+  object-fit: cover;
+  border-radius: 9999px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: 4px solid white;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.timeline-container {
+  position: relative;
+  padding-top: 0.5rem;
+  width: 50%;
+  margin-left: auto;
+  padding-left: 4rem;
+}
+
+.timeline-container-left {
+  margin-left: 0;
+  margin-right: auto;
+  padding-left: 0;
+  padding-right: 4rem;
+}
+
+.timeline-pointer {
+  position: absolute;
+  inset: 0;
+  height: 1rem;
+  width: 1rem;
+  transform: rotate(45deg);
+  background-color: white;
+  top: 2.75rem;
+  left: 3.5rem;
+}
+
+.timeline-pointer-left {
+  left: auto;
+  right: 3.5rem;
 }
 
 /* ================================
    Text Color Utilities
 =================================== */
-.text-primary {
-  color: var(--color-primary);
-}
-
-.text-secondary {
-  color: var(--color-secondary);
-}
-
-.text-accent {
-  color: var(--color-accent);
-}
-
-.text-accent-hover:hover {
-  color: var(--color-accent-hover);
-}
-
-.text-neutral-light {
-  color: var(--color-neutral-light);
-}
-
-.text-neutral-dark {
-  color: var(--color-neutral-dark);
-}
-
-.text-error {
-  color: var(--text-error);
-}
+.text-primary { color: var(--color-primary); }
+.text-secondary { color: var(--color-secondary); }
+.text-accent { color: var(--color-accent); }
+.text-accent-hover:hover { color: var(--color-accent-hover); }
+.text-neutral-light { color: var(--color-neutral-light); }
+.text-neutral-dark { color: var(--color-neutral-dark); }
+.text-error { color: var(--text-error); }
 
 /* ================================
    Background Color Utilities
 =================================== */
-.bg-primary {
-  background-color: var(--bg-primary);
-}
-
-.bg-secondary {
-  background-color: var(--bg-secondary);
-}
-
-.bg-secondary-light {
-  background-color: var(--bg-secondary-light);
-}
-
-.bg-accent {
-  background-color: var(--bg-accent);
-}
-
-.bg-neutral-light {
-  background-color: var(--color-neutral-light);
-}
-
-.bg-neutral-dark {
-  background-color: var(--color-neutral-dark);
-}
+.bg-primary { background-color: var(--bg-primary); }
+.bg-secondary { background-color: var(--bg-secondary); }
+.bg-secondary-light { background-color: var(--bg-secondary-light); }
+.bg-accent { background-color: var(--bg-accent); }
+.bg-neutral-light { background-color: var(--color-neutral-light); }
+.bg-neutral-dark { background-color: var(--color-neutral-dark); }
 
 /* ================================
-   Button Style Example (Optional)
+   Button Styles
 =================================== */
 .btn-primary {
   background-color: var(--color-accent);
@@ -107,7 +117,6 @@
   border-radius: 0.5rem;
   transition: background-color 0.3s;
 }
-
 .btn-primary:hover {
   background-color: var(--color-accent-hover);
 }
@@ -115,14 +124,6 @@
 /* ================================
    Border Color Utilities
 =================================== */
-.border-primary {
-  border-color: var(--color-primary);
-}
-
-.border-secondary {
-  border-color: var(--color-secondary);
-}
-
-.border-accent {
-  border-color: var(--color-accent);
-}
+.border-primary { border-color: var(--color-primary); }
+.border-secondary { border-color: var(--color-secondary); }
+.border-accent { border-color: var(--color-accent); }

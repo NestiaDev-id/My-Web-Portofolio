@@ -24,6 +24,7 @@
     "react-router-dom": "^7.2.0",
     "react-syntax-highlighter": "^15.6.1",
     "react-type-animation": "^3.2.0",
+    "react-vertical-timeline-component": "^3.5.3",
     "swiper": "^11.2.6"
   },
   "devDependencies": {

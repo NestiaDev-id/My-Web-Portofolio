@@ -1,8 +1,8 @@
 import Grog from "groq-sdk";
-import { fetchLatestNews } from "../utils/newsApi"; // Impor fungsi fetching berita
+import { fetchLatestNews } from "../utils/newsApi";
 
 const grog = new Grog({
-  apiKey: import.meta.env.VITE_GROQ_API_KEY, // ✅ Perbaiki variabel env
+  apiKey: import.meta.env.VITE_GROQ_API_KEY,
   dangerouslyAllowBrowser: true,
 });
 
@@ -112,7 +112,7 @@ export const requestToAi = async (content) => {
       model: "llama3-8b-8192",
       temperature: 0.7,
       top_p: 0.9,
-      max_completion_tokens: 500,
+      max_completion_tokens: 750,
     });
 
     if (!reply || !reply.choices || reply.choices.length === 0) {

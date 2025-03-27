@@ -1,4 +1,5 @@
 import Grog from "groq-sdk";
+import { fetchLatestNews } from "../utils/newsApi"; // Impor fungsi fetching berita
 
 const grog = new Grog({
   apiKey: import.meta.env.VITE_GROQ_API_KEY, // ✅ Perbaiki variabel env
@@ -7,6 +8,25 @@ const grog = new Grog({
 
 export const requestToAi = async (content) => {
   try {
+    let latestNews;
+    try {
+      latestNews = await fetchLatestNews();
+    } catch (newsError) {
+      console.warn("⚠️ Gagal mengambil berita, melanjutkan tanpa berita...");
+      console.error("Error fetching news:", newsError);
+      latestNews = []; // Jika gagal, tetap lanjut tanpa berita
+    }
+    // 🔹 Ringkas berita terkini jika tersedia
+    const newsSummary = latestNews.length
+      ? latestNews
+          .slice(0, 3) // Ambil 3 berita terbaru
+          .map(
+            (news) =>
+              `- ${news.title}: ${news.description} (Baca selengkapnya: ${news.url})`
+          )
+          .join("\n")
+      : "Saat ini tidak ada berita terbaru yang tersedia.";
+
     const reply = await grog.chat.completions.create({
       messages: [
         {
@@ -78,6 +98,9 @@ export const requestToAi = async (content) => {
           - "Apakah kamu bisa memberikan contoh kode?", jawab bahwa kamu tidak dapat memberikan kode secara langsung, tetapi kamu dapat menjelaskan konsep dan teori yang relevan.
           - "Apakah kamu bisa memberikan penjelasan tentang teknologi tertentu?", jawab bahwa kamu dapat memberikan penjelasan tentang berbagai teknologi, tetapi tidak dapat memberikan kode atau implementasi langsung.
           - "Apakah kamu bisa memberikan rekomendasi teknologi?", jawab bahwa kamu dapat memberikan rekomendasi berdasarkan pengetahuan dan pengalaman, tetapi tidak dapat memberikan kode atau implementasi langsung.
+
+          **Berita terbaru**:
+          ${newsSummary}
 
           Tugas utamamu adalah membantu pengguna dengan profesionalisme dan keramahan, seolah-olah kamu adalah asisten pribadi eksklusif milik NestiaDev.`,
         },

@@ -10,19 +10,21 @@ export const requestToAi = async (content) => {
   try {
     let latestNews;
     try {
-      latestNews = await fetchLatestNews();
+      latestNews = await fetchLatestNews(content);
+      console.log("📡 Berita terbaru berhasil diambil:", latestNews);
     } catch (newsError) {
       console.warn("⚠️ Gagal mengambil berita, melanjutkan tanpa berita...");
       console.error("Error fetching news:", newsError);
-      latestNews = []; // Jika gagal, tetap lanjut tanpa berita
+      latestNews = [];
     }
+
     // 🔹 Ringkas berita terkini jika tersedia
     const newsSummary = latestNews.length
       ? latestNews
-          .slice(0, 3) // Ambil 3 berita terbaru
+          .slice(0, 5)
           .map(
             (news) =>
-              `- ${news.title}: ${news.description} (Baca selengkapnya: ${news.url})`
+              `- ${news.title}: ${news.summary} (Baca selengkapnya: ${news.url})`
           )
           .join("\n")
       : "Saat ini tidak ada berita terbaru yang tersedia.";
@@ -99,7 +101,7 @@ export const requestToAi = async (content) => {
           - "Apakah kamu bisa memberikan penjelasan tentang teknologi tertentu?", jawab bahwa kamu dapat memberikan penjelasan tentang berbagai teknologi, tetapi tidak dapat memberikan kode atau implementasi langsung.
           - "Apakah kamu bisa memberikan rekomendasi teknologi?", jawab bahwa kamu dapat memberikan rekomendasi berdasarkan pengetahuan dan pengalaman, tetapi tidak dapat memberikan kode atau implementasi langsung.
 
-          **Berita terbaru**:
+          Jika anda tidak bisa menjawab atau kurang nya informasi anda bisa menggunakan berita terkini yang ada di bawah ini sebagai bahan referensi untuk menjawab pertanyaan pengguna:
           ${newsSummary}
 
           Tugas utamamu adalah membantu pengguna dengan profesionalisme dan keramahan, seolah-olah kamu adalah asisten pribadi eksklusif milik NestiaDev.`,

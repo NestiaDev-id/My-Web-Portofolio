@@ -377,22 +377,22 @@ export default function ProfilePage() {
       {/* Timeline */}
       <section className="mt-8">
         <h2 className="text-3xl font-bold mb-6 text-white">Timeline</h2>
-        <div class="relative container mx-auto px-6 flex flex-col space-y-8">
-          <div class="absolute z-0 w-2 h-full bg-white shadow-md inset-0 left-17 md:mx-auto md:right-0 md:left-0"></div>
-          <div class="relative z-10">
+        <div className="relative container mx-auto px-6 flex flex-col space-y-8">
+          <div className="absolute z-0 w-2 h-full bg-white shadow-md inset-0 left-17 md:mx-auto md:right-0 md:left-0"></div>
+          <div className="relative z-10">
             <img
               src="https://images.pexels.com/photos/885880/pexels-photo-885880.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=100"
               alt=""
-              class="timeline-img"
+              className="timeline-img"
             />
-            <div class="timeline-container">
-              <div class="timeline-pointer" aria-hidden="true"></div>
-              <div class="bg-white p-6 rounded-md shadow-md">
-                <span class="font-bold text-indigo-600 text-sm tracking-wide">
+            <div className="timeline-container">
+              <div className="timeline-pointer" aria-hidden="true"></div>
+              <div className="bg-white p-6 rounded-md shadow-md">
+                <span className="font-bold text-indigo-600 text-sm tracking-wide">
                   Jan 2021
                 </span>
-                <h1 class="text-2xl font-bold pt-1">An amazing travel</h1>
-                <p class="pt-1">
+                <h1 className="text-2xl font-bold pt-1">An amazing travel</h1>
+                <p className="pt-1">
                   Lorem ipsum dolor, sit amet consectetur adipisicing elit. Ex
                   iste suscipit reiciendis, perferendis vel consequuntur
                   cupiditate ad commodi provident, sapiente veniam sed autem.
@@ -400,23 +400,23 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
-          <div class="relative z-10">
+          <div className="relative z-10">
             <img
               src="https://images.pexels.com/photos/3223552/pexels-photo-3223552.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=100"
               alt=""
-              class="timeline-img"
+              className="timeline-img"
             />
-            <div class="timeline-container timeline-container-left">
+            <div className="timeline-container timeline-container-left">
               <div
-                class="timeline-pointer timeline-pointer-left"
+                className="timeline-pointer timeline-pointer-left"
                 aria-hidden="true"
               ></div>
-              <div class="bg-white p-6 rounded-md shadow-md">
-                <span class="font-bold text-indigo-600 text-sm tracking-wide">
+              <div className="bg-white p-6 rounded-md shadow-md">
+                <span className="font-bold text-indigo-600 text-sm tracking-wide">
                   Aug 2020
                 </span>
-                <h1 class="text-2xl font-bold pt-1">A trip far away</h1>
-                <p class="pt-1">
+                <h1 className="text-2xl font-bold pt-1">A trip far away</h1>
+                <p className="pt-1">
                   Lorem ipsum dolor, sit amet consectetur adipisicing elit. Ex
                   iste suscipit reiciendis, perferendis vel consequuntur
                   cupiditate ad commodi provident, sapiente veniam sed
@@ -424,7 +424,7 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
-          <div class="relative z-10">
+          <div className="relative z-10">
             <img
               src="https://images.pexels.com/photos/2906807/pexels-photo-2906807.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=100"
               alt=""

@@ -1,5 +1,6 @@
 import Grog from "groq-sdk";
 import { fetchLatestNews } from "../utils/newsApi";
+import { translateToIndonesian } from "./translateApi";
 
 const grog = new Grog({
   apiKey: import.meta.env.VITE_GROQ_API_KEY,
@@ -117,9 +118,20 @@ export const requestToAi = async (content) => {
       max_completion_tokens: 750,
     });
 
-    if (!reply || !reply.choices || reply.choices.length === 0) {
+    if (
+      !reply ||
+      !reply.choices ||
+      reply.choices.length === 0 ||
+      !reply.choices[0].message
+    ) {
       throw new Error("AI tidak memberikan respons yang valid.");
     }
+
+    let translatedContent = await translateToIndonesian(
+      reply.choices[0].message.content
+    );
+    reply.choices[0].message.content =
+      translatedContent || reply.choices[0].message.content;
 
     return reply.choices[0].message.content;
   } catch (error) {

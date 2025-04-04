@@ -1,0 +1,23 @@
+fastapi 
+requests
+uvicorn
+
+langchain 
+chromadb 
+
+# NLP & Transformers
+torch
+transformers
+sentence-transformers
+
+# Pemrosesan Data
+numpy
+pandas
+scikit-learn
+
+# PDF & Dokumen Processing (Opsional, jika ada dokumen di Knowledge Base)
+pymupdf
+pdfminer.six
+
+# Environment Management
+python-dotenv

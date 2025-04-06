@@ -1,6 +1,21 @@
-import mongoose from "mongoose";
+import mongoose, { Schema, Document } from "mongoose";
 
-const blogSchema = new mongoose.Schema({
+// 1. Interface
+export interface IBlog extends Document {
+  title: string;
+  slug: string;
+  description?: string;
+  cover_image?: string;
+  content: string;
+  images?: string[];
+  tags?: string[];
+  author: string;
+  createdAt: Date;
+  updatedAt?: Date;
+}
+
+// 2. Schema
+const blogSchema = new Schema<IBlog>({
   title: {
     type: String,
     required: true,
@@ -14,21 +29,21 @@ const blogSchema = new mongoose.Schema({
     type: String,
   },
   cover_image: {
-    type: String, // URL gambar besar di bagian atas
+    type: String,
   },
   content: {
-    type: String, // Konten utama dalam bentuk Markdown
+    type: String,
     required: true,
   },
   images: [
     {
-      type: String, // Array image URL (gambar tambahan di bawah konten)
+      type: String,
     },
   ],
-  tags: [String], // Kategori / label
+  tags: [String],
   author: {
     type: String,
-    default: "admin", // bisa juga di-relasikan ke model User nantinya
+    default: "admin",
   },
   createdAt: {
     type: Date,
@@ -37,5 +52,7 @@ const blogSchema = new mongoose.Schema({
   updatedAt: Date,
 });
 
-const Blog = mongoose.models.Blog || mongoose.model("Blog", blogSchema);
+// 3. Model
+const Blog = mongoose.models.Blog || mongoose.model<IBlog>("Blog", blogSchema);
+
 export default Blog;

@@ -1,5 +1,6 @@
 import { ObjectId } from "mongodb";
 import clientPromise from "./init";
+import { IUser } from "@/pages/models/user.model";
 
 const dbName = process.env.MONGODB_DB_NAME;
 
@@ -14,20 +15,21 @@ export async function getData(collectionName: string, query = {}) {
 
 export async function addData(
   collectionName: string,
-  data: {
-    aboutme: string;
-    name: string;
-    education: string;
-    tech_stack: string;
-    skills: string;
-    experience: string;
-  },
+  data: IUser,
   callback: (response: { status: boolean; message: string }) => void
 ) {
   try {
     const client = await clientPromise;
     const db = client.db(dbName);
     const collection = db.collection(collectionName);
+
+    // Cek apakah data sudah ada berdasarkan username
+    const existingUser = await collection.findOne({ name: data.name });
+    const existingUserEmail = await collection.findOne({ email: data.email });
+    if (existingUser || existingUserEmail) {
+      callback({ status: false, message: "Username or email already exists" });
+      return;
+    }
 
     const result = await collection.insertOne(data);
     if (result.acknowledged) {
@@ -44,14 +46,7 @@ export async function addData(
 export async function editData(
   collectionName: string,
   filter: { _id: string },
-  updateData: {
-    aboutme?: string;
-    name?: string;
-    education?: string;
-    tech_stack?: string;
-    skills?: string;
-    experience?: string;
-  },
+  updateData: IUser,
   callback: (response: { status: boolean; message: string }) => void
 ) {
   try {

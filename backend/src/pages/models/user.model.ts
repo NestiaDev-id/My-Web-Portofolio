@@ -45,6 +45,7 @@ interface IUser {
   profile_picture?: string;
   cover_photo?: string;
   aboutme?: string;
+  quote?: string[];
 
   tech_stack?: string[];
   skills?: string[];
@@ -75,6 +76,7 @@ const userSchema = new mongoose.Schema<IUser>({
   profile_picture: String,
   cover_photo: String,
   aboutme: String,
+  quote: [String],
 
   tech_stack: [String],
   skills: [String],

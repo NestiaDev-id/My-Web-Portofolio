@@ -7,8 +7,7 @@ if (!uri) {
     "Please add your MongoDB URI to the environment variables (e.g., .env.local)"
   );
 } else {
-  // berhasik koneksi ke database
-  console.log("MongoDB URI: ", uri);
+  console.log("Terhubung ke database MongoDB");
 }
 
 const client = new MongoClient(uri);

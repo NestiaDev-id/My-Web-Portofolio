@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { splitText } from "motion-plus";
 
@@ -188,6 +188,23 @@ export default function ProfilePage() {
       { id: 2, content: "Machine Learning Engineer Intern at ABC Tech" },
     ],
   };
+
+  // get api from localhost:3000/api/about
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:3000/api/about?_id=67f3fde8f68dac7aca1babb5"
+        );
+        const result = await response.json();
+        console.log(result);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+    fetchData();
+  }),
+    [];
 
   return (
     <div className="container mx-auto mt-20 p-4 text-gray-200">
@@ -430,14 +447,14 @@ export default function ProfilePage() {
               alt=""
               class="timeline-img"
             />
-            <div class="timeline-container">
-              <div class="timeline-pointer" aria-hidden="true"></div>
-              <div class="bg-white p-6 rounded-md shadow-md">
-                <span class="font-bold text-indigo-600 text-sm tracking-wide">
+            <div className="timeline-container">
+              <div className="timeline-pointer" aria-hidden="true"></div>
+              <div className="bg-white p-6 rounded-md shadow-md">
+                <span className="font-bold text-indigo-600 text-sm tracking-wide">
                   March 2020
                 </span>
-                <h1 class="text-2xl font-bold pt-1">Solo Trip</h1>
-                <p class="pt-1">
+                <h1 className="text-2xl font-bold pt-1">Solo Trip</h1>
+                <p className="pt-1">
                   Lorem ipsum dolor, sit amet consectetur adipisicing elit. Ex
                   iste suscipit reiciendis, perferendis vel consequuntur
                   cupiditate ad commodi provident, sapiente veniam sed autem,

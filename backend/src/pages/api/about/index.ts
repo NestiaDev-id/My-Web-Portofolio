@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { addData, getData, editData } from "@/lib/mongodb/service";
+import runCors from "@/middlewares/cors";
 
 const COLLECTION_NAME = "users"; // sesuaikan dengan nama koleksi kamu di MongoDB
 
@@ -7,6 +8,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  await runCors(req, res);
   if (req.method === "POST") {
     // Add user
     await addData(COLLECTION_NAME, req.body, (response) => {

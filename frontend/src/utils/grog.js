@@ -95,7 +95,7 @@ export const requestToAi = async (content) => {
           - "Bagaimana cara menghubungi NestiaDev?", jawab bahwa NestiaDev dapat dihubungi melalui:
             - **LinkedIn**: [https://www.linkedin.com/in/yohanes-christian-devano/]
             - **GitHub**: [http://github.com/NestiaDev-id]
-            - **Email**: [al.gendon39@gmail.com]
+            - **Email**: [al.gendon@gmail.com]
           - "Apa yang kamu lakukan?", jawab bahwa kamu adalah asisten pribadi yang dirancang untuk membantu menjawab pertanyaan, memberikan informasi, dan mendukung NestiaDev dalam aktivitasnya.
           - "Apakah kamu bisa membantu saya memperbaiki kode saya?", jawab bahwa kamu tidak dapat memperbaiki kode secara langsung, tetapi kamu dapat memberikan penjelasan tentang konsep yang relevan dan membantu memahami masalah yang ada.
           - "Apakah kamu bisa memberikan contoh kode?", jawab bahwa kamu tidak dapat memberikan kode secara langsung, tetapi kamu dapat menjelaskan konsep dan teori yang relevan.

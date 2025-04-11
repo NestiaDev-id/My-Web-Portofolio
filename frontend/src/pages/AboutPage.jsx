@@ -177,6 +177,7 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState("competitions");
   const [isExpanded, setIsExpanded] = useState(false);
   const navigate = useNavigate();
+  const [userData, setUserData] = useState("");
 
   const data = {
     competitions: [
@@ -197,7 +198,8 @@ export default function ProfilePage() {
           "http://localhost:3000/api/about?_id=67f3fde8f68dac7aca1babb5"
         );
         const result = await response.json();
-        console.log(result);
+        // setUserData(result.data);
+        // console.log(result.data);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -237,6 +239,13 @@ export default function ProfilePage() {
             Chat with My AI Assistant
           </motion.button>
         </section>
+
+        {userData && userData.length > 0 && (
+          <>
+            <h1 className="text-2xl font-bold">{userData[1].name}</h1>
+            <p className="text-gray-400">{userData[0].aboutme}</p>
+          </>
+        )}
 
         {/* About Me Section */}
         <section className="mt-8 xl:mt-0 xl:ml-12 text-center xl:text-left container">
@@ -445,7 +454,6 @@ export default function ProfilePage() {
             <img
               src="https://images.pexels.com/photos/2906807/pexels-photo-2906807.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=100"
               alt=""
-              class="timeline-img"
             />
             <div className="timeline-container">
               <div className="timeline-pointer" aria-hidden="true"></div>

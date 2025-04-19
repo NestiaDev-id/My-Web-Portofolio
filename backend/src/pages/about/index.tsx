@@ -10,6 +10,7 @@ import { Badge } from "../components/ui/badge";
 import { X, Upload, Check, Plus } from "lucide-react";
 import { motion } from "framer-motion";
 import { useToast } from "../components/ui/use-toast";
+import { AdminLayout } from "../components/layouts/AdminLayout";
 
 const AboutPage = () => {
   const [formData, setFormData] = useState<AboutMeData>({ ...aboutMeData });
@@ -200,3 +201,7 @@ const AboutPage = () => {
 };
 
 export default AboutPage;
+
+AboutPage.getLayout = function getLayout(page: ReactElement) {
+  return <AdminLayout>{page}</AdminLayout>;
+};

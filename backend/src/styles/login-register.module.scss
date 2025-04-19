@@ -1,0 +1,81 @@
+/* Pure SCSS for register.scss */
+.register-container {
+  background-color: #ffffff;
+  padding: 30px;
+  border: 3px solid #ff90e8; /* Neon pink border */
+  box-shadow: 5px 5px 0px 0px rgba(255, 144, 232, 1); /* Neon shadow effect */
+  border-radius: 0; /* No rounded corners */
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+  transition: all 150ms ease-in-out;
+}
+
+.register-container h1 {
+  font-size: 3rem;
+  font-weight: bold;
+  color: #ff90e8;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 20px;
+  text-shadow: 4px 4px 0px rgba(0, 0, 0, 1); /* Bold text shadow */
+}
+
+/* .form-group for form fields */
+.form-group {
+  margin-bottom: 20px;
+  text-align: left;
+
+  .form-label {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #333;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 12px;
+    background-color: #ffffff;
+    border: 2px solid #000000;
+    box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
+    transition: all 150ms ease-in-out;
+  }
+
+  .form-input:focus {
+    outline: none;
+    border-color: #ff90e8; /* Focus border color */
+    box-shadow: 4px 4px 0px 0px rgba(255, 144, 232, 1); /* Neon glow on focus */
+  }
+}
+
+.form-button {
+  background-color: #ff90e8;
+  color: #ffffff;
+  border: none;
+  padding: 12px 20px;
+  width: 100%;
+  font-size: 1.2rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
+  transition: all 150ms ease-in-out;
+  cursor: pointer;
+}
+
+.form-button:hover {
+  transform: translate(3px, 3px);
+  box-shadow: none;
+}
+
+.link-text {
+  font-size: 0.9rem;
+  margin-top: 20px;
+  color: #333;
+}
+
+.link-text a {
+  color: #ff90e8;
+  text-decoration: none;
+}

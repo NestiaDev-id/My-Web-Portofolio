@@ -1,44 +1,93 @@
 @import "tailwindcss";
 
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
+/* Font import */
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap");
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
+@layer base {
+  :root {
+    --background: 60 9% 98%;
+    --foreground: 20 14.3% 4.1%;
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+    --card: 60 9% 98%;
+    --card-foreground: 20 14.3% 4.1%;
+
+    --popover: 60 9% 98%;
+    --popover-foreground: 20 14.3% 4.1%;
+
+    --primary: 24 9.8% 10%;
+    --primary-foreground: 60 9.1% 97.8%;
+
+    --secondary: 60 4.8% 95.9%;
+    --secondary-foreground: 24 9.8% 10%;
+
+    --muted: 60 4.8% 95.9%;
+    --muted-foreground: 25 5.3% 44.7%;
+
+    --accent: 60 4.8% 95.9%;
+    --accent-foreground: 24 9.8% 10%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 60 9.1% 97.8%;
+
+    --border: 20 5.9% 90%;
+    --input: 20 5.9% 90%;
+    --ring: 24 9.8% 10%;
+
+    --radius: 0px;
+
+    --sidebar-background: 0 0% 0%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 120 100% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 15%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 0 0% 20%;
+    --sidebar-ring: 120 100% 50%;
   }
-  to {
-    transform: rotate(360deg);
+
+  html {
+    font-family: "Space Grotesk", sans-serif;
+  }
+
+  /* Apply border color manually */
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  /* Apply background and text colors manually */
+  body {
+    background-color: #fffbe3; /* jika kamu ingin tetap pakai warna solid */
+    color: hsl(var(--foreground));
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+/* Manual equivalent of @apply for neo-card */
+.neo-card {
+  background-color: white;
+  border-width: 2px;
+  border-color: black;
+  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
 }
 
-.card {
-  padding: 2em;
+/* Manual equivalent of @apply for neo-button */
+.neo-button {
+  background-color: #ff90e8;
+  border-width: 2px;
+  border-color: black;
+  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
+  transition: all 150ms ease-in-out;
 }
 
-.read-the-docs {
-  color: #888;
+.neo-button:hover {
+  transform: translateX(3px) translateY(3px);
+  box-shadow: none;
+}
+
+/* Manual equivalent of @apply for neo-input */
+.neo-input {
+  background-color: white;
+  border-width: 2px;
+  border-color: black;
+  box-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 1);
 }

@@ -27,6 +27,7 @@ import {
 import { Badge } from "../components/ui/badge";
 import { Plus, X, Upload } from "lucide-react";
 import { useToast } from "../components/ui/use-toast";
+import { AdminLayout } from "../components/layouts/AdminLayout";
 
 const ProjectsPage = () => {
   const [projects, setProjects] = useState<Project[]>(projectsData);
@@ -361,3 +362,7 @@ const ProjectsPage = () => {
 };
 
 export default ProjectsPage;
+
+ProjectsPage.getLayout = function getLayout(page: React.ReactNode) {
+  return <AdminLayout>{page}</AdminLayout>;
+};

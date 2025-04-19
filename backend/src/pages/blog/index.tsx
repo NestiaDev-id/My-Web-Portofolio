@@ -27,6 +27,7 @@ import {
 import { Badge } from "../components/ui/badge";
 import { Plus, X, Upload, Calendar } from "lucide-react";
 import { useToast } from "../components/ui/use-toast";
+import { AdminLayout } from "../components/layouts/AdminLayout";
 
 const BlogPage = () => {
   const [posts, setPosts] = useState<BlogPost[]>(blogPostsData);
@@ -407,3 +408,7 @@ const BlogPage = () => {
 };
 
 export default BlogPage;
+
+BlogPage.getLayout = function getLayout(page: React.ReactNode) {
+  return <AdminLayout>{page}</AdminLayout>;
+};

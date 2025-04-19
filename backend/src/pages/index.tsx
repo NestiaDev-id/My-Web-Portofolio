@@ -19,6 +19,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { AdminLayout } from "./components/layouts/AdminLayout";
 
 const Dashboard = () => {
   return (
@@ -149,3 +150,7 @@ const StatCard = ({ title, value, icon, description }: StatCardProps) => {
 };
 
 export default Dashboard;
+
+Dashboard.getLayout = function getLayout(page: React.ReactNode) {
+  return <AdminLayout>{page}</AdminLayout>;
+};

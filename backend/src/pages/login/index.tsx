@@ -47,7 +47,7 @@ const Login: React.FC = () => {
     <div className="flex justify-center items-center min-h-screen bg-[#FFFBE3] text-black">
       <div className={styles["register-container"]}>
         <h1>Login</h1>
-        <form>
+        <form onSubmit={handleSubmit}>
           <div className={styles["form-group"]}>
             <label htmlFor="email" className={styles["form-label"]}>
               Email

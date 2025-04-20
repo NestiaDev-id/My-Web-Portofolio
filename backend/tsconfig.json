@@ -17,6 +17,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "tailwind.config.mjs", "src/pages/api/register/route.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "tailwind.config.mjs", "src/pages/api/auth/route.ts"],
   "exclude": ["node_modules"]
 }

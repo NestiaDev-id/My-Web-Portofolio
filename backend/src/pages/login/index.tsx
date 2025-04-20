@@ -3,15 +3,44 @@ import styles from "@/styles/login-register.module.scss"; // Import SCSS module
 import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 const handleGoogleLogin = () => {
   console.log("Login with Google clicked");
 };
 const Login: React.FC = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
+  const router = useRouter();
+
   const [showPassword, setShowPassword] = useState(false);
 
   const togglePassword = () => {
     setShowPassword((prev) => !prev);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const res = await fetch("/api/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      setMessage("Login successful!");
+      // Redirect to dashboard or home page
+      router.push("/"); // Adjust the path as needed
+    } else {
+      setMessage(data.error || "Something went wrong. Please try again.");
+      console.log(data.error);
+    }
   };
 
   return (
@@ -27,6 +56,8 @@ const Login: React.FC = () => {
               type="email"
               id="email"
               name="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className={styles["form-input"]}
               placeholder="Enter your email"
             />
@@ -41,6 +72,8 @@ const Login: React.FC = () => {
                 type={showPassword ? "text" : "password"}
                 id="password"
                 name="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className={`${styles["form-input"]} pr-12`}
                 placeholder="Enter your password"
               />

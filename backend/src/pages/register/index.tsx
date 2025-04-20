@@ -1,14 +1,43 @@
 import styles from "@/styles/login-register.module.scss"; // Import SCSS module
 
-import React from "react";
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+
 // import "../../styles/register.module.scss"; // Import the pure SCSS file
 
 const Register: React.FC = () => {
+  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const res = await fetch("/api/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, username, password }),
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      setMessage("Registration successful! Please log in.");
+      router.push("/login"); // Redirect to login page after successful registration
+    } else {
+      setMessage(data.error || "Something went wrong. Please try again.");
+      console.log(data.error);
+    }
+  };
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-100">
       <div className={styles["register-container"]}>
         <h1>Register</h1>
-        <form>
+        <form onSubmit={handleSubmit}>
           <div className={styles["form-group"]}>
             <label htmlFor="username" className={styles["form-label"]}>
               Username
@@ -17,6 +46,8 @@ const Register: React.FC = () => {
               type="text"
               id="username"
               name="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               className={styles["form-input"]}
               placeholder="Enter your username"
             />
@@ -30,6 +61,8 @@ const Register: React.FC = () => {
               type="email"
               id="email"
               name="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className={styles["form-input"]}
               placeholder="Enter your email"
             />
@@ -43,6 +76,8 @@ const Register: React.FC = () => {
               type="password"
               id="password"
               name="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               className={styles["form-input"]}
               placeholder="Enter your password"
             />

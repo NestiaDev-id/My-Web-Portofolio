@@ -3,6 +3,7 @@ import styles from "@/styles/login-register.module.scss"; // Import SCSS module
 import { Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 import { motion } from "framer-motion";
+
 const handleGoogleLogin = () => {
   console.log("Login with Google clicked");
 };
@@ -88,7 +89,7 @@ const Login: React.FC = () => {
             onClick={handleGoogleLogin}
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
-            className="w-full flex items-center justify-center gap-2 border-2 border-black bg-white text-black py-3 px-4 font-bold shadow-[4px_4px_0_0_#000] hover:bg-[#FF90E8] transition-colors"
+            className="w-full flex items-center justify-center gap-2 border-2 border-black bg-white text-black py-3 px-4 font-bold shadow-[4px_4px_0_0_#000] hover:bg-[#FF90E8]  hover:text-white transition-colors"
           >
             <svg
               className="w-5 h-5"

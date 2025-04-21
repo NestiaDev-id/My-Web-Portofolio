@@ -4,9 +4,6 @@ import {
   NextRequest,
   NextResponse,
 } from "next/server";
-import { jwtVerify } from "jose";
-
-const onlyAdminRoutes = ["/admin"];
 
 // Middleware wrapper untuk melindungi rute tertentu
 export default function withAuth(

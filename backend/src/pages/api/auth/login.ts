@@ -35,16 +35,11 @@ const loginSchema = z.object({
   email: z
     .string()
     .email()
-    .refine(
-      (email) => {
-        // Validasi email dengan regex untuk memastikan formatnya benar
-        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-        return emailRegex.test(email) && email.endsWith("@gmail.com"); // Validasi domain @gmail.com
-      },
-      {
-        message: "Format email tidak valid",
-      }
-    ),
+    .refine((email) => {
+      // Validasi email dengan regex untuk memastikan formatnya benar
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      return emailRegex.test(email) && email.endsWith("@gmail.com"); // Validasi domain @gmail.com
+    }),
   password: z.string().min(6), // Password minimal 6 karakter
 });
 
@@ -73,6 +68,12 @@ export default async function handler(
 
     // Check user-specific rate limit based on email
     const { email, password } = loginSchema.parse(req.body); // Validate input
+    if (!email || !password) {
+      return res.status(400).json({
+        message: "Login gagal",
+        error: "Email atau password tidak sesuai format yang diizinkan.",
+      });
+    }
     // console.log("✅ Validated input:", { email });
     await userRateLimiter.check(res, 3, email); // Max 3 login attempts per email per minute
 
@@ -86,9 +87,10 @@ export default async function handler(
     // Mencari user di database berdasarkan email
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user)
-      return res
-        .status(401)
-        .json({ message: "Login gagal", error: "User not found" }); // Unauthorized jika user tidak ditemukan
+      return res.status(401).json({
+        message: "Login gagal",
+        error: "User atau akun tidak ditemukan.",
+      }); // Unauthorized jika user tidak ditemukan
 
     // Membandingkan password yang diberikan dengan password yang di-hash di database
     // const valid = await bcrypt.compare(password, user.password);
@@ -98,9 +100,10 @@ export default async function handler(
     const valid = await argon2.verify(original, password);
 
     if (!valid)
-      return res
-        .status(401)
-        .json({ message: "Login gagal", error: "Invalid password" }); // Unauthorized jika password salah
+      return res.status(401).json({
+        message: "Login gagal",
+        error: "Email atau password yang anda masukan salah.",
+      }); // Unauthorized jika password salah
 
     // Update lastLogin pada user
     await prisma.user.update({

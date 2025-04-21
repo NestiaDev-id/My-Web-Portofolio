@@ -4,6 +4,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Router from "next/router";
+import { useToast } from "../components/ui/use-toast";
 
 const handleGoogleLogin = () => {
   console.log("Login with Google clicked");
@@ -16,6 +17,7 @@ const Login: React.FC = () => {
   const [isTokenValid, setIsTokenValid] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [csrfToken, setCsrfToken] = useState("");
+  const { toast } = useToast();
 
   const togglePassword = () => {
     setShowPassword((prev) => !prev);
@@ -34,6 +36,7 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
 
     try {
       const res = await fetch("/api/auth/login", {
@@ -49,30 +52,46 @@ const Login: React.FC = () => {
       const data = await res.json();
 
       if (res.ok) {
-        console.log("✅ Login sukses:", data.message);
+        toast({
+          title: "Login berhasil!",
+          description: data.message || "Selamat datang kembali 🎉",
+        });
         Router.push("/"); // Arahkan ke home
       } else {
-        console.warn("❌ Login gagal:", data.message || data.error);
+        toast({
+          title: "Login gagal",
+          description: data.error || "Coba lagi nanti.",
+          variant: "destructive", // kalau ada styling untuk error
+        });
       }
     } catch (error) {
-      console.error("🚨 Error saat login:", error);
+      toast({
+        title: "Terjadi kesalahan",
+        description: "Unexpected error.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen bg-[#FFFBE3] text-black">
-        <motion.div
-          className="w-16 h-16 border-4 border-black border-t-transparent rounded-full"
-          animate={{ rotate: 360 }}
-          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
-        />
-      </div>
-    );
-  }
-
   return (
     <div className="flex justify-center items-center min-h-screen bg-[#FFFBE3] text-black">
+      {/* LOADING MODAL */}
+      {isLoading && (
+        <div className="absolute z-50 inset-0 flex items-center justify-center bg-[#FFFBE3]/90">
+          <div className="border-4 border-black bg-white p-6 rounded-xl shadow-[4px_4px_0_0_#000]">
+            <motion.div
+              className="w-12 h-12 border-[5px] border-black border-t-transparent rounded-full mx-auto mb-4"
+              animate={{ rotate: 360 }}
+              transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+            />
+            <p className="text-center font-bold">
+              Authenticating... Please wait
+            </p>
+          </div>
+        </div>
+      )}
       <div className={styles["register-container"]}>
         <h1>Login</h1>
         <form onSubmit={handleSubmit}>

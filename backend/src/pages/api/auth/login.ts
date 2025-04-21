@@ -55,6 +55,11 @@ export default async function handler(
   if (req.method !== "POST") return res.status(405).end(); // Early check for method
 
   try {
+    // Mengecek token JWT yang sudah ada di cookie, jika sudah ada maka tidak perlu login kembali
+    if (req.cookies.token) {
+      return res.status(200).json({ message: "User already logged in" });
+    }
+
     // Memeriksa apakah alamat IP melampaui batas permintaan
     // ✅ Rate limit per IP
     const ip =
@@ -78,24 +83,6 @@ export default async function handler(
         .json({ message: "Login gagal", error: "Unauthorized" }); // Unauthorized jika email tidak cocok
     }
 
-    // cek apakah email sudah login sebelumnya, berdasarkan token
-    // karna token berdurasi 1 jam
-    // const token = req.headers.authorization?.split(" ")[1];
-    // if (token) {
-    //   try {
-    //     const decoded = jwt.verify(token, privateKey.key, {
-    //       algorithms: ["RS512"],
-    //     }) as jwt.JwtPayload;
-    //     if (Date.now() / 1000 - decoded.iat < 60 * 60) {
-    //       return res
-    //         .status(401)
-    //         .json({ message: "Login gagal", error: "Unauthorized" }); // Unauthorized jika email tidak cocok
-    //     }
-    //   } catch (error) {
-    //     console.error("Error verifying token:", error);
-    //   }
-    // }
-
     // Mencari user di database berdasarkan email
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user)
@@ -105,12 +92,23 @@ export default async function handler(
 
     // Membandingkan password yang diberikan dengan password yang di-hash di database
     // const valid = await bcrypt.compare(password, user.password);
-    const valid = await argon2.verify(user.password, password);
+    const stripped = user.password.replace("$argon2id$", ""); // Remove "$argon2id$" if it's there
+
+    const original = `$argon2id$${stripped}`; // Add it back
+    const valid = await argon2.verify(original, password);
 
     if (!valid)
       return res
         .status(401)
         .json({ message: "Login gagal", error: "Invalid password" }); // Unauthorized jika password salah
+
+    // Update lastLogin pada user
+    await prisma.user.update({
+      where: { email },
+      data: {
+        lastLogin: new Date(), // Update lastLogin dengan waktu saat ini
+      },
+    });
 
     const header = {
       alg: "RS512",

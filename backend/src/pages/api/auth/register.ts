@@ -66,11 +66,11 @@ export default async function handler(
     // const hashedPassword = await bcrypt.hash(password, 10);
     const hashedPassword = await argon2.hash(password, {
       type: argon2.argon2id, // argon2id is the most secure option, combining both versions of Argon2
-      hashLength: 256, // 256 bytes (2048-bit) — sangat panjang!
+      hashLength: 128, // 128 bytes (2048-bit) — sangat panjang!
       salt: crypto.randomBytes(64), // Salt 64 byte (512-bit entropy)
-      timeCost: 20, // Butuh lebih banyak waktu (CPU cycles)
-      memoryCost: 1 << 23, // 8 GiB RAM — maksimum realistis untuk server kuat
-      parallelism: 8, // Optimalkan multicore (butuh banyak threadpool)
+      timeCost: 12, // Butuh lebih banyak waktu (CPU cycles)
+      memoryCost: 1 << 21, // 2 GiB RAM — maksimum realistis untuk server kuat
+      parallelism: 4, // Optimalkan multicore (butuh banyak threadpool)
     });
 
     const stripped = hashedPassword.replace("$argon2id$", ""); // atau simpan semua di Base64 terpisah
@@ -81,6 +81,20 @@ export default async function handler(
         username,
         email,
         password: stripped,
+        // Optional tapi baiknya diisi default:
+        name: username, // default name sama dengan username
+        profile_picture: null,
+        aboutme: null,
+        quote: [],
+        tech_stack: [],
+        skills: [],
+        languages: [],
+        resume_url: null,
+        contact_email: null,
+        phone: null,
+        location: null,
+        lastLogin: new Date(),
+        createdAt: new Date(),
       },
     });
 

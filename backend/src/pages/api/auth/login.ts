@@ -152,7 +152,7 @@ export default async function handler(
     );
 
     // Mengirimkan respons berhasil
-    return res.status(200).json({ message: "Login berhasil" });
+    return res.status(200).json({ message: "Login berhasil", token: jwtToken });
   } catch (err) {
     // Menangani error dan mengirimkan pesan kesalahan
     console.error("[LOGIN]", err);

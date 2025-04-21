@@ -1,9 +1,9 @@
 import styles from "@/styles/login-register.module.scss"; // Import SCSS module
 
 import { Eye, EyeOff } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
+import Router from "next/router";
 
 const handleGoogleLogin = () => {
   console.log("Login with Google clicked");
@@ -12,9 +12,9 @@ const Login: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
-  const router = useRouter();
-
   const [showPassword, setShowPassword] = useState(false);
+  const [isTokenValid, setIsTokenValid] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const togglePassword = () => {
     setShowPassword((prev) => !prev);
@@ -22,8 +22,10 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
 
-    const res = await fetch("/api/login", {
+    // Step 1: Kirim permintaan login
+    const res = await fetch("/api/auth/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -32,16 +34,39 @@ const Login: React.FC = () => {
     });
 
     const data = await res.json();
+    setIsLoading(false);
 
     if (res.ok) {
-      setMessage("Login successful!");
-      // Redirect to dashboard or home page
-      router.push("/"); // Adjust the path as needed
+      console.log("Login berhasil");
+
+      // Step 2: Validasi token lewat endpoint protected
+      const protectedRes = await fetch("/api/auth/protected", {
+        method: "GET",
+        credentials: "include", // ⬅️ penting agar cookie terkirim
+      });
+
+      if (protectedRes.ok) {
+        // Step 3: Redirect ke home
+        Router.push("/");
+      } else {
+        console.error("Token dari cookie tidak valid");
+      }
     } else {
-      setMessage(data.error || "Something went wrong. Please try again.");
-      console.log(data.error);
+      console.error("Login gagal:", data?.error || data?.message);
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-[#FFFBE3] text-black">
+        <motion.div
+          className="w-16 h-16 border-4 border-black border-t-transparent rounded-full"
+          animate={{ rotate: 360 }}
+          transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-[#FFFBE3] text-black">

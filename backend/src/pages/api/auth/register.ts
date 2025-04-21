@@ -7,6 +7,7 @@ import rateLimit from "@/lib/middleware/rate-limit"; // Rate limiting middleware
 import fs from "fs";
 import crypto from "crypto";
 import argon2 from "argon2";
+import { encryptDataWithMLKEM } from "@/lib/security/mlkem-aes";
 
 // Load private key for signing JWT
 const privateKey = {

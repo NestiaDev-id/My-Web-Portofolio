@@ -1,13 +1,13 @@
 import crypto from "crypto";
-import { mlkem } from "mlkem-js"; // Misalkan ini adalah pustaka untuk ML-KEM (kunci publik tahan kuantum)
+import { generateKeyPair, encrypt, decrypt } from "./kem"; // Misalkan ini adalah pustaka untuk ML-KEM (kunci publik tahan kuantum)
 
 // Fungsi untuk melakukan pertukaran kunci dan enkripsi menggunakan AES-256-CBC
 export async function encryptDataWithMLKEM(data: string) {
   // Generasi pasangan kunci untuk ML-KEM (public dan private key)
-  const { publicKey, privateKey } = mlkem.generateKeyPair();
+  const { publicKey, privateKey } = generateKeyPair();
 
   // Enkripsi menggunakan ML-KEM untuk menghasilkan shared secret
-  const sharedSecret = mlkem.encrypt(publicKey, privateKey);
+  const sharedSecret = encrypt(publicKey, privateKey);
 
   // Gunakan shared secret untuk menghasilkan kunci simetris AES
   const aesKey = crypto.createHash("sha256").update(sharedSecret).digest(); // AES Key 256-bit dari shared secret
@@ -34,7 +34,7 @@ export function decryptDataWithMLKEM(
   publicKey: Buffer
 ) {
   // Dapatkan shared secret menggunakan private key dan public key (ML-KEM)
-  const sharedSecret = mlkem.decrypt(privateKey, publicKey);
+  const sharedSecret = decrypt(privateKey, publicKey);
 
   // Generate AES Key dari shared secret
   const aesKey = crypto.createHash("sha256").update(sharedSecret).digest();

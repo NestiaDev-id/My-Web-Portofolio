@@ -2,10 +2,16 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import withAuth from "./middlewares/withAuth";
 
-// Fungsi utama middleware, isinya default karena hanya dipakai untuk dibungkus oleh withAuth
+// Fungsi middleware utama, hanya meneruskan permintaan
 export function mainMiddleware(request: NextRequest) {
-  const res = NextResponse.next(); // Lanjut ke request selanjutnya (jika lolos auth)
+  return NextResponse.next(); // Penting! Harus return response
 }
 
-// Buat empty array untuk "requireAuth", karena kita akan handle semua di dalam withAuth
-export default withAuth(mainMiddleware);
+// Bungkus dengan auth middleware
+export default withAuth(mainMiddleware, [
+  "/",
+  "/profile",
+  "/blog",
+  "/projects",
+  "/social",
+]);

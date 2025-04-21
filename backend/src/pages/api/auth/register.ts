@@ -6,6 +6,7 @@ import { z } from "zod"; // Input validation
 import rateLimit from "@/lib/middleware/rate-limit"; // Rate limiting middleware
 import fs from "fs";
 import crypto from "crypto";
+import argon2 from "argon2";
 
 // Load private key for signing JWT
 const privateKey = {
@@ -23,6 +24,7 @@ const limiter = rateLimit({
 
 // Registration schema validation
 const registerSchema = z.object({
+  username: z.string().min(3),
   email: z
     .string()
     .email()
@@ -45,7 +47,7 @@ export default async function handler(
     await limiter.check(res, 5, ip);
 
     // Validate input data
-    const { email, password } = registerSchema.parse(req.body);
+    const { username, email, password } = registerSchema.parse(req.body);
 
     // Check if email already exists in the database
     const existingUser = await prisma.user.findUnique({ where: { email } });
@@ -53,14 +55,32 @@ export default async function handler(
       return res.status(400).json({ message: "Email already in use" });
     }
 
+    // just one single-email user allowed from env
+    if (email !== process.env.ALLOWED_USER_EMAIL) {
+      return res
+        .status(401)
+        .json({ message: "Login gagal", error: "Unauthorized" }); // Unauthorized jika email tidak cocok
+    }
+
     // Hash the user's password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await argon2.hash(password, {
+      type: argon2.argon2id, // argon2id is the most secure option, combining both versions of Argon2
+      hashLength: 256, // 256 bytes (2048-bit) — sangat panjang!
+      salt: crypto.randomBytes(64), // Salt 64 byte (512-bit entropy)
+      timeCost: 20, // Butuh lebih banyak waktu (CPU cycles)
+      memoryCost: 1 << 23, // 8 GiB RAM — maksimum realistis untuk server kuat
+      parallelism: 8, // Optimalkan multicore (butuh banyak threadpool)
+    });
+
+    const stripped = hashedPassword.replace("$argon2id$", ""); // atau simpan semua di Base64 terpisah
 
     // Create the new user in the database
     const newUser = await prisma.user.create({
       data: {
+        username,
         email,
-        password: hashedPassword,
+        password: stripped,
       },
     });
 

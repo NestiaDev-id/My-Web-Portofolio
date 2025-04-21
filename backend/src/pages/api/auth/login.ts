@@ -7,9 +7,7 @@ import rateLimit from "@/lib/middleware/rate-limit"; // Rate limiting middleware
 import fs from "fs";
 import crypto from "crypto";
 import csrf from "csrf";
-
-// CSRF Protection setup
-const csrfProtection = new csrf();
+import argon2 from "argon2";
 
 // Load private key dengan passphrase
 const privateKey = {
@@ -57,18 +55,6 @@ export default async function handler(
   if (req.method !== "POST") return res.status(405).end(); // Early check for method
 
   try {
-    // CSRF token validation
-    // console.log("CSRF Secret:", process.env.CSRF_SECRET);
-    // console.log("CSRF Token:", req.headers["x-csrf-token"]);
-    // if (
-    //   !csrfProtection.verify(
-    //     process.env.CSRF_SECRET!,
-    //     req.headers["x-csrf-token"] as string
-    //   )
-    // ) {
-    //   return res.status(403).json({ message: "CSRF token tidak valid" });
-    // }
-
     // Memeriksa apakah alamat IP melampaui batas permintaan
     // ✅ Rate limit per IP
     const ip =
@@ -77,12 +63,12 @@ export default async function handler(
         : req.headers["x-forwarded-for"]) ||
       req.socket.remoteAddress ||
       "global";
-    console.log("🧠 IP address:", ip);
+    // console.log("🧠 IP address:", ip);
     await limiter.check(res, 5, ip);
 
     // Check user-specific rate limit based on email
     const { email, password } = loginSchema.parse(req.body); // Validate input
-    console.log("✅ Validated input:", { email });
+    // console.log("✅ Validated input:", { email });
     await userRateLimiter.check(res, 3, email); // Max 3 login attempts per email per minute
 
     // Cek apakah email sesuai dengan yang diperbolehkan (email tunggal untuk aplikasi)
@@ -92,6 +78,24 @@ export default async function handler(
         .json({ message: "Login gagal", error: "Unauthorized" }); // Unauthorized jika email tidak cocok
     }
 
+    // cek apakah email sudah login sebelumnya, berdasarkan token
+    // karna token berdurasi 1 jam
+    // const token = req.headers.authorization?.split(" ")[1];
+    // if (token) {
+    //   try {
+    //     const decoded = jwt.verify(token, privateKey.key, {
+    //       algorithms: ["RS512"],
+    //     }) as jwt.JwtPayload;
+    //     if (Date.now() / 1000 - decoded.iat < 60 * 60) {
+    //       return res
+    //         .status(401)
+    //         .json({ message: "Login gagal", error: "Unauthorized" }); // Unauthorized jika email tidak cocok
+    //     }
+    //   } catch (error) {
+    //     console.error("Error verifying token:", error);
+    //   }
+    // }
+
     // Mencari user di database berdasarkan email
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user)
@@ -100,7 +104,9 @@ export default async function handler(
         .json({ message: "Login gagal", error: "User not found" }); // Unauthorized jika user tidak ditemukan
 
     // Membandingkan password yang diberikan dengan password yang di-hash di database
-    const valid = await bcrypt.compare(password, user.password);
+    // const valid = await bcrypt.compare(password, user.password);
+    const valid = await argon2.verify(user.password, password);
+
     if (!valid)
       return res
         .status(401)
@@ -122,7 +128,6 @@ export default async function handler(
       sub: "user-authentication",
       jti: crypto.randomUUID(),
     };
-
     const encode = (obj: any) =>
       Buffer.from(JSON.stringify(obj))
         .toString("base64")
@@ -143,7 +148,7 @@ export default async function handler(
       .replace(/\//g, "_");
 
     const jwtToken = `${tokenPart}.${signature}`;
-    console.log("🔐 JWT Token created");
+    // console.log("🔐 JWT Token created");
 
     // Mengirim token dalam cookie HTTP-Only yang aman
     res.setHeader(

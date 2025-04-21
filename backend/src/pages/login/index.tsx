@@ -15,44 +15,47 @@ const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isTokenValid, setIsTokenValid] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [csrfToken, setCsrfToken] = useState("");
 
   const togglePassword = () => {
     setShowPassword((prev) => !prev);
   };
 
+  useEffect(() => {
+    fetch("/api/auth/protected")
+      .then((res) => res.json())
+      .then((data) => {
+        setCsrfToken(data.csrfToken);
+      })
+      .catch((err) => {
+        console.error("Gagal mengambil CSRF token:", err);
+      });
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
 
-    // Step 1: Kirim permintaan login
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email, password }),
-    });
-
-    const data = await res.json();
-    setIsLoading(false);
-
-    if (res.ok) {
-      console.log("Login berhasil");
-
-      // Step 2: Validasi token lewat endpoint protected
-      const protectedRes = await fetch("/api/auth/protected", {
-        method: "GET",
-        credentials: "include", // ⬅️ penting agar cookie terkirim
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-csrf-token": csrfToken,
+        },
+        body: JSON.stringify({ email, password }),
+        credentials: "include", // Supaya cookie terkirim
       });
 
-      if (protectedRes.ok) {
-        // Step 3: Redirect ke home
-        Router.push("/");
+      const data = await res.json();
+
+      if (res.ok) {
+        console.log("✅ Login sukses:", data.message);
+        Router.push("/"); // Arahkan ke home
       } else {
-        console.error("Token dari cookie tidak valid");
+        console.warn("❌ Login gagal:", data.message || data.error);
       }
-    } else {
-      console.error("Login gagal:", data?.error || data?.message);
+    } catch (error) {
+      console.error("🚨 Error saat login:", error);
     }
   };
 

@@ -2,15 +2,31 @@ import type { NextApiHandler, NextApiRequest, NextApiResponse } from "next";
 import fs from "fs";
 import crypto from "crypto";
 import path from "path";
+import csrf from "csrf";
 
 // Path untuk public key
+// Membaca public key dari file untuk memverifikasi signature token
 const publicKeyPath = path.resolve(process.cwd(), "keys/public.key");
 const publicKey = fs.readFileSync(publicKeyPath, "utf8");
+
+// Inisialisasi utilitas untuk membuat & memverifikasi CSRF token
+const tokens = new csrf();
 
 export function verifyToken(handler: NextApiHandler) {
   return async (req: NextApiRequest, res: NextApiResponse) => {
     try {
-      // Mengecek token dari header Authorization
+      // ✅ CSRF Token Verification (hanya jika metode rawan modifikasi data)
+      if (["POST", "PUT", "DELETE"].includes(req.method || "")) {
+        const csrfToken = req.headers["x-csrf-token"];
+        if (
+          !csrfToken ||
+          !tokens.verify(process.env.CSRF_SECRET!, csrfToken as string)
+        ) {
+          return res.status(403).json({ message: "CSRF token tidak valid" });
+        }
+      }
+
+      // ✅ Ambil token dari header Authorization jika tersedia
       const authorizationHeader = req.headers.authorization || "";
       let token = null;
 
@@ -19,7 +35,7 @@ export function verifyToken(handler: NextApiHandler) {
         token = authorizationHeader.split(" ")[1];
       }
 
-      // Jika tidak ada di Authorization, cek token di cookie
+      // ✅ Jika tidak ditemukan di Authorization, cek di cookie
       if (!token) {
         const cookie = req.headers.cookie || "";
         token = cookie

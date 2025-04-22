@@ -1,73 +1,83 @@
+import Cors from "cors";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "@/lib/prisma/prisma";
 import verifyToken from "@/lib/middleware/verifyToken";
-// import { decryptPhone, encryptPhone } from "@/lib/crypto/hybrid"; // Fungsi hybrid ML-KEM + AES
+import { runMiddleware } from "../../lib/middleware/csrf-token";
 
-const handler = async function (req: NextApiRequest, res: NextApiResponse) {
-  // Pastikan token sudah terverifikasi, dan data user sudah ada di req.user
-  const user = (req as any).user; // Data user dari token yang diverifikasi
-  if (!user) return res.status(401).json({ message: "Unauthorized" });
+// Inisialisasi CORS
+const cors = Cors({
+  methods: ["GET", "POST", "PATCH", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true, // ⬅️ WAJIB supaya browser izinkan cookie dikirim
+  origin: "http://localhost:5173",
+});
 
-  // 🟢 GET: Ambil data user
-  if (req.method === "GET") {
-    try {
-      const userData = await prisma.user.findUnique({
-        where: { id: user.userId }, // Ambil user berdasarkan ID dari token
-        select: {
-          username: true,
-          email: true,
-          name: true,
-          aboutme: true,
-          quote: true,
-          tech_stack: true,
-          skills: true,
-          languages: true,
-          resume_url: true,
-          contact_email: true,
-          phone: true,
-          location: true,
-          lastLogin: true,
-          createdAt: true,
-          profile_picture: true,
-        },
-      });
+// Helper untuk menjalankan middleware CORS
+const runCors = (req: NextApiRequest, res: NextApiResponse) =>
+  new Promise<void>((resolve, reject) => {
+    cors(req, res, (result) => {
+      if (result instanceof Error) {
+        return reject(result);
+      }
+      resolve();
+    });
+  });
 
-      if (!userData) return res.status(404).json({ message: "User not found" });
+// Wrapper utama
+async function mainHandler(req: NextApiRequest, res: NextApiResponse) {
+  await runMiddleware(req, res);
 
-      // Decrypt phone jika ada
-      const decryptedPhone = userData.phone;
-
-      return res.status(200).json({
-        ...userData,
-        phone: decryptedPhone,
-      });
-    } catch (error) {
-      console.error("[GET USER]", error);
-      return res.status(500).json({ message: "Internal server error" });
-    }
+  // Tangani preflight OPTIONS request langsung tanpa verifikasi token
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
   }
 
-  // 🟡 PATCH: Update data user
-  else if (req.method === "PATCH") {
-    try {
-      const {
-        name,
-        aboutme,
-        quote,
-        tech_stack,
-        skills,
-        languages,
-        resume_url,
-        contact_email,
-        phone,
-        location,
-      } = req.body;
+  // await runMiddleware(req, res); // ⬅️ CORS harus dijalankan lebih dulu
 
-      const encryptedPhone = phone;
+  return verifyToken(async (req, res) => {
+    const user = (req as any).user;
+    if (!user) return res.status(401).json({ message: "Unauthorized" });
 
-      const updatedUser = await prisma.user.update({
-        where: { id: user.userId }, // Update user berdasarkan ID dari token
-        data: {
+    if (req.method === "GET") {
+      try {
+        const userData = await prisma.user.findUnique({
+          where: { id: user.userId },
+          select: {
+            username: true,
+            email: true,
+            name: true,
+            aboutme: true,
+            quote: true,
+            tech_stack: true,
+            skills: true,
+            languages: true,
+            resume_url: true,
+            contact_email: true,
+            phone: true,
+            location: true,
+            lastLogin: true,
+            createdAt: true,
+            profile_picture: true,
+          },
+        });
+
+        if (!userData) {
+          return res.status(404).json({ message: "User not found" });
+        }
+
+        return res.status(200).json({
+          ...userData,
+          phone: userData.phone,
+        });
+      } catch (error) {
+        console.error("[GET USER ERROR]", error);
+        return res.status(500).json({ message: "Internal server error" });
+      }
+    }
+
+    if (req.method === "PATCH") {
+      try {
+        const {
           name,
           aboutme,
           quote,
@@ -76,23 +86,38 @@ const handler = async function (req: NextApiRequest, res: NextApiResponse) {
           languages,
           resume_url,
           contact_email,
-          phone: encryptedPhone,
+          phone,
           location,
-          updatedAt: new Date(),
-        },
-      });
+        } = req.body;
 
-      return res
-        .status(200)
-        .json({ message: "Profile updated", user: updatedUser });
-    } catch (error) {
-      console.error("[PATCH USER]", error);
-      return res.status(500).json({ message: "Internal server error" });
+        const updatedUser = await prisma.user.update({
+          where: { id: user.userId },
+          data: {
+            name,
+            aboutme,
+            quote,
+            tech_stack,
+            skills,
+            languages,
+            resume_url,
+            contact_email,
+            phone,
+            location,
+            updatedAt: new Date(),
+          },
+        });
+
+        return res
+          .status(200)
+          .json({ message: "Profile updated", user: updatedUser });
+      } catch (error) {
+        console.error("[PATCH USER ERROR]", error);
+        return res.status(500).json({ message: "Internal server error" });
+      }
     }
-  }
 
-  // ❌ Method tidak diperbolehkan
-  return res.status(405).json({ message: "Method not allowed" });
-};
+    return res.status(405).json({ message: "Method not allowed" });
+  })(req, res); // jangan lupa kirim req/res ke verifyToken
+}
 
-export default verifyToken(handler);
+export default mainHandler;

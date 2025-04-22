@@ -16,7 +16,7 @@ export default function verifyToken(handler: NextApiHandler) {
   return async (req: NextApiRequest, res: NextApiResponse) => {
     try {
       // ✅ CSRF Token Verification (hanya jika metode rawan modifikasi data)
-      if (["POST", "PUT", "DELETE"].includes(req.method || "")) {
+      if (["GET", "POST", "PUT", "DELETE"].includes(req.method || "")) {
         const csrfToken = req.headers["x-csrf-token"];
         if (
           !csrfToken ||

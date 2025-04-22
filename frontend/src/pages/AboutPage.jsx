@@ -30,6 +30,7 @@ import {
   SiTensorflow,
   SiHuggingface,
 } from "react-icons/si";
+import Cookies from "js-cookie";
 
 const techStack = [
   { name: "Figma", icon: <FaFigma />, color: "text-purple-400" },
@@ -192,21 +193,28 @@ export default function ProfilePage() {
 
   // get api from localhost:3000/api/about
   useEffect(() => {
+    const csrfToken = Cookies.get("csrfToken");
+    const token = Cookies.get("token");
     const fetchData = async () => {
       try {
-        const response = await fetch(
-          "http://localhost:3000/api/about?_id=67f3fde8f68dac7aca1babb5"
-        );
+        const response = await fetch("http://localhost:3000/api/user", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": csrfToken,
+            // Authorization: `Bearer ${token}`,
+          },
+          credentials: "include",
+        });
         const result = await response.json();
         // setUserData(result.data);
-        // console.log(result.data);
+        console.log(result);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
     fetchData();
-  }),
-    [];
+  }, []);
 
   return (
     <div className="container mx-auto mt-20 p-4 text-gray-200">

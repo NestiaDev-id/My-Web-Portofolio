@@ -12,7 +12,7 @@ const publicKey = fs.readFileSync(publicKeyPath, "utf8");
 // Inisialisasi utilitas untuk membuat & memverifikasi CSRF token
 const tokens = new csrf();
 
-export function verifyToken(handler: NextApiHandler) {
+export default function verifyToken(handler: NextApiHandler) {
   return async (req: NextApiRequest, res: NextApiResponse) => {
     try {
       // ✅ CSRF Token Verification (hanya jika metode rawan modifikasi data)

@@ -1,14 +1,17 @@
 import styles from "@/styles/login-register.module.scss"; // Import SCSS module
 
 import { Eye, EyeOff } from "lucide-react";
+import nookies from "nookies";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Router from "next/router";
 import { useToast } from "../components/ui/use-toast";
+import { GetServerSideProps } from "next";
 
 const handleGoogleLogin = () => {
   console.log("Login with Google clicked");
 };
+
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -206,3 +209,20 @@ const Login: React.FC = () => {
 };
 
 export default Login;
+
+// server side render
+export const getServerSideProps: GetServerSideProps = async (ctx) => {
+  const cookies = nookies.get(ctx);
+  const token = cookies.token;
+
+  if (token) {
+    // Bisa juga verifikasi token di sini kalau perlu
+    return {
+      redirect: {
+        destination: "/", // arahkan ke halaman home atau dashboard
+        permanent: false,
+      },
+    };
+  }
+  return { props: {} };
+};

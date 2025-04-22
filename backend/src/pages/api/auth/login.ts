@@ -30,6 +30,8 @@ const userRateLimiter = rateLimit({
   keyGenerator: (req) => req.body.email, // Use email as key
 });
 
+const isProd = process.env.NODE_ENV === "production";
+
 // Definisi skema validasi email dan password
 const loginSchema = z.object({
   email: z
@@ -154,7 +156,9 @@ export default async function handler(
     // Mengirim token dalam cookie HTTP-Only yang aman
     res.setHeader(
       "Set-Cookie",
-      `token=${jwtToken}; HttpOnly; Path=/; Max-Age=3600; SameSite=Strict; Secure`
+      `token=${jwtToken}; Path=/; Max-Age=3600; SameSite=Strict; Secure${
+        isProd ? "; HttpOnly" : ""
+      }`
     );
 
     // Mengirimkan respons berhasil

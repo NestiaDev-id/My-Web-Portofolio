@@ -14,4 +14,5 @@ export default withAuth(mainMiddleware, [
   "/blog",
   "/projects",
   "/social",
+  "/about",
 ]);

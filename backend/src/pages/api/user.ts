@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "@/lib/prisma/prisma";
-import { verifyToken } from "@/lib/middleware/verifyToken";
+import verifyToken from "@/lib/middleware/verifyToken";
 // import { decryptPhone, encryptPhone } from "@/lib/crypto/hybrid"; // Fungsi hybrid ML-KEM + AES
 
 const handler = async function (req: NextApiRequest, res: NextApiResponse) {
@@ -28,6 +28,7 @@ const handler = async function (req: NextApiRequest, res: NextApiResponse) {
           location: true,
           lastLogin: true,
           createdAt: true,
+          profile_picture: true,
         },
       });
 
@@ -47,7 +48,7 @@ const handler = async function (req: NextApiRequest, res: NextApiResponse) {
   }
 
   // 🟡 PATCH: Update data user
-  if (req.method === "PATCH") {
+  else if (req.method === "PATCH") {
     try {
       const {
         name,

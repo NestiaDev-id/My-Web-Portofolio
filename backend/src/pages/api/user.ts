@@ -4,25 +4,6 @@ import { prisma } from "@/lib/prisma/prisma";
 import verifyToken from "@/lib/middleware/verifyToken";
 import { runMiddleware } from "../../lib/middleware/csrf-token";
 
-// Inisialisasi CORS
-const cors = Cors({
-  methods: ["GET", "POST", "PATCH", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true, // ⬅️ WAJIB supaya browser izinkan cookie dikirim
-  origin: "http://localhost:5173",
-});
-
-// Helper untuk menjalankan middleware CORS
-const runCors = (req: NextApiRequest, res: NextApiResponse) =>
-  new Promise<void>((resolve, reject) => {
-    cors(req, res, (result) => {
-      if (result instanceof Error) {
-        return reject(result);
-      }
-      resolve();
-    });
-  });
-
 // Wrapper utama
 async function mainHandler(req: NextApiRequest, res: NextApiResponse) {
   await runMiddleware(req, res);
@@ -31,8 +12,6 @@ async function mainHandler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
-
-  // await runMiddleware(req, res); // ⬅️ CORS harus dijalankan lebih dulu
 
   return verifyToken(async (req, res) => {
     const user = (req as any).user;

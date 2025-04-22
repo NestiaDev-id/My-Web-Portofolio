@@ -54,15 +54,21 @@ const AboutPage = () => {
   const { toast } = useToast();
 
   useEffect(() => {
+    const csrfToken = Cookies.get("csrfToken");
+
     setIsLoading(true);
 
     fetch("/api/user", {
       method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRF-Token": csrfToken || "",
+      },
       credentials: "include", // penting! supaya cookie dikirim
     })
       .then(async (res) => {
         const data = await res.json();
-        console.log(data);
+        console.log(res);
         if (res.ok) {
           setFormData(data);
         } else {

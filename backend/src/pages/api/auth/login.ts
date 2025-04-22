@@ -1,12 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "@/lib/prisma/prisma"; // Database client for querying user data
-import bcrypt from "bcryptjs"; // Password hashing and comparison
-import jwt from "jsonwebtoken"; // JWT for creating tokens
-import { z } from "zod"; // Schema validation
+import { z } from "zod"; // Input validation
 import rateLimit from "@/lib/middleware/rate-limit"; // Rate limiting middleware
 import fs from "fs";
 import crypto from "crypto";
-import csrf from "csrf";
 import argon2 from "argon2";
 
 // Load private key dengan passphrase

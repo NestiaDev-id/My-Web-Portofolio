@@ -207,7 +207,7 @@ export default function ProfilePage() {
           credentials: "include",
         });
         const result = await response.json();
-        // setUserData(result.data);
+        setUserData(result);
         console.log(result);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -235,8 +235,8 @@ export default function ProfilePage() {
             />
           </motion.div>
 
-          <h1 className="text-2xl font-bold">Yohanes Christian Devano</h1>
-          <p className="text-gray-400 container">Mahasiswa Sanata Dharma</p>
+          <h1 className="text-2xl font-bold">{userData.name}</h1>
+          <p className="text-gray-400 container">{userData.university}</p>
 
           <motion.button
             whileHover={{ scale: 1.05 }}
@@ -248,13 +248,6 @@ export default function ProfilePage() {
           </motion.button>
         </section>
 
-        {userData && userData.length > 0 && (
-          <>
-            <h1 className="text-2xl font-bold">{userData[1].name}</h1>
-            <p className="text-gray-400">{userData[0].aboutme}</p>
-          </>
-        )}
-
         {/* About Me Section */}
         <section className="mt-8 xl:mt-0 xl:ml-12 text-center xl:text-left container">
           <h3 className="text-2xl font-bold">About Me</h3>
@@ -265,33 +258,7 @@ export default function ProfilePage() {
               transition={{ duration: 0.5 }}
               className={`overflow-hidden relative`}
             >
-              <p>
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Quod,
-                nobis optio quaerat distinctio in sunt quam voluptas, commodi,
-                minus dicta deleniti! Animi corrupti, exercitationem odio
-                adipisci iste natus officiis iure ea error. Ad eum nisi fugit
-                deleniti quasi! Voluptate aut dolore quaerat accusantium
-                excepturi pariatur eos perspiciatis mollitia, distinctio ducimus
-                sequi consequatur id. Sed nemo, saepe possimus voluptate
-                repellendus dolorem non nihil assumenda illo tempora? Quis,
-                dolores dolorem. Numquam dolorem quasi neque velit quas, autem
-                nam ut sit sint laborum modi vero, quaerat architecto ea odio
-                quia asperiores omnis dolore necessitatibus porro illum animi
-                labore? Commodi harum tempore error, ea illum, laboriosam
-                consequatur temporibus qui exercitationem aut ratione
-                cupiditate, animi inventore dignissimos facere ab asperiores at!
-                Eum quos sapiente neque labore voluptatibus incidunt, cumque
-                earum commodi amet ea perspiciatis, qui aperiam id suscipit unde
-                quaerat quisquam beatae facere ipsa itaque, dolorem tenetur
-                temporibus atque? Magnam ad, accusantium eius eum rem cupiditate
-                perferendis explicabo expedita minima! Assumenda, maxime
-                corrupti optio saepe perspiciatis vero ad temporibus, delectus
-                odio eos, eligendi error harum magnam! Natus reiciendis facere
-                impedit molestias consequuntur voluptatem adipisci officia quod
-                inventore accusantium sint, nihil vero eius deserunt
-                reprehenderit ab labore repellat quasi autem in assumenda illum
-                blanditiis. Officia, maxime.
-              </p>
+              <p>{userData.aboutme}</p>
 
               {/* Efek Fade-Out jika belum di-expand */}
               {!isExpanded && (
@@ -315,15 +282,7 @@ export default function ProfilePage() {
             transition={{ duration: 0.5 }}
             className="flex gap-2 flex-wrap justify-center xl:justify-start"
           >
-            {[
-              "Artificial Intelligence",
-              "Data Analysis",
-              "UI/UX",
-              "Problem Solving",
-              "Management",
-              "Teamwork",
-              "Project Management",
-            ].map((skill) => (
+            {userData.skills?.map((skill) => (
               <motion.span
                 key={skill}
                 className="badge badge-outline"
@@ -333,6 +292,7 @@ export default function ProfilePage() {
               </motion.span>
             ))}
           </motion.div>
+
           {/* Education Section */}
           <h4 className="text-2xl font-bold mt-4">Education</h4>
           <section className="flex flex-col xl:flex-row gap-12 mt-4">

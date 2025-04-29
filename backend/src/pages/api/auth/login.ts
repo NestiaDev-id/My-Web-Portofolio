@@ -1,3 +1,4 @@
+"use client";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "@/lib/prisma/prisma"; // Database client for querying user data
 import { z } from "zod"; // Input validation

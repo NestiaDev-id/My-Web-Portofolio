@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { cn } from "../../lib/utils";
 import { Button } from "../../ui/button";
+import { useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   User,
@@ -54,9 +55,19 @@ export function Sidebar() {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const router = useRouter();
 
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/auth/logout", { method: "POST" });
+      router.push("/auth/login"); // Arahkan user ke halaman login setelah logout
+    } catch (error) {
+      console.error("Logout gagal:", error);
+    }
   };
 
   const toggleMobileSidebar = () => {
@@ -124,8 +135,13 @@ export function Sidebar() {
                   </Link>
                 ))}
               </nav>
-              <div className="text-xs text-sidebar-foreground/50 mt-auto pt-4">
-                Portfolio Admin v1.0
+              <div className="mt-auto pt-4 text-xs text-muted-foreground text-end">
+                <button
+                  onClick={handleLogout}
+                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-md hover:bg-red-600 transition-colors"
+                >
+                  Logout
+                </button>
               </div>
             </div>
           </motion.div>

@@ -1,32 +1,20 @@
 import Cors from "cors";
 import { NextApiRequest, NextApiResponse } from "next";
 
-// Helper to run middleware on API route
-function runMiddleware(
-  req: NextApiRequest,
-  res: NextApiResponse,
-  fn: (
-    req: NextApiRequest,
-    res: NextApiResponse,
-    callback: (result: any) => void
-  ) => void
-) {
+// Inisialisasi CORS
+const cors = Cors({
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  origin: "http://localhost:5173", // Atur sesuai client
+  allowedHeaders: ["Content-Type", "Authorization", "x-csrf-token"],
+  credentials: true,
+});
+
+// Utility untuk menjalankan middleware
+export function runCorsMiddleware(req: NextApiRequest, res: NextApiResponse) {
   return new Promise((resolve, reject) => {
-    fn(req, res, (result: any) => {
+    cors(req, res, (result: any) => {
       if (result instanceof Error) return reject(result);
       return resolve(result);
     });
   });
-}
-
-const cors = Cors({
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  origin: "*", // Bisa diganti ke frontend kamu misalnya "http://localhost:3000"
-});
-
-export default async function runCors(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  await runMiddleware(req, res, cors);
 }

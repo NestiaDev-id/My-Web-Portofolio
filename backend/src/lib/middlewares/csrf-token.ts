@@ -1,22 +1,20 @@
-import Cors from "cors";
+// import type { NextApiRequest, NextApiResponse } from "next";
+// import Tokens from "csrf";
 
-// Inisialisasi CORS
-const cors = Cors({
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  origin: "http://localhost:5173",
-  allowedHeaders: ["Content-Type", "Authorization", "x-csrf-token"],
+// const tokens = new Tokens();
 
-  credentials: true, // Untuk mengirim cookies
-});
+// export default async function handler(
+//   req: NextApiRequest,
+//   res: NextApiResponse
+// ) {
+//   // Gunakan secret tetap dari env, atau buat baru kalau belum ada
+//   const secret = process.env.CSRF_SECRET || tokens.secretSync();
 
-// Fungsi untuk menjalankan middleware CORS
-export function runMiddleware(req: any, res: any) {
-  return new Promise((resolve, reject) => {
-    cors(req, res, (result: any) => {
-      if (result instanceof Error) {
-        return reject(result);
-      }
-      return resolve(result);
-    });
-  });
-}
+//   // (Opsional) Set CSRF_SECRET ke env di runtime kalau belum ada
+//   // Biasanya ini diset di proses build / deploy
+
+//   const token = tokens.create(secret);
+
+//   // Kirim token ke klien (bisa via JSON, atau cookie)
+//   res.status(200).json({ csrfToken: token });
+// }

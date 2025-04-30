@@ -49,3 +49,29 @@ export function createCSRFToken(payload: any): string {
   // Kembalikan CSRF token yang sudah dibuat
   return csrfToken;
 }
+
+// Fungsi untuk memverifikasi CSRF Token
+export function verifyCSRFToken(csrfToken: string): boolean {
+  // Memuat public key yang digunakan untuk memverifikasi tanda tangan
+  const publicKey = loadPublicKey();
+
+  // Pisahkan csrfToken menjadi bagian header, payload, salt, dan signature
+  const [base64Header, base64Payload, csrfSalt, signature] =
+    csrfToken.split(".");
+
+  // Gabungkan kembali header dan payload untuk divalidasi
+  const dataToVerify = `${base64Header}.${base64Payload}`;
+
+  // Gabungkan data yang akan diverifikasi dengan salt
+  const finalDataToVerify = `${dataToVerify}.${csrfSalt}`;
+
+  // Verifikasi signature dengan public key menggunakan algoritma RSA-SHA512
+  const isVerified = crypto.verify(
+    "RSA-SHA512", // Algoritma RSA yang digunakan untuk verifikasi
+    Buffer.from(finalDataToVerify), // Data yang akan diverifikasi
+    publicKey, // Public key yang digunakan untuk verifikasi
+    Buffer.from(signature, "base64url") // Signature yang akan diverifikasi
+  );
+
+  return isVerified; // Kembalikan hasil verifikasi (true jika valid, false jika tidak)
+}

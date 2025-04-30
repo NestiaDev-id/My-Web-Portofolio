@@ -82,12 +82,12 @@ const AboutPage = () => {
       .catch((error) => {
         toast({
           title: "Terjadi kesalahan",
-          description: "Tidak dapat mengambil data pengguna.",
+          description: "Tidak dapat mengambil data pengguna" + error,
           variant: "destructive",
         });
       })
       .finally(() => setIsLoading(false));
-  }, []);
+  }, [toast]);
 
   const handleResumeSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -134,7 +134,7 @@ const AboutPage = () => {
     } catch (error) {
       toast({
         title: "Upload error",
-        description: "Something went wrong while uploading",
+        description: "Something went wrong while uploading" + error,
         variant: "destructive",
       });
     } finally {
@@ -512,12 +512,16 @@ const AboutPage = () => {
               <div>
                 <span className="font-medium text-foreground">Last Login:</span>
                 <br />
-                {new Date(formData.lastLogin).toLocaleString()}
+                {formData.lastLogin
+                  ? new Date(formData.lastLogin).toLocaleString()
+                  : "N/A"}
               </div>
               <div>
                 <span className="font-medium text-foreground">Joined:</span>
                 <br />
-                {new Date(formData.createdAt).toLocaleDateString()}
+                {formData.createdAt
+                  ? new Date(formData.createdAt).toLocaleDateString()
+                  : "N/A"}
               </div>
             </div>
           </div>

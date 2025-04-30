@@ -1,7 +1,6 @@
 import styles from "@/styles/login-register.module.scss"; // Import SCSS module
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
 import Router from "next/router";
 import { useToast } from "../components/ui/use-toast";
 
@@ -13,7 +12,6 @@ const Register: React.FC = () => {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -50,7 +48,7 @@ const Register: React.FC = () => {
     } catch (error) {
       toast({
         title: "Login gagal",
-        description: "Unexpected error.",
+        description: `${error}`,
         variant: "destructive", // kalau ada styling untuk error
       });
     } finally {

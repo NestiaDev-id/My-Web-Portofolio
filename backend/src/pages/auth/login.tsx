@@ -1,6 +1,5 @@
 import styles from "@/styles/login-register.module.scss"; // Import SCSS module
 
-import { Eye, EyeOff } from "lucide-react";
 import nookies from "nookies";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -16,9 +15,7 @@ const handleGoogleLogin = () => {
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [isTokenValid, setIsTokenValid] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [csrfToken, setCsrfToken] = useState("");
   const { toast } = useToast();
@@ -71,7 +68,7 @@ const Login: React.FC = () => {
     } catch (error) {
       toast({
         title: "Terjadi kesalahan",
-        description: "Unexpected error.",
+        description: `${error}`,
         variant: "destructive",
       });
     } finally {

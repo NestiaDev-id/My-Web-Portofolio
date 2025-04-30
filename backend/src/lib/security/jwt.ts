@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { loadPrivateKey, loadPublicKey } from "./keyLoader";
+import { prisma } from "../prisma/prisma";
 
 export function createJWT(payload: any): string {
   // 🔑 Ambil private key dari file atau environment
@@ -39,7 +40,7 @@ export function createJWT(payload: any): string {
   return `${tokenPart}.${signature}`;
 }
 
-export function verifyJWT(token: string): boolean {
+export async function verifyJWT(token: string): Promise<boolean> {
   const publicKey = loadPublicKey();
   const jwtSecret = process.env.JWT_SECRET;
 
@@ -90,5 +91,39 @@ export function verifyJWT(token: string): boolean {
     return false;
   }
 
+  // 🛑 Periksa apakah JWT terdaftar di blacklist
+  const blacklisted = await prisma.tokenBlacklist.findUnique({
+    where: { jti: payload.jti }, // Menggunakan JTI sebagai ID unik untuk token
+  });
+
+  if (blacklisted) {
+    return false; // Token ditemukan di blacklist, dianggap tidak valid
+  }
+
   return true; // ✅ Token valid
+}
+
+export function getJTIFromToken(
+  token: string
+): { jti: string; exp: number } | null {
+  const parts = token.split(".");
+  if (parts.length !== 4) return null;
+
+  const [, encodedPayload] = parts;
+
+  try {
+    const payloadJson = Buffer.from(encodedPayload, "base64url").toString(
+      "utf-8"
+    );
+    const payload = JSON.parse(payloadJson);
+
+    if (!payload.jti || !payload.exp) return null;
+
+    return {
+      jti: payload.jti,
+      exp: payload.exp,
+    };
+  } catch {
+    return null;
+  }
 }

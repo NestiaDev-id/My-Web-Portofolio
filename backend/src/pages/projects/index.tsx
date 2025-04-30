@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { ContentCard } from "../components/ui/content-card";
 import { DataTable } from "../components/ui/data-table";
-import { projectsData, Project } from "../components/lib/mock-data";
+import { projectsData, Project } from "../../lib/middlewares/mock-data";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Textarea } from "../components/ui/textarea";

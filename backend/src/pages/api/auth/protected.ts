@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import verifyToken from "@/lib/middleware/verifyToken";
+import verifyToken from "@/lib/middlewares/verifyToken";
 
 export default verifyToken(async function handler(
   req: NextApiRequest,

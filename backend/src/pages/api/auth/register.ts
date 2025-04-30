@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma/prisma"; // Database client
 import bcrypt from "bcryptjs"; // Password hashing
 import jwt from "jsonwebtoken"; // JWT creation
 import { z } from "zod"; // Input validation
-import rateLimit from "@/lib/middleware/rate-limit"; // Rate limiting middleware
+import rateLimit from "@/lib/middlewares/rate-limit"; // Rate limiting middleware
 import fs from "fs";
 import crypto from "crypto";
 import argon2 from "argon2";

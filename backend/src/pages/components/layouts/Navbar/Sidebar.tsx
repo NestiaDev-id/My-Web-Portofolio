@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useLocation } from "react-router-dom";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { cn } from "../../lib/utils";
+import { cn } from "../../../../lib/middlewares/utils";
 import { Button } from "../../ui/button";
 import { useRouter } from "next/navigation";
 import {

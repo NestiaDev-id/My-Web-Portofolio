@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
-import { cn } from "../lib/utils";
+import { cn } from "../../../lib/middlewares/utils";
 import { motion } from "framer-motion";
 
 interface ContentCardProps {

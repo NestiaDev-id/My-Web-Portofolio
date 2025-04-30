@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { addData, getData, editData } from "@/lib/mongodb/service";
-import runCors from "@/middlewares/cors";
+import runCors from "@/lib/middlewares/cors";
 
 const COLLECTION_NAME = "users"; // sesuaikan dengan nama koleksi kamu di MongoDB
 

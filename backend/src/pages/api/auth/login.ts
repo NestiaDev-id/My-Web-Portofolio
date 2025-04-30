@@ -2,7 +2,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "@/lib/prisma/prisma"; // Database client for querying user data
 import { z } from "zod"; // Input validation
-import rateLimit from "@/lib/middleware/rate-limit"; // Rate limiting middleware
+import rateLimit from "@/lib/middlewares/rate-limit"; // Rate limiting middleware
 import fs from "fs";
 import crypto from "crypto";
 import argon2 from "argon2";

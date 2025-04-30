@@ -15,7 +15,7 @@ export async function getData(collectionName: string, query = {}) {
 
 export async function addData(
   collectionName: string,
-  data: typeof User,
+  data: { name: string; email: string; [key: string]: any },
   callback: (response: { status: boolean; message: string }) => void
 ) {
   try {

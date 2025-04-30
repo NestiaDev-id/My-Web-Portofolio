@@ -3,7 +3,6 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "@/lib/prisma/prisma";
 import crypto from "crypto";
 import argon2 from "argon2";
-import { loadPrivateKey } from "@/lib/security/keyLoader";
 import { emailLimiter, globalLimiter } from "@/lib/security/limiter";
 import { loginSchema } from "@/lib/validation/login.schema";
 import { createJWT } from "@/lib/security/jwt";
@@ -21,17 +20,11 @@ export default async function handler(
       return res.status(200).json({ message: "User already logged in" });
     }
 
-    const ip =
-      (Array.isArray(req.headers["x-forwarded-for"])
-        ? req.headers["x-forwarded-for"][0]
-        : req.headers["x-forwarded-for"]) ||
-      req.socket.remoteAddress ||
-      "global";
-    await globalLimiter.check(res, 5, ip);
+    await globalLimiter.check(req, res);
+
+    await emailLimiter.check(req, res);
 
     const { email, password } = loginSchema.parse(req.body);
-    await emailLimiter.check(res, 3, email);
-
     if (email !== process.env.ALLOWED_USER_EMAIL) {
       return res.status(401).json({ message: "Unauthorized" });
     }
@@ -40,7 +33,6 @@ export default async function handler(
     if (!user) {
       return res.status(401).json({ error: "User not found" });
     }
-    console.log("[LOGIN] User found", user.password);
 
     const stripped = user.password.replace("$argon2id$", "");
     const original = `$argon2id$${stripped}`;

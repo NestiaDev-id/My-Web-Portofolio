@@ -1,29 +1,32 @@
-import { LRUCache } from "lru-cache"; // Mengimpor LRUCache dari pustaka lru-cache untuk menyimpan cache terbatas
+import { LRUCache } from "lru-cache";
+import type { NextApiRequest, NextApiResponse } from "next";
 
-export default function rateLimit(options: { max: number; windowMs: number }) {
-  // Membuat cache dengan batas maksimal dan TTL (Time to Live) sesuai parameter yang diberikan
-  const tokenCache = new LRUCache({
-    max: 500, // Maksimum kapasitas cache
-    ttl: options.windowMs, // Waktu hidup cache dalam milidetik (ttl untuk mengatur durasi cache)
+type RateLimitOptions = {
+  max: number;
+  windowMs: number;
+  keyGenerator: (req: NextApiRequest) => string;
+};
+
+export default function rateLimit(options: RateLimitOptions) {
+  const tokenCache = new LRUCache<string, number>({
+    max: 500,
+    ttl: options.windowMs,
   });
 
   return {
-    // Fungsi untuk memeriksa apakah permintaan melebihi batas (rate limit)
-    check: (res: any, limit: number, token: string) => {
-      const tokenCount = Number(tokenCache.get(token) || 0); // Ambil jumlah percakapan untuk token ini, default 0 jika belum ada
+    check: (req: NextApiRequest, res: NextApiResponse) => {
+      const token = options.keyGenerator(req);
+      const tokenCount = Number(tokenCache.get(token) || 0);
 
-      // Lewati pemeriksaan rate limit saat mode development
       if (process.env.NODE_ENV === "development") return;
 
-      // Jika jumlah permintaan melebihi limit, beri respons 429
-      if (tokenCount >= limit) {
+      if (tokenCount >= options.max) {
         res
           .status(429)
           .json({ message: "Terlalu banyak percobaan, coba lagi nanti." });
-        throw new Error("Rate limit exceeded"); // Menghentikan eksekusi lebih lanjut jika limit terlampaui
+        throw new Error("Rate limit exceeded");
       }
 
-      // Menambahkan percakapan token ke cache (menghitung jumlah permintaan)
       tokenCache.set(token, tokenCount + 1);
     },
   };

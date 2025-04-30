@@ -57,6 +57,7 @@ export default async function handler(
       jti: crypto.randomUUID(),
     };
 
+    // Generate JWT token
     const jwt = createJWT(payload);
 
     res.setHeader(
@@ -65,6 +66,10 @@ export default async function handler(
         isProd ? "; HttpOnly" : ""
       }`
     );
+
+    // Generate CSRF token
+
+    // const csrfToken =
 
     return res.status(200).json({ message: "Login berhasil", token: jwt });
   } catch (err) {

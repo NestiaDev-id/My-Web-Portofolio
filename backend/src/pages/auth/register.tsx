@@ -7,6 +7,7 @@ import { useToast } from "../components/ui/use-toast";
 
 // import "../../styles/register.module.scss"; // Import the pure SCSS file
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 const Register: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -21,7 +22,7 @@ const Register: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const res = await fetch("/api/register/", {
+      const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -31,12 +32,14 @@ const Register: React.FC = () => {
 
       const data = await res.json();
 
+      console.log("[REGISTER] data", data);
+
       if (res.ok) {
         toast({
           title: "Registrasi berhasil!",
           description: data.message || "Silahkan login Terlebih dahulu",
         });
-        Router.push("/login");
+        Router.push("auth/login");
       } else {
         toast({
           title: "Registrasi gagal",
@@ -124,7 +127,7 @@ const Register: React.FC = () => {
         </form>
 
         <p className={styles["link-text"]}>
-          Already have an account? <a href="/login">Login here</a>
+          Already have an account? <Link href="/auth/login">Login here</Link>
         </p>
       </div>
     </div>

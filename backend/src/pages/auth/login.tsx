@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import Router from "next/router";
 import { useToast } from "../components/ui/use-toast";
 import { GetServerSideProps } from "next";
+import Link from "next/link";
 
 const handleGoogleLogin = () => {
   console.log("Login with Google clicked");
@@ -201,7 +202,8 @@ const Login: React.FC = () => {
         </div>
 
         <p className={styles["link-text"]}>
-          Don’t have an account? <a href="/register">Register here</a>
+          Don’t have an account?{" "}
+          <Link href="/auth/register">Register here</Link>
         </p>
       </div>
     </div>

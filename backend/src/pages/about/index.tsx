@@ -58,7 +58,7 @@ const AboutPage = () => {
 
     setIsLoading(true);
 
-    fetch("/api/user", {
+    fetch("/api/data/user", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

@@ -342,8 +342,8 @@ const ProjectsPage = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the project "{selectedProject?.title}
-              ". This action cannot be undone.
+              This will permanently delete the project &quot;
+              {selectedProject?.title}&quot;. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

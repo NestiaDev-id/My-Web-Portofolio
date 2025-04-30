@@ -388,8 +388,8 @@ const BlogPage = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the blog post "{selectedPost?.title}
-              ". This action cannot be undone.
+              This will permanently delete the blog post &quot;
+              {selectedPost?.title}&quot;. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

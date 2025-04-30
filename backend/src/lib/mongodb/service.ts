@@ -1,6 +1,6 @@
 import { ObjectId } from "mongodb";
 import clientPromise from "./init";
-import { IUser } from "@/pages/models/user.model";
+import { IUser } from "@/models/user.model";
 
 const dbName = process.env.MONGODB_DB_NAME;
 

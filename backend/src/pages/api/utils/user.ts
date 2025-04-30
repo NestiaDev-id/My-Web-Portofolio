@@ -1,8 +1,8 @@
 import Cors from "cors";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "@/lib/prisma/prisma";
-import verifyToken from "@/lib/middleware/verifyToken";
-import { runMiddleware } from "../../lib/middleware/csrf-token";
+import verifyToken from "@/lib/middlewares/verifyToken";
+import { runMiddleware } from "../../../lib/middlewares/csrf-token";
 
 // Wrapper utama
 async function mainHandler(req: NextApiRequest, res: NextApiResponse) {

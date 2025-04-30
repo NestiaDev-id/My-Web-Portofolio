@@ -10,7 +10,7 @@ import {
   dashboardStats,
   projectsData,
   blogPostsData,
-} from "../pages/components/lib/mock-data";
+} from "../lib/middlewares/mock-data";
 import {
   BarChart3,
   FileText,

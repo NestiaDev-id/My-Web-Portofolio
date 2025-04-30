@@ -53,6 +53,7 @@
     "framer-motion": "^12.7.4",
     "groq-sdk": "^0.19.0",
     "input-otp": "^1.4.2",
+    "jose": "^6.0.10",
     "js-cookie": "^3.0.5",
     "jsonwebtoken": "^9.0.2",
     "lru-cache": "^11.1.0",

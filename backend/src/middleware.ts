@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import withAuth from "./middlewares/withAuth";
+import withAuth from "./lib/middlewares/withAuth";
 
 // Fungsi middleware utama, hanya meneruskan permintaan
 export function mainMiddleware(request: NextRequest) {

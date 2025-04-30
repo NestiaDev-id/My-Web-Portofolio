@@ -1,6 +1,6 @@
 import { ObjectId } from "mongodb";
 import clientPromise from "./init";
-import { IUser } from "@/models/user.model";
+import User from "@/models/user.model";
 
 const dbName = process.env.MONGODB_DB_NAME;
 
@@ -15,7 +15,7 @@ export async function getData(collectionName: string, query = {}) {
 
 export async function addData(
   collectionName: string,
-  data: IUser,
+  data: typeof User,
   callback: (response: { status: boolean; message: string }) => void
 ) {
   try {
@@ -46,7 +46,7 @@ export async function addData(
 export async function editData(
   collectionName: string,
   filter: { _id: string },
-  updateData: IUser,
+  updateData: typeof User,
   callback: (response: { status: boolean; message: string }) => void
 ) {
   try {

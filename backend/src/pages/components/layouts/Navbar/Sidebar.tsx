@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import Cookies from "js-cookie";
 
 type NavItem = {
   title: string;
@@ -63,8 +64,18 @@ export function Sidebar() {
 
   const handleLogout = async () => {
     try {
-      await fetch("/auth/logout", { method: "POST" });
-      router.push("/auth/login"); // Arahkan user ke halaman login setelah logout
+      const csrfToken = Cookies.get("csrfToken"); // Ambil dari cookie
+
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: {
+          // "Content-Type": "application/json",
+          // Authorization: `Bearer ${document.cookie}`,
+          "x-csrf-token": csrfToken ?? "", // Kirim header jika perlu
+        },
+      });
+
+      router.push("/auth/login");
     } catch (error) {
       console.error("Logout gagal:", error);
     }

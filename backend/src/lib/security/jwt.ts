@@ -107,7 +107,7 @@ export function getJTIFromToken(
   token: string
 ): { jti: string; exp: number } | null {
   const parts = token.split(".");
-  if (parts.length !== 4) return null;
+  if (parts.length !== 3) return null; // Token seharusnya hanya memiliki 3 bagian (header, payload, signature)
 
   const [, encodedPayload] = parts;
 
@@ -117,13 +117,16 @@ export function getJTIFromToken(
     );
     const payload = JSON.parse(payloadJson);
 
+    // console.log("[getJTIFromToken] Payload:", payload); // Log payload untuk melihat apakah jti dan exp ada di dalamnya
+
     if (!payload.jti || !payload.exp) return null;
 
     return {
       jti: payload.jti,
       exp: payload.exp,
     };
-  } catch {
+  } catch (error) {
+    console.error("[getJTIFromToken] Parsing error:", error);
     return null;
   }
 }

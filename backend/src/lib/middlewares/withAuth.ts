@@ -36,7 +36,7 @@ export default function withAuth(
         return NextResponse.json({ error: "Invalid token" }, { status: 401 });
       }
 
-      const { userId, jti: sessionId } = jwtPayload as {
+      const { userId, jti: sessionId } = jwtPayload as unknown as {
         userId: string;
         jti: string;
       };

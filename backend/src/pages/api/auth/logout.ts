@@ -6,21 +6,28 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  console.log("[LOGOUT] Method:", req.method);
+
   if (req.method !== "POST") {
     return res.status(405).json({ message: "Method not allowed" });
   }
 
   // (Opsional) Tambahkan logika blacklist token di sini jika perlu
   const token = req.cookies.token;
+  console.log("[LOGOUT] Token from cookie:", token);
   if (token) {
     const result = getJTIFromToken(token);
+    console.log("[LOGOUT] getJTIFromToken result:", result);
 
     if (!result) {
+      console.log("[LOGOUT] ❌ Invalid token format");
       return res.status(400).json({ message: "Invalid token" });
     }
 
     const { jti, exp } = result;
     const expiresAt = new Date(exp * 1000);
+
+    // console.log(`[LOGOUT] jti: ${jti}, exp: ${exp}, expiresIn: ${expiresIn}`);
 
     const expiresIn = exp - Math.floor(Date.now() / 1000);
     if (jti && expiresIn > 0) {

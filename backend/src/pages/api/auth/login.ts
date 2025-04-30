@@ -69,7 +69,14 @@ export default async function handler(
 
     // Generate CSRF token
 
-    // const csrfToken =
+    const csrfToken = crypto.randomBytes(32).toString("hex");
+
+    res.setHeader(
+      "Set-Cookie",
+      `csrf=${csrfToken}; Path=/; Max-Age=3600; SameSite=Strict; Secure${
+        isProd ? "; HttpOnly" : ""
+      }`
+    );
 
     return res.status(200).json({ message: "Login berhasil", token: jwt });
   } catch (err) {

@@ -8,6 +8,7 @@ interface ISocialLinks {
   website?: string;
   youtube?: string;
   facebook?: string;
+  updatedAt?: Date;
 }
 
 interface ICertification {
@@ -65,6 +66,7 @@ interface IUser {
 
   lastLogin?: Date;
   createdAt?: Date;
+  updatedAt?: Date;
 }
 
 const userSchema = new mongoose.Schema<IUser>({

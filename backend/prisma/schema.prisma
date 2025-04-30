@@ -20,6 +20,18 @@ model TokenBlacklist {
   createdAt DateTime @default(now())
 }
 
+model SessionLog {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  ip        String
+  userAgent String
+  location  String   @default("Unknown")
+  action    String // "LOGIN" atau "LOGOUT"
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
 // =================== Model User ===================
 model User {
   id              String          @id @default(auto()) @map("_id") @db.ObjectId
@@ -45,6 +57,9 @@ model User {
   lastLogin       DateTime?
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
+  SessionLog      SessionLog[]
+  failedAttempts  Int             @default(0)
+  lockedAt        DateTime?
 }
 
 // =================== Model Blog ===================

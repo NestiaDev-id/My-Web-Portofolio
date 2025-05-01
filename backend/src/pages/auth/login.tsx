@@ -19,21 +19,25 @@ const Login: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [csrfToken, setCsrfToken] = useState("");
   const { toast } = useToast();
+  const [is2FAModalOpen, setIs2FAModalOpen] = useState(false);
+  const [is2FASuccessful, setIs2FASuccessful] = useState(false);
 
   const togglePassword = () => {
     setShowPassword((prev) => !prev);
   };
 
-  useEffect(() => {
-    fetch("/api/auth/protected")
-      .then((res) => res.json())
-      .then((data) => {
-        setCsrfToken(data.csrfToken);
-      })
-      .catch((err) => {
-        console.error("Gagal mengambil CSRF token:", err);
-      });
-  }, []);
+  // useEffect(() => {
+  //   fetch("/api/auth/protected")
+  //     .then((res) => res.json())
+  //     .then((data) => {
+  //       setCsrfToken(data.csrfToken);
+  //     })
+  //     .catch((err) => {
+  //       console.error("Gagal mengambil CSRF token:", err);
+  //     });
+  // }, []);
+
+  // Fungsi untuk generate CSRF token setelah 2FA berhasil
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,6 +77,69 @@ const Login: React.FC = () => {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleGenerateCsrfToken = async () => {
+    try {
+      const res = await fetch("/api/auth/csrf-token", {
+        method: "GET",
+        credentials: "include", // Kirimkan cookie untuk CSRF
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setCsrfToken(data.csrfToken);
+        setIs2FASuccessful(true); // Menandakan bahwa 2FA berhasil
+        toast({
+          title: "2FA Berhasil",
+          description: "CSRF Token berhasil didapatkan, silakan lanjutkan.",
+        });
+      } else {
+        throw new Error("Gagal mendapatkan CSRF token.");
+      }
+    } catch (error) {
+      toast({
+        title: "Kesalahan",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Fungsi untuk menyelesaikan login setelah CSRF token berhasil didapatkan
+  const handleCompleteLogin = async () => {
+    try {
+      const res = await fetch("/api/auth/complete-login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-csrf-token": csrfToken, // Kirimkan CSRF token
+        },
+        body: JSON.stringify({ email }),
+        credentials: "include",
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        toast({
+          title: "Login berhasil!",
+          description: data.message || "Selamat datang kembali 🎉",
+        });
+        Router.push("/"); // Arahkan ke halaman home
+      } else {
+        toast({
+          title: "Login gagal",
+          description: data.error || "Coba lagi nanti.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Terjadi kesalahan",
+        description: `${error}`,
+        variant: "destructive",
+      });
     }
   };
 
@@ -203,6 +270,32 @@ const Login: React.FC = () => {
           <Link href="/auth/register">Register here</Link>
         </p>
       </div>
+
+      {/* Modal 2FA */}
+      {is2FAModalOpen && (
+        <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-8 rounded-xl shadow-lg w-96">
+            <h2 className="text-xl mb-4">Two-Factor Authentication</h2>
+            <button
+              className="w-full bg-blue-500 text-white py-2 rounded"
+              onClick={handleGenerateCsrfToken}
+            >
+              Generate CSRF Token
+            </button>
+
+            {is2FASuccessful && (
+              <div className="mt-4">
+                <button
+                  className="w-full bg-green-500 text-white py-2 rounded"
+                  onClick={handleCompleteLogin}
+                >
+                  Complete Login
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

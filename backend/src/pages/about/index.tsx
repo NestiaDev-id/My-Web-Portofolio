@@ -55,6 +55,7 @@ const AboutPage = () => {
 
   useEffect(() => {
     const csrfToken = Cookies.get("csrfToken");
+    console.log("CSRF Token yang didapatkan dari cookie:", csrfToken);
 
     setIsLoading(true);
 
@@ -62,7 +63,7 @@ const AboutPage = () => {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "X-CSRF-Token": csrfToken || "",
+        "x-csrf-token": csrfToken || "",
       },
       credentials: "include", // penting! supaya cookie dikirim
     })

@@ -100,27 +100,56 @@ export default async function handler(
     };
 
     // Generate JWT token
-    const jwt = createJWT(payload);
+    const accessToken = createJWT({
+      ...payload,
+      exp: Math.floor(Date.now() / 1000) + 15 * 60,
+    });
+    const refreshToken = createJWT({
+      ...payload,
+      exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,
+    }); // 7 hari
 
     // 🔐 Buat CSRF token untuk validasi anti-CSRF
     const csrfPayload = {
       userId: user.id,
       sessionId: payload.jti, // Gunakan JTI (JWT ID) sebagai session ID
     };
+
     const csrfToken = createCSRFToken(csrfPayload);
 
     // Set cookie untuk token dan CSRF token
     res.setHeader("Set-Cookie", [
-      `token=${jwt}; Path=/; Max-Age=3600; SameSite=Strict; Secure${
+      `token=${accessToken}; Path=/; Max-Age=3600; SameSite=Strict; Secure${
         isProd ? "; HttpOnly" : ""
       }`,
-      `csrfToken=${csrfToken}; Path=/; Max-Age=1800; SameSite=Strict; Secure`,
+      `token2=${refreshToken}; Path=/; Max-Age=604800; SameSite=Strict; Secure${
+        isProd ? "; HttpOnly" : ""
+      }`,
+      `csrfToken=${csrfToken}; Path=/; Max-Age=1800; SameSite=Strict; Secure${
+        isProd ? "; HttpOnly" : ""
+      }`,
     ]);
+
+    // // ! TODO : Tambahkan sessionId setelah login
+    // ! TODO : Tambahkan CSRF token ke header response untuk digunakan di frontend
+    // ! TODO: Encrypt Session Data at Rest
+
+    // Advance Session Security
+    // // ! TODO: Implement Sliding Sessions with Inactivity Timeout	⛔	Tidak terlihat implementasi sliding session atau idle-timeout.
+    // ! TODO: Detect Multiple Concurrent Logins	⛔	Perlu sistem tracking session per user.
+    // ! TODO: Enforce Device Fingerprinting for Session Consistency	⛔	Belum ada fingerprinting device.
+    // // ! TODO: Add IP-Based Anomaly Detection	⛔	Belum ada IP tracking/validasi saat login atau token digunakan.
+    // // ! TODO: Sign Out Users on Suspicious Behavior	⛔	Belum ada sistem invalidate session berdasarkan kecurigaan.
+    //  ! TODO: Move All Auth Checks to Server-Side Middleware	⚠️	Perlu integrasi middleware Next.js yang memanggil verifyCSRFToken.
+    // ! TODO: Implement Custom Authorization Logic per Endpoint	⚠️	Masih perlu dibuat untuk API route spesifik.
+    // ! TODO:Add CAPTCHA on Suspicious Login Attempts	⛔	Belum ada CAPTCHA atau tantangan keamanan.
+    // // ! TODO: Log All Session Creations and Destructions	⛔	Belum ada log metadata login/logout.
+    // // ! TODO: Lock Accounts After Repeated Auth Failures	⛔	Belum ada lock atau notifikasi setelah login gagal.
 
     // Kirim respons sukses
     return res
       .status(200)
-      .json({ message: "Login berhasil", token: jwt, csrf: csrfToken });
+      .json({ message: "Login berhasil", token: accessToken, csrf: csrfToken });
   } catch (err) {
     console.error("[LOGIN ERROR]", err);
     return res.status(400).json({ message: "Bad Request" });

@@ -5,6 +5,7 @@ type VerifyCSRFOptions = {
   expectedUserId: string;
   expectedSessionId: string;
   usedNonces: Set<string>; // Atau storage lain untuk memantau reuse
+  nonce: string;
 };
 
 // Default masa berlaku token (dalam detik) — contoh: 30 menit
@@ -68,13 +69,15 @@ export function verifyCSRFToken(
   options: VerifyCSRFOptions
 ): boolean {
   try {
-    const { expectedUserId, expectedSessionId, usedNonces } = options;
+    const { expectedUserId, expectedSessionId, usedNonces, nonce } = options;
 
     const publicKey = loadPublicKey();
 
     // Pisahkan csrfToken menjadi bagian header, payload, salt, dan signature
     const [base64Header, base64Payload, csrfSalt, signature] =
       csrfToken.split(".");
+
+    console.log("[verifyCSRFToken] csrfToken:", csrfToken);
 
     // Gabungkan kembali header dan payload untuk divalidasi
     const dataToVerify = `${base64Header}.${base64Payload}`;
@@ -118,8 +121,8 @@ export function verifyCSRFToken(
       return false; // nonce pernah digunakan → replay attack
     }
 
-    // Tandai nonce sudah digunakan
-    usedNonces.add(payload.nonce);
+    if (usedNonces.has(nonce)) return false;
+    usedNonces.add(nonce);
 
     return true;
   } catch (error) {

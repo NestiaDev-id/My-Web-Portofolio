@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { requestToAi } from "../utils/grog";
+import { Send, BotMessageSquare, User, Plus } from "lucide-react";
 
 const ChatApp = () => {
   const [messages, setMessages] = useState([
@@ -8,7 +9,12 @@ const ChatApp = () => {
       id: 1,
       sender: "NestiaDev",
       text: "Tanyakan padaku sesuatu!",
-      time: "21:21",
+      time: new Date().toLocaleTimeString("id-ID", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+        timeZone: "Asia/Jakarta",
+      }),
       avatar:
         "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp",
     },
@@ -16,6 +22,7 @@ const ChatApp = () => {
   const [input, setInput] = useState("");
   const [time, setTime] = useState("");
   const messagesEndRef = useRef(null);
+  const [isTyping, setIsTyping] = useState(false);
 
   useEffect(() => {
     const updateClock = () => {
@@ -51,6 +58,7 @@ const ChatApp = () => {
 
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
+    setIsTyping(true);
 
     try {
       const aiResponse = await requestToAi(input);
@@ -82,11 +90,13 @@ const ChatApp = () => {
             "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp",
         },
       ]);
+    } finally {
+      setIsTyping(false);
     }
   };
 
   return (
-    <section className="min-h-screen mt-16 bg-gray-900 text-white flex flex-col items-center p-4">
+    <section className="min-h-screen pt-20 bg-gray-900 text-white flex flex-col items-center px-4">
       <h1 className="text-2xl sm:text-3xl font-bold mt-4 text-center">
         Ask anything
       </h1>
@@ -97,7 +107,7 @@ const ChatApp = () => {
       {/* Chat Container */}
       <div className="w-full sm:w-[90%] md:w-[80%] lg:w-[60%] xl:w-[50%] mt-6 bg-gray-800 p-4 rounded-lg shadow-md flex flex-col h-[450px] sm:h-[500px] md:h-[600px]">
         {/* Chat Messages */}
-        <div className="flex-grow overflow-y-auto space-y-4 p-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-700">
+        <div className="flex-grow overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-gray-700">
           {messages.map((msg) => (
             <motion.div
               key={msg.id}
@@ -113,16 +123,16 @@ const ChatApp = () => {
                 alt="Avatar"
                 className="w-8 h-8 rounded-full"
               />
-              <div>
-                <div className="flex items-center space-x-2">
+              <div className="flex flex-col max-w">
+                <div className="flex items-center space-x-2 text-sm">
                   <span className="font-semibold">{msg.sender}</span>
                   <span className="text-xs text-gray-400">{msg.time}</span>
                 </div>
                 <div
-                  className={`p-3 rounded-lg max-w-xs ${
+                  className={`p-3 rounded-lg text-sm max-w-xs leading-snug ${
                     msg.sender === "You"
-                      ? "bg-blue-500 text-white ml-auto"
-                      : "bg-gray-700"
+                      ? "bg-blue-500 text-white ml-auto rounded-tr-none"
+                      : "bg-gray-700 text-white rounded-tl-none"
                   }`}
                 >
                   {msg.text}
@@ -130,11 +140,60 @@ const ChatApp = () => {
               </div>
             </motion.div>
           ))}
-          <div ref={messagesEndRef} />
+
+          {/* Typing bubble */}
+          {isTyping && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+              className="flex items-start gap-3 "
+            >
+              {/* Avatar */}
+              <img
+                src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
+                alt="Nestia avatar"
+                className="w-8 h-8 rounded-full"
+              />
+
+              {/* Nama dan bubble */}
+              <div className="flex flex-col space-y-1 animate-pulse">
+                {/* Nama dan waktu */}
+                <div className="flex items-center space-x-2 text-sm">
+                  <span className="font-semibold text-white">NestiaDev</span>
+                  <span className="text-xs text-gray-400">
+                    {new Date().toLocaleTimeString("id-ID", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: false,
+                      timeZone: "Asia/Jakarta",
+                    })}
+                  </span>
+                </div>
+
+                {/* Bubble chat dengan sudut atas kiri kotak */}
+                <div className="bg-gray-700 text-white px-4 py-2 size-8 flex items-center text-center rounded-2xl rounded-tl-none w-fit max-w-xs">
+                  <div className="flex space-x-1">
+                    <span className="size-1.5 bg-gray-300 rounded-full animate-bounce [animation-delay:.1s]"></span>
+                    <span className="size-1.5 bg-gray-300 rounded-full animate-bounce [animation-delay:.2s]"></span>
+                    <span className="size-1.5 bg-gray-300 rounded-full animate-bounce [animation-delay:.3s]"></span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
         </div>
 
         {/* Chat Input */}
-        <div className="flex items-center bg-gray-700 rounded-lg mt-3">
+        <div className="flex items-center bg-gray-700 rounded-lg">
+          {/* Upload files */}
+          <button
+            onClick={(e) => e.target.value}
+            className="p-2 rounded-l-lg bg-gray-600 text-sm sm:text-base"
+          >
+            <Plus className="size-6 text-sm sm:text-base" />
+          </button>
+
           <input
             type="text"
             className="w-full p-2 bg-transparent outline-none text-sm sm:text-base"

@@ -1,4 +1,4 @@
-import Cors from "cors";
+// import Cors from "cors";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { prisma } from "@/lib/prisma/prisma";
 import { runCorsMiddleware } from "../../../lib/middlewares/cors";

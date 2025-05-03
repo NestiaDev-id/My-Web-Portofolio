@@ -2,56 +2,70 @@ import crypto from "crypto";
 import { loadPrivateKey, loadPublicKey } from "./keyLoader";
 import { prisma } from "../prisma/prisma";
 
-export function createJWT(payload: any): string {
-  // 🔑 Ambil private key dari file atau environment
+export interface JwtPayload {
+  userId: string;
+  email: string;
+  iat: number;
+  exp: number;
+  iss: string;
+  aud: string;
+  sub: string;
+  jti: string; // JWT ID
+  nonce?: string; // Nonce untuk CSRF
+}
+
+/**
+ * Membuat JWT menggunakan RSA-SHA512
+ * @param payload Data yang akan dimasukkan ke dalam payload JWT
+ * @returns JWT dalam format string
+ */
+export function createJWT(payload: JwtPayload): string {
   const privateKey = loadPrivateKey();
 
-  // 📦 Header JWT: menentukan algoritma dan tipe
   const header = {
-    alg: "RS512", // RSA-SHA512 untuk tanda tangan (signature)
-    typ: "JWT", // Jenis token
-    kid: "auth-key-001", // ID kunci opsional (key ID), digunakan jika ada banyak key
+    alg: "RS512",
+    typ: "JWT",
+    kid: "auth-key-001",
   };
 
-  // 🧩 Fungsi untuk encode ke base64-url (tanpa padding, + dan /)
   const encode = (obj: any) =>
     Buffer.from(JSON.stringify(obj))
-      .toString("base64") // → ubah ke base64
-      .replace(/=/g, "") // → hapus padding "="
-      .replace(/\+/g, "-") // → ubah + jadi -
-      .replace(/\//g, "_"); // → ubah / jadi _
+      .toString("base64")
+      .replace(/=/g, "")
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_");
 
-  // 🧱 Gabungkan header dan payload yang sudah diencode
   const tokenPart = `${encode(header)}.${encode(payload)}`;
 
-  // ✍️ Buat objek untuk menandatangani data menggunakan algoritma RSA-SHA512
   const signer = crypto.createSign("RSA-SHA512");
-  signer.update(tokenPart); // Masukkan data (header.payload)
+  signer.update(tokenPart);
   signer.end();
 
-  // 🖋️ Tanda tangani data dengan privateKey → hasilnya base64 signature
   const signature = signer
     .sign(privateKey, "base64")
-    .replace(/=/g, "") // → konversi ke base64-url
+    .replace(/=/g, "")
     .replace(/\+/g, "-")
     .replace(/\//g, "_");
 
-  // 🏁 Gabungkan semuanya menjadi JWT akhir: header.payload.signature
   return `${tokenPart}.${signature}`;
 }
 
-export async function verifyJWT(token: string): Promise<boolean> {
+/**
+ * Memverifikasi JWT menggunakan RSA-SHA512
+ * @param token JWT yang akan diverifikasi
+ * @returns Payload JWT jika valid, atau `null` jika tidak valid
+ */
+export async function verifyJWT(token: string): Promise<JwtPayload | null> {
   try {
     const publicKey = loadPublicKey();
 
     const parts = token.split(".");
     if (parts.length !== 3) {
       console.warn("[verifyJWT] Token format tidak valid. Expected 3 parts.");
-      return false;
+      return null;
     }
 
     const [encodedHeader, encodedPayload, signature] = parts;
-
     const dataToVerify = `${encodedHeader}.${encodedPayload}`;
 
     const verifier = crypto.createVerify("RSA-SHA512");
@@ -64,39 +78,50 @@ export async function verifyJWT(token: string): Promise<boolean> {
     );
 
     if (!isValidSignature) {
-      return false;
+      console.warn("[verifyJWT] Signature tidak valid.");
+      return null;
     }
 
-    const payload = JSON.parse(
+    const payload: JwtPayload = JSON.parse(
       Buffer.from(encodedPayload, "base64url").toString()
     );
 
     const now = Math.floor(Date.now() / 1000);
     if (payload.exp && payload.exp < now) {
-      return false;
+      console.warn("[verifyJWT] Token sudah kedaluwarsa.");
+      return null;
     }
 
-    // Optional: verifikasi blacklist token berdasarkan jti
+    // Verifikasi blacklist token berdasarkan jti
     const blacklisted = await prisma.tokenBlacklist.findUnique({
       where: { jti: payload.jti },
     });
 
     if (blacklisted) {
-      return false;
+      console.warn("[verifyJWT] Token masuk dalam blacklist.");
+      return null;
     }
 
     return payload;
   } catch (err) {
     console.error("[verifyJWT] Error saat verifikasi:", err);
-    return false;
+    return null;
   }
 }
 
+/**
+ * Mendapatkan JTI dan exp dari token
+ * @param token JWT yang akan diproses
+ * @returns Objek berisi `jti` dan `exp`, atau `null` jika token tidak valid
+ */
 export function getJTIFromToken(
   token: string
 ): { jti: string; exp: number } | null {
   const parts = token.split(".");
-  if (parts.length !== 3) return null; // Token seharusnya hanya memiliki 3 bagian (header, payload, signature)
+  if (parts.length !== 3) {
+    console.warn("[getJTIFromToken] Token format tidak valid.");
+    return null;
+  }
 
   const [, encodedPayload] = parts;
 
@@ -106,9 +131,12 @@ export function getJTIFromToken(
     );
     const payload = JSON.parse(payloadJson);
 
-    // console.log("[getJTIFromToken] Payload:", payload); // Log payload untuk melihat apakah jti dan exp ada di dalamnya
-
-    if (!payload.jti || !payload.exp) return null;
+    if (!payload.jti || !payload.exp) {
+      console.warn(
+        "[getJTIFromToken] jti atau exp tidak ditemukan di payload."
+      );
+      return null;
+    }
 
     return {
       jti: payload.jti,

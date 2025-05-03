@@ -1,7 +1,7 @@
 import styles from "@/styles/login-register.module.scss"; // Import SCSS module
 
 import nookies from "nookies";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import Router from "next/router";
 import { useToast } from "../components/ui/use-toast";
@@ -18,10 +18,10 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [csrfToken, setCsrfToken] = useState("");
+  // const [csrfToken, setCsrfToken] = useState("");
   const { toast } = useToast();
-  const [is2FAModalOpen, setIs2FAModalOpen] = useState(false);
-  const [is2FASuccessful, setIs2FASuccessful] = useState(false);
+  // const [is2FAModalOpen, setIs2FAModalOpen] = useState(false);
+  // const [is2FASuccessful, setIs2FASuccessful] = useState(false);
   const router = useRouter();
 
   const callbackUrl = (router.query.callbackUrl as string) || "/";

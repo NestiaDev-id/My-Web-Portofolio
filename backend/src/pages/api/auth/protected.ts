@@ -57,7 +57,7 @@ export default async function handler(
     const isCSRFValid = verifyCSRFToken(csrfToken, {
       expectedUserId: payload.userId,
       expectedSessionId: payload.jti, // gunakan jti sebagai sessionId
-      nonce: payload.nonce,
+      nonce: payload.nonce || "",
       usedNonces,
     });
 

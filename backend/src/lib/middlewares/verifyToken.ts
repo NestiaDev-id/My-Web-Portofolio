@@ -89,13 +89,13 @@
 // }
 
 // src/lib/middlewares/verifyToken.ts
-import type { NextApiHandler, NextApiRequest, NextApiResponse } from "next";
-import { verifyJWT } from "../security/jwt";
-import { verifyCSRFToken } from "../security/csrf";
-import { runCorsMiddleware } from "./cors";
+// import type { NextApiHandler, NextApiRequest, NextApiResponse } from "next";
+// import { verifyJWT } from "../security/jwt";
+// import { verifyCSRFToken } from "../security/csrf";
+// import { runCorsMiddleware } from "./cors";
 
-// Simulasi penyimpanan nonce, ganti dengan Redis kalau mau production
-const usedNonces = new Set<string>();
+// // Simulasi penyimpanan nonce, ganti dengan Redis kalau mau production
+// const usedNonces = new Set<string>();
 
 // export default function verifyToken(handler: NextApiHandler) {
 //   return async (req: NextApiRequest, res: NextApiResponse) => {

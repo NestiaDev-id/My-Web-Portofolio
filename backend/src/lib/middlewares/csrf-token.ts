@@ -3,7 +3,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 // Fungsi middleware CSRF Token
 export async function runMiddleware(req: NextApiRequest, res: NextApiResponse) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     // Pastikan kita menerima token CSRF di header
     const csrfToken = req.headers["x-csrf-token"];
     if (!csrfToken) {

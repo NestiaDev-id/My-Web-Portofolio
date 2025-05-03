@@ -1,4 +1,4 @@
-import { jwtVerify, createRemoteJWKSet } from "jose";
+import { jwtVerify } from "jose";
 import { loadPublicKey } from "../security/keyLoader";
 type JwtPayload = {
   userId: string;

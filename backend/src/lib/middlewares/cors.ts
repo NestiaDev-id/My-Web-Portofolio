@@ -1,31 +1,15 @@
-// import Cors from "cors";
-// import { NextApiRequest, NextApiResponse } from "next";
-
-// // Inisialisasi CORS
-// const cors = Cors({
-//   methods: ["GET", "POST", "PUT", "DELETE"],
-//   origin: ["http://localhost:5173", "https://nestiadev.vercel.app"], // Atur sesuai client
-//   allowedHeaders: ["Content-Type", "Authorization", "x-csrf-token"],
-//   credentials: true,
-// });
-
-// // Utility untuk menjalankan middleware
-// export function runCorsMiddleware(req: NextApiRequest, res: NextApiResponse) {
-//   return new Promise((resolve, reject) => {
-//     cors(req, res, (result: any) => {
-//       if (result instanceof Error) return reject(result);
-//       return resolve(result);
-//     });
-//   });
-// }
-// src/lib/middlewares/cors.ts
 import type { NextApiRequest, NextApiResponse } from "next";
+import Cors from "cors";
 
 // Helper untuk menjalankan middleware biasa di Next.js
 function runMiddleware(
   req: NextApiRequest,
   res: NextApiResponse,
-  fn: Function
+  fn: (
+    req: NextApiRequest,
+    res: NextApiResponse,
+    callback: (result: any) => void
+  ) => void
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     fn(req, res, (result: any) => {
@@ -35,8 +19,6 @@ function runMiddleware(
   });
 }
 
-import Cors from "cors";
-
 // Konfigurasi CORS — sesuaikan dengan kebutuhan
 const cors = Cors({
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -44,9 +26,14 @@ const cors = Cors({
   credentials: true, // agar cookie/token bisa dikirim
 });
 
+/**
+ * Middleware untuk menjalankan CORS
+ * @param req Next.js API Request
+ * @param res Next.js API Response
+ */
 export async function runCorsMiddleware(
   req: NextApiRequest,
   res: NextApiResponse
-) {
+): Promise<void> {
   await runMiddleware(req, res, cors);
 }

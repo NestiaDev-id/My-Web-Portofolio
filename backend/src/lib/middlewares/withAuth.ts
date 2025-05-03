@@ -6,7 +6,7 @@ import {
 } from "next/server";
 import { verifyJWT } from "@/lib/security/jwt"; // Pastikan ini menggunakan Web Crypto API
 import { verifyCSRFToken } from "@/lib/security/csrf";
-import { verifyJWT2 } from "./verifyJWT2";
+import { verifyJWT2, verifyJWT_baru } from "./verifyJWT2";
 
 // Middleware Auth + CSRF untuk path tertentu
 export default function withAuth(
@@ -34,7 +34,7 @@ export default function withAuth(
 
       // Cross check token menggunakan verifyJWT
       try {
-        const jwtPayload = await verifyJWT(token);
+        const jwtPayload = await verifyJWT_baru(token);
         if (!jwtPayload || typeof jwtPayload !== "object") {
           return NextResponse.json({ error: "Invalid token" }, { status: 401 });
         }

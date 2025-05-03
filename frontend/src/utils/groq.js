@@ -1,5 +1,5 @@
 import Grog from "groq-sdk";
-import { fetchLatestNews } from "../utils/newsApi";
+import { fetchLatestNews } from "./newsApi";
 import { translateToIndonesian } from "./translateApi";
 
 const grog = new Grog({
@@ -7,7 +7,16 @@ const grog = new Grog({
   dangerouslyAllowBrowser: true,
 });
 
-export const requestToAi = async (content) => {
+export const requestToAi = async (
+  content,
+  option = {
+    model,
+    temperature,
+    maxTokens,
+    top_p,
+    seed,
+  }
+) => {
   try {
     let latestNews;
     try {
@@ -112,10 +121,11 @@ export const requestToAi = async (content) => {
           content,
         },
       ],
-      model: "llama3-8b-8192",
-      temperature: 0.7,
-      top_p: 0.9,
-      max_completion_tokens: 750,
+      model: option.model,
+      temperature: option.temperature,
+      top_p: option.top_p,
+      maxTokens: option.maxTokens,
+      seed: option.seed,
     });
 
     if (

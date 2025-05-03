@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
+// import { motion } from "framer-motion";
 import { requestToAi } from "../utils/groq";
 import {
   Settings,
@@ -41,7 +41,7 @@ const ChatApp = () => {
   const [temperature, setTemperature] = useState(0.2);
   const [topP, setTopP] = useState(0.8);
   const [seed, setSeed] = useState(10);
-  const [topk, setTopk] = useState(40);
+  // const [topk, setTopk] = useState(40);
   const [maxTokens, setMaxTokens] = useState(750);
   const [model, setModel] = useState("llama3-8b-8192");
   const [systemPrompt, setSystemPrompt] = useState(

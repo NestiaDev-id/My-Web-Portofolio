@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { splitText } from "motion-plus";
+// import { splitText } from "motion-plus";
 
 import { Award, Briefcase, Circle, GraduationCap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -47,30 +47,30 @@ const techStack = [
   { name: "PostgreSQL", icon: <SiPostgresql />, color: "text-blue-500" },
 ];
 
-const timelineData = [
-  {
-    id: 1,
-    title: "Graduated from University",
-    description:
-      "Completed my Bachelor's degree in Computer Science.Lorem ipsum dolor sit amet consecteturadipisicing elit. Labore cum accusamus, magni eveniet sapiente corrupti sunt, dolorem ipsa eligendi ad, necessitatibus temporacommodi ex natus deserunt! Pariatur, autem incidunt molestias magnamsapiente provident iure illum exercitationem delectus voluptatemullam. Officia enim est unde eaque quidem! ",
-    date: "2020",
-    icon: <GraduationCap className="w-6 h-6 text-blue-500" />,
-  },
-  {
-    id: 2,
-    title: "First Job at TechCorp",
-    description: "Started my career as a Software Engineer.",
-    date: "2021",
-    icon: <Briefcase className="w-6 h-6 text-green-500" />,
-  },
-  {
-    id: 3,
-    title: "Promoted to Senior Engineer",
-    description: "Led a team of developers on major projects.",
-    date: "2023",
-    icon: <Briefcase className="w-6 h-6 text-yellow-500" />,
-  },
-];
+// const timelineData = [
+//   {
+//     id: 1,
+//     title: "Graduated from University",
+//     description:
+//       "Completed my Bachelor's degree in Computer Science.Lorem ipsum dolor sit amet consecteturadipisicing elit. Labore cum accusamus, magni eveniet sapiente corrupti sunt, dolorem ipsa eligendi ad, necessitatibus temporacommodi ex natus deserunt! Pariatur, autem incidunt molestias magnamsapiente provident iure illum exercitationem delectus voluptatemullam. Officia enim est unde eaque quidem! ",
+//     date: "2020",
+//     icon: <GraduationCap className="w-6 h-6 text-blue-500" />,
+//   },
+//   {
+//     id: 2,
+//     title: "First Job at TechCorp",
+//     description: "Started my career as a Software Engineer.",
+//     date: "2021",
+//     icon: <Briefcase className="w-6 h-6 text-green-500" />,
+//   },
+//   {
+//     id: 3,
+//     title: "Promoted to Senior Engineer",
+//     description: "Led a team of developers on major projects.",
+//     date: "2023",
+//     icon: <Briefcase className="w-6 h-6 text-yellow-500" />,
+//   },
+// ];
 
 const experiences = [
   {
@@ -175,21 +175,21 @@ const ExperienceCard = ({ experience }) => {
 };
 
 export default function ProfilePage() {
-  const [activeTab, setActiveTab] = useState("competitions");
+  // const [activeTab, setActiveTab] = useState("competitions");
   const [isExpanded, setIsExpanded] = useState(false);
   const navigate = useNavigate();
   const [userData, setUserData] = useState("");
 
-  const data = {
-    competitions: [
-      { id: 1, content: "Winner of AI Hackathon 2023" },
-      { id: 2, content: "Top 10 Finalist in Data Science Challenge" },
-    ],
-    internships: [
-      { id: 1, content: "Data Scientist Intern at XYZ Company" },
-      { id: 2, content: "Machine Learning Engineer Intern at ABC Tech" },
-    ],
-  };
+  // const data = {
+  //   competitions: [
+  //     { id: 1, content: "Winner of AI Hackathon 2023" },
+  //     { id: 2, content: "Top 10 Finalist in Data Science Challenge" },
+  //   ],
+  //   internships: [
+  //     { id: 1, content: "Data Scientist Intern at XYZ Company" },
+  //     { id: 2, content: "Machine Learning Engineer Intern at ABC Tech" },
+  //   ],
+  // };
 
   // get api from localhost:3000/api/about
   useEffect(() => {

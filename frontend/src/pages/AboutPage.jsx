@@ -198,7 +198,7 @@ export default function ProfilePage() {
     const fetchData = async () => {
       try {
         const response = await fetch(
-          `${url}/api/data/user?type=public&userId=${userId}`
+          `https://backend-unknown-portofolio.vercel.app/api/data/user?type=public&userId=6805ed20adf3bf91069c1a28`
         );
         const result = await response.json();
         setUserData(result);

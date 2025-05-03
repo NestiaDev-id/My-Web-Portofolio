@@ -104,8 +104,8 @@ export default async function handler(
     // Generate JWT token
     const accessToken = createJWT({
       ...payload,
-      exp: Math.floor(Date.now() / 1000) + 15 * 60,
-    });
+      exp: Math.floor(Date.now() / 1000) + 10,
+    }); // 15 menit
     const refreshToken = createJWT({
       ...payload,
       exp: Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60,

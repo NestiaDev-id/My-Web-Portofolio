@@ -1,7 +1,16 @@
 import { jwtVerify, createRemoteJWKSet } from "jose";
 import { loadPublicKey } from "../security/keyLoader";
+type JwtPayload = {
+  userId: string;
+  email: string;
+  iat?: number;
+  exp?: number;
+  [key: string]: any; // jika ada properti lain yang mungkin ikut
+};
 
-export async function verifyJWT_baru(token: string) {
+export async function verifyJWT_baru(
+  token: string
+): Promise<JwtPayload | null> {
   try {
     const publickey = loadPublicKey();
     // Konversi PEM ke format yang didukung oleh jose
@@ -9,6 +18,7 @@ export async function verifyJWT_baru(token: string) {
 
     // Memverifikasi JWT menggunakan public key
     const { payload } = await jwtVerify(token, publicKey);
+    console.log("[verifyJWT] Payload:", payload);
     return payload;
   } catch (error) {
     console.error("JWT verification failed:", error);

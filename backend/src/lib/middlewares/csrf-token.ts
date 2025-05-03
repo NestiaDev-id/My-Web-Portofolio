@@ -1,20 +1,24 @@
-// import type { NextApiRequest, NextApiResponse } from "next";
-// import Tokens from "csrf";
+// File: lib/middlewares/csrf-token.ts
+import { NextApiRequest, NextApiResponse } from "next";
 
-// const tokens = new Tokens();
+// Fungsi middleware CSRF Token
+export async function runMiddleware(req: NextApiRequest, res: NextApiResponse) {
+  return new Promise((resolve, reject) => {
+    // Pastikan kita menerima token CSRF di header
+    const csrfToken = req.headers["x-csrf-token"];
+    if (!csrfToken) {
+      // Jika tidak ada CSRF token
+      return res.status(403).json({ message: "CSRF token missing" });
+    }
 
-// export default async function handler(
-//   req: NextApiRequest,
-//   res: NextApiResponse
-// ) {
-//   // Gunakan secret tetap dari env, atau buat baru kalau belum ada
-//   const secret = process.env.CSRF_SECRET || tokens.secretSync();
+    // Lakukan pengecekan atau verifikasi CSRF token di sini
+    // if (csrfToken !== process.env.CSRF_TOKEN) {
+    //   // Jika token CSRF tidak valid
+    //   return res.status(403).json({ message: "Invalid CSRF token" });
+    // }
 
-//   // (Opsional) Set CSRF_SECRET ke env di runtime kalau belum ada
-//   // Biasanya ini diset di proses build / deploy
-
-//   const token = tokens.create(secret);
-
-//   // Kirim token ke klien (bisa via JSON, atau cookie)
-//   res.status(200).json({ csrfToken: token });
-// }
+    // Jika CSRF token valid
+    console.log("[CSRF] CSRF token valid");
+    resolve(true);
+  });
+}

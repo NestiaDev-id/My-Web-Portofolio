@@ -97,17 +97,14 @@ const Login: React.FC = () => {
 
     try {
       // 1. Kirim login request ke server
-      const loginRes = await fetch(
-        "https://backend-unknown-portofolio.vercel.app/api/auth/login",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email, password }),
-          credentials: "include", // Cookie akan dikirim (token2 dan csrfToken jika diset)
-        }
-      );
+      const loginRes = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+        credentials: "include", // Cookie akan dikirim (token2 dan csrfToken jika diset)
+      });
 
       const loginData = await loginRes.json();
 

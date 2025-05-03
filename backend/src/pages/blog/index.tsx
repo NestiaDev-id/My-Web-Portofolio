@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { ContentCard } from "../components/ui/content-card";
-import { DataTable } from "../components/ui/data-table";
+import { ContentCard } from "../../components/ui/content-card";
+import { DataTable } from "../../components/ui/data-table";
 import { blogPostsData, BlogPost } from "../../lib/utils/mock-data";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Textarea } from "../components/ui/textarea";
-import { Label } from "../components/ui/label";
+import { Button } from "../../components/ui/button";
+import { Input } from "../../components/ui/input";
+import { Textarea } from "../../components/ui/textarea";
+import { Label } from "../../components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../components/ui/dialog";
+} from "../../components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,11 +23,11 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "../components/ui/alert-dialog";
-import { Badge } from "../components/ui/badge";
+} from "../../components/ui/alert-dialog";
+import { Badge } from "../../components/ui/badge";
 import { Plus, X, Upload, Calendar } from "lucide-react";
-import { useToast } from "../components/ui/use-toast";
-import { AdminLayout } from "../components/layouts/AdminLayout";
+import { useToast } from "../../components/ui/use-toast";
+import { AdminLayout } from "../../components/layouts/AdminLayout";
 
 const BlogPage = () => {
   const [posts, setPosts] = useState<BlogPost[]>(blogPostsData);

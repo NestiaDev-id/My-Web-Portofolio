@@ -4,8 +4,8 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-} from "../pages/components/ui/card";
-import { ContentCard } from "../pages/components/ui/content-card";
+} from "../components/ui/card";
+import { ContentCard } from "../components/ui/content-card";
 import {
   dashboardStats,
   projectsData,
@@ -19,7 +19,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import { AdminLayout } from "./components/layouts/AdminLayout";
+import { AdminLayout } from "../components/layouts/AdminLayout";
 
 const Dashboard = () => {
   return (

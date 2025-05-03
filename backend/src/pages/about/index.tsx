@@ -1,15 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { ContentCard } from "../components/ui/content-card";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Textarea } from "../components/ui/textarea";
-import { Label } from "../components/ui/label";
-import { Avatar, AvatarImage, AvatarFallback } from "../components/ui/avatar";
-import { Badge } from "../components/ui/badge";
+import { ContentCard } from "../../components/ui/content-card";
+import { Button } from "../../components/ui/button";
+import { Input } from "../../components/ui/input";
+import { Textarea } from "../../components/ui/textarea";
+import { Label } from "../../components/ui/label";
+import {
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+} from "../../components/ui/avatar";
+import { Badge } from "../../components/ui/badge";
 import { X, Upload, Check, Plus } from "lucide-react";
 import { motion } from "framer-motion";
-import { useToast } from "../components/ui/use-toast";
-import { AdminLayout } from "../components/layouts/AdminLayout";
+import { useToast } from "../../components/ui/use-toast";
+import { AdminLayout } from "../../components/layouts/AdminLayout";
 import Cookies from "js-cookie";
 
 interface User {

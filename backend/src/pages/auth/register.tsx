@@ -2,7 +2,7 @@ import styles from "@/styles/login-register.module.scss"; // Import SCSS module
 
 import React, { useState } from "react";
 import Router from "next/router";
-import { useToast } from "../components/ui/use-toast";
+import { useToast } from "../../components/ui/use-toast";
 
 // import "../../styles/register.module.scss"; // Import the pure SCSS file
 import { motion } from "framer-motion";

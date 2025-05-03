@@ -4,7 +4,7 @@ import nookies from "nookies";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import Router from "next/router";
-import { useToast } from "../components/ui/use-toast";
+import { useToast } from "../../components/ui/use-toast";
 import { GetServerSideProps } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";

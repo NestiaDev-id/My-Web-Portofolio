@@ -98,7 +98,7 @@ export default async function handler(
       iss: "SecureApp",
       aud: "SecureClient",
       sub: "user-authentication",
-      jti: crypto.randomUUID(), // Unique ID untuk token
+      jti: crypto.randomUUID(), // Unique ID untuk token/
     };
 
     // Generate JWT token

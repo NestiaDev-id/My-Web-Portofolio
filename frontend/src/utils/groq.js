@@ -11,10 +11,10 @@ export const requestToAi = async (
   content,
   option = {
     model,
-    temperature,
-    maxTokens,
-    top_p,
-    seed,
+    temperature: 0,
+    maxTokens: 0,
+    top_p: 0,
+    seed: 0,
   }
 ) => {
   try {

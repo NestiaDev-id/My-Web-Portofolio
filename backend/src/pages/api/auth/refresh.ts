@@ -30,6 +30,7 @@ export default async function handler(
       userId: payload.userId,
       email: payload.email,
       iat: now,
+      jti: payload.jti,
       exp: now + 30 * 60,
     });
 

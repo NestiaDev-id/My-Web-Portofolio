@@ -27,7 +27,7 @@ export default function withAuth(
       if (!token || !csrfToken) {
         // ⛔ Token hilang → redirect ke halaman login
         const loginUrl = new URL("/auth/login", req.url);
-        loginUrl.searchParams.set("callbackUrl", encodeURIComponent(req.url));
+        loginUrl.searchParams.set("callbackUrl", req.nextUrl.pathname); // cukup encode otomatis oleh URL
         return NextResponse.redirect(loginUrl);
       }
 

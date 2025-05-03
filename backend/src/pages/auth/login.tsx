@@ -7,6 +7,7 @@ import Router from "next/router";
 import { useToast } from "../components/ui/use-toast";
 import { GetServerSideProps } from "next";
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 const handleGoogleLogin = () => {
   console.log("Login with Google clicked");
@@ -21,6 +22,9 @@ const Login: React.FC = () => {
   const { toast } = useToast();
   const [is2FAModalOpen, setIs2FAModalOpen] = useState(false);
   const [is2FASuccessful, setIs2FASuccessful] = useState(false);
+  const router = useRouter();
+
+  const callbackUrl = (router.query.callbackUrl as string) || "/";
 
   const togglePassword = () => {
     setShowPassword((prev) => !prev);
@@ -150,7 +154,7 @@ const Login: React.FC = () => {
         description: protectedData.message || "Selamat datang kembali 🎉",
       });
 
-      Router.push("/");
+      Router.push(callbackUrl);
     } catch (error: any) {
       toast({
         title: "Terjadi kesalahan",

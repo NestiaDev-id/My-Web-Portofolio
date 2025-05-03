@@ -14,9 +14,10 @@ export const globalLimiter = rateLimit({
 // Fungsi untuk mendapatkan IP dari NextApiRequest
 export function getIP(req: NextApiRequest): string {
   const forwarded = req.headers["x-forwarded-for"];
-  const ip = Array.isArray(forwarded)
-    ? forwarded[0]
-    : forwarded || req.socket?.remoteAddress;
+  const ip =
+    typeof forwarded === "string"
+      ? forwarded.split(",")[0].trim()
+      : req.socket?.remoteAddress;
 
   return ip || "global";
 }

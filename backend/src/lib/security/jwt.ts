@@ -41,66 +41,55 @@ export function createJWT(payload: any): string {
 }
 
 export async function verifyJWT(token: string): Promise<boolean> {
-  const publicKey = loadPublicKey();
-  const jwtSecret = process.env.JWT_SECRET;
+  try {
+    const publicKey = loadPublicKey();
 
-  if (!jwtSecret) {
-    throw new Error("JWT_SECRET is not defined");
-  }
+    const parts = token.split(".");
+    if (parts.length !== 3) {
+      console.warn("[verifyJWT] Token format tidak valid. Expected 3 parts.");
+      return false;
+    }
 
-  const parts = token.split(".");
-  if (parts.length !== 4) {
-    return false; // Format tidak sesuai
-  }
+    const [encodedHeader, encodedPayload, signature] = parts;
 
-  const [encodedHeader, encodedPayload, salt, signature] = parts;
+    const dataToVerify = `${encodedHeader}.${encodedPayload}`;
 
-  // 🔁 Bangun ulang data yang akan diverifikasi
-  const dataToVerify = `${encodedHeader}.${encodedPayload}.${salt}`;
+    const verifier = crypto.createVerify("RSA-SHA512");
+    verifier.update(dataToVerify);
+    verifier.end();
 
-  const verifier = crypto.createVerify("RSA-SHA512");
-  verifier.update(dataToVerify);
-  verifier.end();
+    const isValidSignature = verifier.verify(
+      publicKey,
+      Buffer.from(signature, "base64url")
+    );
 
-  const isValidSignature = verifier.verify(
-    publicKey,
-    Buffer.from(signature, "base64url")
-  );
+    if (!isValidSignature) {
+      return false;
+    }
 
-  if (!isValidSignature) {
+    const payload = JSON.parse(
+      Buffer.from(encodedPayload, "base64url").toString()
+    );
+
+    const now = Math.floor(Date.now() / 1000);
+    if (payload.exp && payload.exp < now) {
+      return false;
+    }
+
+    // Optional: verifikasi blacklist token berdasarkan jti
+    const blacklisted = await prisma.tokenBlacklist.findUnique({
+      where: { jti: payload.jti },
+    });
+
+    if (blacklisted) {
+      return false;
+    }
+
+    return payload;
+  } catch (err) {
+    console.error("[verifyJWT] Error saat verifikasi:", err);
     return false;
   }
-
-  // ⏳ Periksa waktu kadaluwarsa
-  const payload = JSON.parse(
-    Buffer.from(encodedPayload, "base64url").toString()
-  );
-
-  const now = Math.floor(Date.now() / 1000);
-  if (payload.exp && payload.exp < now) {
-    return false;
-  }
-
-  // 🔐 Verifikasi salt cocok
-  const expectedSalt = crypto
-    .createHmac("sha256", jwtSecret)
-    .update("jwt_salt")
-    .digest("base64url");
-
-  if (salt !== expectedSalt) {
-    return false;
-  }
-
-  // 🛑 Periksa apakah JWT terdaftar di blacklist
-  const blacklisted = await prisma.tokenBlacklist.findUnique({
-    where: { jti: payload.jti }, // Menggunakan JTI sebagai ID unik untuk token
-  });
-
-  if (blacklisted) {
-    return false; // Token ditemukan di blacklist, dianggap tidak valid
-  }
-
-  return true; // ✅ Token valid
 }
 
 export function getJTIFromToken(

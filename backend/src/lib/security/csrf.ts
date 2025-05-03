@@ -72,61 +72,67 @@ export function verifyCSRFToken(
     const { expectedUserId, expectedSessionId, usedNonces, nonce } = options;
 
     const publicKey = loadPublicKey();
+    const parts = csrfToken.split(".");
+    if (parts.length !== 4) {
+      console.warn("[verifyCSRFToken] Format token salah");
+      return false;
+    }
 
-    // Pisahkan csrfToken menjadi bagian header, payload, salt, dan signature
-    const [base64Header, base64Payload, csrfSalt, signature] =
-      csrfToken.split(".");
+    const [base64Header, base64Payload, csrfSalt, signature] = parts;
+    const dataToVerify = `${base64Header}.${base64Payload}.${csrfSalt}`;
 
-    console.log("[verifyCSRFToken] csrfToken:", csrfToken);
-
-    // Gabungkan kembali header dan payload untuk divalidasi
-    const dataToVerify = `${base64Header}.${base64Payload}`;
-
-    // Gabungkan data yang akan diverifikasi dengan salt
-    const finalDataToVerify = `${dataToVerify}.${csrfSalt}`;
-
-    // Verifikasi signature dengan public key menggunakan algoritma RSA-SHA512
     const isVerified = crypto.verify(
-      "RSA-SHA512", // Algoritma RSA yang digunakan untuk verifikasi
-      Buffer.from(finalDataToVerify), // Data yang akan diverifikasi
-      publicKey, // Public key yang digunakan untuk verifikasi
-      Buffer.from(signature, "base64url") // Signature yang akan diverifikasi
+      "RSA-SHA512",
+      Buffer.from(dataToVerify),
+      publicKey,
+      Buffer.from(signature, "base64url")
     );
 
     if (!isVerified) {
-      return false; // Jika signature tidak valid, kembalikan false
+      console.warn("[verifyCSRFToken] Signature tidak valid");
+      return false;
     }
 
     const payload = JSON.parse(
       Buffer.from(base64Payload, "base64url").toString("utf-8")
     );
 
-    // ❗ Verifikasi token tidak kadaluwarsa
-    if (typeof payload.exp !== "number" || Date.now() / 1000 > payload.exp) {
+    // Expiration check
+    const now = Math.floor(Date.now() / 1000);
+    if (typeof payload.exp !== "number" || payload.exp < now) {
+      console.warn("[verifyCSRFToken] Token kadaluwarsa");
       return false;
     }
+    console.log("expectedUserId:", expectedUserId);
+    console.log("payload.userId:", payload.userId);
+    console.log("expectedSessionId:", expectedSessionId);
+    console.log("payload.sessionId:", payload.sessionId);
 
-    // Tambahkan logika validasi userId/sessionId jika diperlukan
     if (
       payload.userId !== expectedUserId ||
       payload.sessionId !== expectedSessionId
     ) {
+      console.warn("[verifyCSRFToken] userId/sessionId tidak cocok");
       return false;
     }
 
-    //  ! TODO: Simpan nonce ke dalam storage (Redis) untuk mencegah reuse
-    // Jika menggunakan Redis, Anda bisa menggunakan perintah SETEX untuk menyimpan nonce dengan masa berlaku yang sama dengan token CSRF
-    // 🔁 Replay protection menggunakan nonce
-    if (typeof payload.nonce !== "string" || usedNonces.has(payload.nonce)) {
-      return false; // nonce pernah digunakan → replay attack
+    // Replay protection with nonce
+    if (typeof payload.nonce !== "string") {
+      console.warn("[verifyCSRFToken] Nonce tidak valid");
+      return false;
     }
 
-    if (usedNonces.has(nonce)) return false;
-    usedNonces.add(nonce);
+    if (usedNonces.has(payload.nonce)) {
+      console.warn("[verifyCSRFToken] Nonce sudah digunakan");
+      return false;
+    }
+
+    // Tandai nonce sebagai telah digunakan
+    usedNonces.add(payload.nonce);
 
     return true;
   } catch (error) {
     console.error("Error verifying CSRF token:", error);
-    return false; // Jika terjadi kesalahan, anggap token tidak valid
+    return false;
   }
 }

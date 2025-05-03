@@ -26,53 +26,135 @@ const Login: React.FC = () => {
     setShowPassword((prev) => !prev);
   };
 
-  // useEffect(() => {
-  //   fetch("/api/auth/protected")
-  //     .then((res) => res.json())
-  //     .then((data) => {
-  //       setCsrfToken(data.csrfToken);
-  //     })
-  //     .catch((err) => {
-  //       console.error("Gagal mengambil CSRF token:", err);
-  //     });
-  // }, []);
-
   // Fungsi untuk generate CSRF token setelah 2FA berhasil
+
+  // const handleSubmit = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   setIsLoading(true);
+
+  //   try {
+  //     // 1. Ambil CSRF token dari endpoint protected
+  //     const protectedRes = await fetch("/api/auth/protected", {
+  //       method: "GET",
+  //       credentials: "include", // Kirim cookie jika ada
+  //     });
+
+  //     if (!protectedRes.ok) {
+  //       throw new Error("Gagal mendapatkan CSRF token");
+  //     }
+
+  //     const protectedData = await protectedRes.json();
+  //     const csrfToken = protectedData.csrfToken;
+
+  //     if (!csrfToken) {
+  //       throw new Error("CSRF token tidak tersedia");
+  //     }
+
+  //     // 2. Kirim login request ke server
+  //     const loginRes = await fetch("/api/auth/login", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         "x-csrf-token": csrfToken,
+  //       },
+  //       body: JSON.stringify({ email, password }),
+  //       credentials: "include",
+  //     });
+
+  //     const loginData = await loginRes.json();
+
+  //     if (loginRes.ok) {
+  //       toast({
+  //         title: "Login berhasil!",
+  //         description: loginData.message || "Selamat datang kembali 🎉",
+  //       });
+  //       Router.push("/");
+  //     } else {
+  //       toast({
+  //         title: "Login gagal",
+  //         description: loginData.error || "Coba lagi nanti.",
+  //         variant: "destructive",
+  //       });
+  //     }
+  //   } catch (error: any) {
+  //     toast({
+  //       title: "Terjadi kesalahan",
+  //       description: error.message || String(error),
+  //       variant: "destructive",
+  //     });
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      const res = await fetch("/api/auth/login", {
+      // 1. Kirim login request ke server
+      const loginRes = await fetch("/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-csrf-token": csrfToken,
         },
         body: JSON.stringify({ email, password }),
-        credentials: "include", // Supaya cookie terkirim
+        credentials: "include", // Cookie akan dikirim (token2 dan csrfToken jika diset)
       });
 
-      const data = await res.json();
+      const loginData = await loginRes.json();
 
-      if (res.ok) {
-        toast({
-          title: "Login berhasil!",
-          description: data.message || "Selamat datang kembali 🎉",
-        });
-        Router.push("/"); // Arahkan ke home
-      } else {
-        toast({
-          title: "Login gagal",
-          description: data.error || "Coba lagi nanti.",
-          variant: "destructive", // kalau ada styling untuk error
-        });
+      if (!loginRes.ok) {
+        throw new Error(loginData.error || "Login gagal");
       }
-    } catch (error) {
+
+      let { token: jwtToken, csrf: csrfToken } = loginData;
+
+      if (!jwtToken || !csrfToken) {
+        throw new Error("Token tidak tersedia dari server");
+      }
+
+      // 2. Simpan token jika perlu (tidak disarankan menyimpan JWT di localStorage/cookie jika sudah pakai cookie httpOnly)
+      // Tapi jika pakai Authorization header, kita perlu menyimpannya
+      // localStorage.setItem("token", jwtToken);
+      // localStorage.setItem("csrfToken", csrfToken);
+      // Opsi lain yaitu mengambil token dari cookie menggunakan document.cookie
+      const getCookieValue = (name: string) => {
+        const cookies = document.cookie.split("; ");
+        const cookie = cookies.find((c) => c.startsWith(`${name}=`));
+        return cookie ? cookie.split("=")[1] : null;
+      };
+
+      jwtToken = getCookieValue("token");
+      csrfToken = getCookieValue("csrfToken");
+
+      // 3. Akses protected endpoint menggunakan Authorization dan CSRF
+      const protectedRes = await fetch("/api/auth/protected", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${jwtToken}`,
+          "x-csrf-token": csrfToken,
+        },
+        credentials: "include",
+      });
+
+      if (!protectedRes.ok) {
+        throw new Error("Gagal verifikasi token di protected endpoint");
+      }
+
+      const protectedData = await protectedRes.json();
+
+      // 4. Jika berhasil
+      toast({
+        title: "Login berhasil!",
+        description: protectedData.message || "Selamat datang kembali 🎉",
+      });
+
+      Router.push("/");
+    } catch (error: any) {
       toast({
         title: "Terjadi kesalahan",
-        description: `${error}`,
+        description: error.message || String(error),
         variant: "destructive",
       });
     } finally {
@@ -80,68 +162,68 @@ const Login: React.FC = () => {
     }
   };
 
-  const handleGenerateCsrfToken = async () => {
-    try {
-      const res = await fetch("/api/auth/csrf-token", {
-        method: "GET",
-        credentials: "include", // Kirimkan cookie untuk CSRF
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setCsrfToken(data.csrfToken);
-        setIs2FASuccessful(true); // Menandakan bahwa 2FA berhasil
-        toast({
-          title: "2FA Berhasil",
-          description: "CSRF Token berhasil didapatkan, silakan lanjutkan.",
-        });
-      } else {
-        throw new Error("Gagal mendapatkan CSRF token.");
-      }
-    } catch (error) {
-      toast({
-        title: "Kesalahan",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  };
+  // const handleGenerateCsrfToken = async () => {
+  //   try {
+  //     const res = await fetch("/api/auth/csrf-token", {
+  //       method: "GET",
+  //       credentials: "include", // Kirimkan cookie untuk CSRF
+  //     });
+  //     if (res.ok) {
+  //       const data = await res.json();
+  //       setCsrfToken(data.csrfToken);
+  //       setIs2FASuccessful(true); // Menandakan bahwa 2FA berhasil
+  //       toast({
+  //         title: "2FA Berhasil",
+  //         description: "CSRF Token berhasil didapatkan, silakan lanjutkan.",
+  //       });
+  //     } else {
+  //       throw new Error("Gagal mendapatkan CSRF token.");
+  //     }
+  //   } catch (error) {
+  //     toast({
+  //       title: "Kesalahan",
+  //       description: error.message,
+  //       variant: "destructive",
+  //     });
+  //   }
+  // };
 
   // Fungsi untuk menyelesaikan login setelah CSRF token berhasil didapatkan
-  const handleCompleteLogin = async () => {
-    try {
-      const res = await fetch("/api/auth/complete-login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-csrf-token": csrfToken, // Kirimkan CSRF token
-        },
-        body: JSON.stringify({ email }),
-        credentials: "include",
-      });
+  // const handleCompleteLogin = async () => {
+  //   try {
+  //     const res = await fetch("/api/auth/complete-login", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         "x-csrf-token": csrfToken, // Kirimkan CSRF token
+  //       },
+  //       body: JSON.stringify({ email }),
+  //       credentials: "include",
+  //     });
 
-      const data = await res.json();
+  //     const data = await res.json();
 
-      if (res.ok) {
-        toast({
-          title: "Login berhasil!",
-          description: data.message || "Selamat datang kembali 🎉",
-        });
-        Router.push("/"); // Arahkan ke halaman home
-      } else {
-        toast({
-          title: "Login gagal",
-          description: data.error || "Coba lagi nanti.",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Terjadi kesalahan",
-        description: `${error}`,
-        variant: "destructive",
-      });
-    }
-  };
+  //     if (res.ok) {
+  //       toast({
+  //         title: "Login berhasil!",
+  //         description: data.message || "Selamat datang kembali 🎉",
+  //       });
+  //       Router.push("/"); // Arahkan ke halaman home
+  //     } else {
+  //       toast({
+  //         title: "Login gagal",
+  //         description: data.error || "Coba lagi nanti.",
+  //         variant: "destructive",
+  //       });
+  //     }
+  //   } catch (error) {
+  //     toast({
+  //       title: "Terjadi kesalahan",
+  //       description: `${error}`,
+  //       variant: "destructive",
+  //     });
+  //   }
+  // };
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-[#FFFBE3] text-black">
@@ -272,7 +354,7 @@ const Login: React.FC = () => {
       </div>
 
       {/* Modal 2FA */}
-      {is2FAModalOpen && (
+      {/* {is2FAModalOpen && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white p-8 rounded-xl shadow-lg w-96">
             <h2 className="text-xl mb-4">Two-Factor Authentication</h2>
@@ -295,7 +377,7 @@ const Login: React.FC = () => {
             )}
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 };

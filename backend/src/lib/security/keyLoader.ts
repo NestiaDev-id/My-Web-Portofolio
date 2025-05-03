@@ -14,12 +14,19 @@ export const loadPrivateKey = () => {
   };
 };
 
-export const loadPublicKey = () => {
-  const publicKeyPath = path.resolve(process.cwd(), "keys/public.key");
+// export const loadPublicKey = () => {
+//   const publicKeyPath = path.resolve(process.cwd(), "keys/public.key");
 
-  if (!fs.existsSync(publicKeyPath)) {
-    console.log("Public key not found");
-    throw new Error("Public key not found");
+//   if (!fs.existsSync(publicKeyPath)) {
+//     console.log("Public key not found");
+//     throw new Error("Public key not found");
+//   }
+//   return fs.readFileSync(publicKeyPath, "utf8");
+// };
+export const loadPublicKey = (): string => {
+  const publicKey = process.env.PUBLIC_KEY;
+  if (!publicKey) {
+    throw new Error("Public key is not set in environment variables");
   }
-  return fs.readFileSync(publicKeyPath, "utf8");
+  return publicKey;
 };

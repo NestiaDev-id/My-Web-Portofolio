@@ -8,6 +8,7 @@ import { loginSchema } from "@/lib/validation/login.schema";
 import { createJWT } from "@/lib/security/jwt";
 import { createCSRFToken } from "@/lib/security/csrf";
 import useragent from "useragent";
+import { runCorsMiddleware } from "@/lib/middlewares/cors";
 
 const isProd = process.env.NODE_ENV === "production";
 
@@ -18,6 +19,7 @@ export default async function handler(
   if (req.method !== "POST") return res.status(405).end();
 
   try {
+    await runCorsMiddleware(req, res);
     // Cek apakah pengguna sudah login
     if (req.cookies.token) {
       return res.status(200).json({ message: "User already logged in" });

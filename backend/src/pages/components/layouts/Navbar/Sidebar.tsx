@@ -220,7 +220,12 @@ export function Sidebar() {
               exit={{ opacity: 0 }}
               className="text-xs text-sidebar-foreground/50 mt-auto pt-4"
             >
-              Portfolio Admin v1.0
+              <button
+                onClick={handleLogout}
+                className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-500 rounded-md hover:bg-red-600 transition-colors"
+              >
+                Logout
+              </button>
             </motion.div>
           )}
         </div>

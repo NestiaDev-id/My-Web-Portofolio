@@ -4,7 +4,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 // Inisialisasi CORS
 const cors = Cors({
   methods: ["GET", "POST", "PUT", "DELETE"],
-  origin: "http://localhost:5173", // Atur sesuai client
+  origin: ["http://localhost:5173", "https://nestiadev.vercel.app"], // Atur sesuai client
   allowedHeaders: ["Content-Type", "Authorization", "x-csrf-token"],
   credentials: true,
 });

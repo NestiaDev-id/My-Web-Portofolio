@@ -19,7 +19,15 @@ export async function verifyJWT_baru(
     // Memverifikasi JWT menggunakan public key
     const { payload } = await jwtVerify(token, publicKey);
     console.log("[verifyJWT] Payload:", payload);
-    return payload;
+    // Ensure the payload matches the JwtPayload structure
+    const customPayload: JwtPayload = {
+      userId: payload.userId as string,
+      email: payload.email as string,
+      iat: payload.iat,
+      exp: payload.exp,
+      ...payload, // Include any additional properties
+    };
+    return customPayload;
   } catch (error) {
     console.error("JWT verification failed:", error);
     return null;

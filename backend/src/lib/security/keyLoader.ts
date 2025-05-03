@@ -3,6 +3,7 @@ import path from "path";
 
 export const loadPrivateKey = () => {
   const privateKeyPath = path.resolve(process.cwd(), "keys/private.key");
+  console.log("Private key path:", fs.readFileSync(privateKeyPath, "utf8"));
 
   if (!fs.existsSync(privateKeyPath)) {
     console.log("Private key not found");

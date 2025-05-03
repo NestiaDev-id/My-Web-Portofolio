@@ -38,40 +38,6 @@ export default function withAuth(
         if (!jwtPayload || typeof jwtPayload !== "object") {
           return NextResponse.json({ error: "Invalid token" }, { status: 401 });
         }
-
-        // Lanjutkan verifikasi dan inject informasi ke request
-        const { userId, jti: sessionId } = jwtPayload as {
-          userId: string;
-          jti: string;
-        };
-
-        // Inject data user ke request
-        (req as any).user = { userId, sessionId };
-
-        // Verifikasi CSRF token jika diperlukan (skip untuk safe methods)
-        const method = req.method.toUpperCase();
-        const safeMethod =
-          method === "GET" || method === "HEAD" || method === "OPTIONS";
-
-        let csrfValid = true;
-        if (!safeMethod) {
-          csrfValid = !!(
-            csrfToken &&
-            verifyCSRFToken(csrfToken, {
-              expectedUserId: userId,
-              expectedSessionId: sessionId,
-              usedNonces: new Set(), // Use a shared store in production like Redis
-              nonce: req.headers.get("x-csrf-token") ?? "",
-            })
-          );
-        }
-
-        if (!csrfValid) {
-          return NextResponse.json(
-            { error: "Invalid CSRF token" },
-            { status: 403 }
-          );
-        }
       } catch (error) {
         // Jika ada error saat verifikasi JWT
         console.error("Token verification failed", error);
@@ -82,3 +48,78 @@ export default function withAuth(
     return middleware(req, event);
   };
 }
+
+// import {
+//   NextFetchEvent,
+//   NextMiddleware,
+//   NextRequest,
+//   NextResponse,
+// } from "next/server";
+// import { verifyJWT_baru } from "@/lib/middlewares/verifyJWT2"; // Pastikan createJWT di-export
+// import { createJWT } from "@/lib/security/jwt";
+// export default function withAuth(
+//   middleware: NextMiddleware,
+//   requireAuthPaths: string[] = []
+// ) {
+//   return async (req: NextRequest, event: NextFetchEvent) => {
+//     const pathname = req.nextUrl.pathname;
+//     const needsAuth = requireAuthPaths.some((path) =>
+//       pathname.startsWith(path)
+//     );
+
+//     if (!needsAuth) return middleware(req, event);
+
+//     const token = req.cookies.get("token")?.value;
+//     const refreshToken = req.cookies.get("token2")?.value;
+
+//     let jwtPayload = null;
+
+//     // 🔐 Coba verifikasi access token dulu
+//     if (token) {
+//       jwtPayload = await verifyJWT_baru(token).catch(() => null);
+//     }
+
+//     // // 🔁 Jika access token gagal diverifikasi → coba refresh
+//     // if (!jwtPayload && refreshToken) {
+//     //   const refreshPayload = await verifyJWT_baru(refreshToken).catch(
+//     //     () => null
+//     //   );
+
+//     //   if (refreshPayload && refreshPayload.userId) {
+//     //     // ✅ Buat access token baru
+//     //     const newAccessToken = createJWT({
+//     //       userId: refreshPayload.userId,
+//     //       email: refreshPayload.email,
+//     //       iat: Math.floor(Date.now() / 1000),
+//     //       exp: Math.floor(Date.now() / 1000) + 30 * 60, // 30 menit
+//     //     });
+
+//     //     // 📦 Set cookie access token baru
+//     //     const res = NextResponse.next();
+//     //     res.cookies.set("token", newAccessToken, {
+//     //       httpOnly: true,
+//     //       sameSite: "strict",
+//     //       secure: true,
+//     //       maxAge: 60 * 30,
+//     //       path: "/",
+//     //     });
+
+//     //     return middleware(req, event);
+//     //   }
+
+//     //   // ❌ Refresh token juga gagal → redirect login
+//     //   const loginUrl = new URL("/auth/login", req.url);
+//     //   loginUrl.searchParams.set("callbackUrl", encodeURIComponent(req.url));
+//     //   return NextResponse.redirect(loginUrl);
+//     // }
+
+//     // // ❌ Tidak ada token sama sekali
+//     // if (!jwtPayload) {
+//     //   const loginUrl = new URL("/auth/login", req.url);
+//     //   loginUrl.searchParams.set("callbackUrl", encodeURIComponent(req.url));
+//     //   return NextResponse.redirect(loginUrl);
+//     // }
+
+//     return middleware(req, event);
+//   };
+// }

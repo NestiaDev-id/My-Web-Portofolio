@@ -3,6 +3,8 @@ import { verifyJWT, createJWT } from "@/lib/security/jwt";
 import * as cookie from "cookie"; // ✅ Perbaiki di sini
 import { createCSRFToken } from "@/lib/security/csrf";
 
+const isProd = process.env.NODE_ENV === "production";
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -43,16 +45,16 @@ export default async function handler(
 
     res.setHeader("Set-Cookie", [
       cookie.serialize("token", newAccessToken, {
-        httpOnly: false,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
+        httpOnly: true,
+        secure: isProd, // true hanya di production
+        sameSite: isProd ? "none" : "lax", // pakai "lax" di localhost
         maxAge: 1800,
         path: "/",
       }),
       cookie.serialize("csrfToken", newCsrfToken, {
         httpOnly: false,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "strict",
+        secure: isProd,
+        sameSite: isProd ? "none" : "lax",
         maxAge: 1800,
         path: "/",
       }),

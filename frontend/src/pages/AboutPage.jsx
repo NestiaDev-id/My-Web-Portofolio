@@ -193,19 +193,12 @@ export default function ProfilePage() {
 
   // get api from localhost:3000/api/about
   useEffect(() => {
-    const csrfToken = Cookies.get("csrfToken");
-    const token = Cookies.get("token");
+    const userId = import.meta.env.VITE_USER_ID;
     const fetchData = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/user", {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-Token": csrfToken,
-            // Authorization: `Bearer ${token}`,
-          },
-          credentials: "include",
-        });
+        const response = await fetch(
+          `http://localhost:3000/api/data/user?type=public&userId=${userId}`
+        );
         const result = await response.json();
         setUserData(result);
         console.log(result);

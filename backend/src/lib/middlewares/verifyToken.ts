@@ -97,61 +97,61 @@ import { runCorsMiddleware } from "./cors";
 // Simulasi penyimpanan nonce, ganti dengan Redis kalau mau production
 const usedNonces = new Set<string>();
 
-export default function verifyToken(handler: NextApiHandler) {
-  return async (req: NextApiRequest, res: NextApiResponse) => {
-    try {
-      await runCorsMiddleware(req, res);
+// export default function verifyToken(handler: NextApiHandler) {
+//   return async (req: NextApiRequest, res: NextApiResponse) => {
+//     try {
+//       await runCorsMiddleware(req, res);
 
-      const authHeader = req.headers.authorization || "";
-      let token: string | null = null;
+//       const authHeader = req.headers.authorization || "";
+//       let token: string | null = null;
 
-      if (authHeader.startsWith("Bearer ")) {
-        token = authHeader.split(" ")[1];
-      }
+//       if (authHeader.startsWith("Bearer ")) {
+//         token = authHeader.split(" ")[1];
+//       }
 
-      if (!token) {
-        const cookie = req.headers.cookie || "";
-        token =
-          cookie
-            .split(";")
-            .find((c) => c.trim().startsWith("token="))
-            ?.split("=")[1] ?? null;
-      }
+//       if (!token) {
+//         const cookie = req.headers.cookie || "";
+//         token =
+//           cookie
+//             .split(";")
+//             .find((c) => c.trim().startsWith("token="))
+//             ?.split("=")[1] ?? null;
+//       }
 
-      if (!token) {
-        return res.status(401).json({ message: "Token tidak ditemukan" });
-      }
+//       if (!token) {
+//         return res.status(401).json({ message: "Token tidak ditemukan" });
+//       }
 
-      // ✅ Verifikasi JWT dan ambil payload
-      const payload = await verifyJWT(token);
-      if (!payload) {
-        return res.status(401).json({ message: "Token tidak valid" });
-      }
+//       // ✅ Verifikasi JWT dan ambil payload
+//       const payload = await verifyJWT(token);
+//       if (!payload) {
+//         return res.status(401).json({ message: "Token tidak valid" });
+//       }
 
-      // 🔐 CSRF verifikasi jika perlu
-      if (["POST", "PUT", "DELETE"].includes(req.method || "")) {
-        const csrfToken = req.headers["x-csrf-token"] as string;
-        const nonce = payload.nonce;
+//       // 🔐 CSRF verifikasi jika perlu
+//       if (["POST", "PUT", "DELETE"].includes(req.method || "")) {
+//         const csrfToken = req.headers["x-csrf-token"] as string;
+//         const nonce = payload.nonce;
 
-        const isValidCSRF = verifyCSRFToken(csrfToken, {
-          expectedUserId: payload.userId,
-          expectedSessionId: payload.sessionId,
-          usedNonces,
-          nonce,
-        });
+//         const isValidCSRF = verifyCSRFToken(csrfToken, {
+//           expectedUserId: payload.userId,
+//           expectedSessionId: payload.sessionId,
+//           usedNonces,
+//           nonce,
+//         });
 
-        if (!isValidCSRF) {
-          return res.status(403).json({ message: "CSRF token tidak valid" });
-        }
-      }
+//         if (!isValidCSRF) {
+//           return res.status(403).json({ message: "CSRF token tidak valid" });
+//         }
+//       }
 
-      // Simpan user ke request
-      (req as any).user = payload;
+//       // Simpan user ke request
+//       (req as any).user = payload;
 
-      return handler(req, res);
-    } catch (err) {
-      console.error("[verifyToken]", err);
-      return res.status(401).json({ message: "Gagal memverifikasi token" });
-    }
-  };
-}
+//       return handler(req, res);
+//     } catch (err) {
+//       console.error("[verifyToken]", err);
+//       return res.status(401).json({ message: "Gagal memverifikasi token" });
+//     }
+//   };
+// }

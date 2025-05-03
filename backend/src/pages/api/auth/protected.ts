@@ -1,5 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import verifyToken from "@/lib/middlewares/verifyToken";
 
 import { verifyJWT } from "@/lib/security/jwt";
 import { verifyCSRFToken } from "@/lib/security/csrf";
@@ -72,8 +71,9 @@ export default async function handler(
     res.status(200).json({ message: "Akses berhasil", user: payload });
   } catch (error) {
     console.error("[Protected Endpoint Error]", error);
-    res
-      .status(500)
-      .json({ message: "Gagal mengakses data", error: error.message });
+    res.status(500).json({
+      message: "Gagal mengakses data",
+      error: error instanceof Error ? error.message : "Unknown error",
+    });
   }
 }

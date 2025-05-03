@@ -193,11 +193,12 @@ export default function ProfilePage() {
 
   // get api from localhost:3000/api/about
   useEffect(() => {
-    const userId = import.meta.env.VITE_USER_ID;
+    const url = import.meta.env.API_URL;
+    const userId = import.meta.env.USER_ID;
     const fetchData = async () => {
       try {
         const response = await fetch(
-          `http://localhost:3000/api/data/user?type=public&userId=${userId}`
+          `${url}/api/data/user?type=public&userId=${userId}`
         );
         const result = await response.json();
         setUserData(result);

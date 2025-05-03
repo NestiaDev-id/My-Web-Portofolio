@@ -8,11 +8,17 @@ type VerifyCSRFOptions = {
   nonce: string;
 };
 
+type CSRFTokenPayload = {
+  userId: string;
+  sessionId: string;
+  [key: string]: unknown; // Properti tambahan dengan tipe `unknown`
+};
+
 // Default masa berlaku token (dalam detik) — contoh: 30 menit
 const CSRF_TOKEN_EXPIRY_SECONDS = 1800;
 
 // Fungsi untuk membuat CSRF Token
-export function createCSRFToken(payload: any): string {
+export function createCSRFToken(payload: CSRFTokenPayload): string {
   // Memuat private key yang digunakan untuk menandatangani token CSRF (RSA)
   const privateKey = loadPrivateKey();
   const csrfSecretKey = process.env.CSRF_SECRET_KEY;
@@ -69,7 +75,7 @@ export function verifyCSRFToken(
   options: VerifyCSRFOptions
 ): boolean {
   try {
-    const { expectedUserId, expectedSessionId, usedNonces, nonce } = options;
+    const { expectedUserId, expectedSessionId, usedNonces } = options;
 
     const publicKey = loadPublicKey();
     const parts = csrfToken.split(".");
@@ -103,10 +109,6 @@ export function verifyCSRFToken(
       console.warn("[verifyCSRFToken] Token kadaluwarsa");
       return false;
     }
-    console.log("expectedUserId:", expectedUserId);
-    console.log("payload.userId:", payload.userId);
-    console.log("expectedSessionId:", expectedSessionId);
-    console.log("payload.sessionId:", payload.sessionId);
 
     if (
       payload.userId !== expectedUserId ||

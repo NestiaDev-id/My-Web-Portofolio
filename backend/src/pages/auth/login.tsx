@@ -155,10 +155,10 @@ const Login: React.FC = () => {
       });
 
       Router.push(callbackUrl);
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Terjadi kesalahan",
-        description: error.message || String(error),
+        description: error instanceof Error ? error.message : String(error),
         variant: "destructive",
       });
     } finally {

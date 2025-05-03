@@ -14,10 +14,23 @@ import bcrypt from "bcrypt";
 
 const firestore = getFirestore(app);
 
-export async function getData(collectionName: string) {
+// Tipe untuk data pengguna
+interface UserData {
+  id?: string;
+  email: string;
+  fullname?: string;
+  password?: string;
+  role?: string;
+}
+
+// Fungsi untuk mendapatkan data dari koleksi Firestore
+export async function getData(collectionName: string): Promise<UserData[]> {
   try {
     const snapshot = await getDocs(collection(firestore, collectionName));
-    const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    const data = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as UserData[];
     return data;
   } catch (error) {
     console.error(
@@ -28,15 +41,11 @@ export async function getData(collectionName: string) {
   }
 }
 
+// Fungsi untuk mendaftarkan pengguna baru
 export async function signUp(
-  userData: {
-    email: string;
-    fullname: string;
-    password: string;
-    role?: string;
-  },
+  userData: UserData,
   callback: (response: { status: boolean; message: string }) => void
-) {
+): Promise<void> {
   try {
     // Query untuk memeriksa apakah email sudah ada
     const q = query(
@@ -45,14 +54,17 @@ export async function signUp(
     );
     const snapshot = await getDocs(q);
 
-    const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    const data = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as UserData[];
 
     if (data.length > 0) {
       // Jika email sudah ada
       callback({ status: false, message: "Email already exists" });
     } else {
       // Hash password
-      userData.password = await bcrypt.hash(userData.password, 10);
+      userData.password = await bcrypt.hash(userData.password || "", 10);
       userData.role = "member";
 
       // Tambahkan data pengguna ke Firestore
@@ -65,7 +77,10 @@ export async function signUp(
   }
 }
 
-export async function signIn(userData: { email: string }) {
+// Fungsi untuk masuk menggunakan email
+export async function signIn(userData: {
+  email: string;
+}): Promise<UserData | null> {
   try {
     const q = query(
       collection(firestore, "users"),
@@ -73,7 +88,10 @@ export async function signIn(userData: { email: string }) {
     );
     const snapshot = await getDocs(q);
 
-    const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    const data = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as UserData[];
 
     if (data.length > 0) {
       return data[0];
@@ -86,7 +104,12 @@ export async function signIn(userData: { email: string }) {
   }
 }
 
-export async function signWithGoogle(userData: any) {
+// Fungsi untuk masuk menggunakan Google
+export async function signWithGoogle(userData: UserData): Promise<{
+  status: boolean;
+  message: string;
+  data?: UserData;
+}> {
   try {
     // Query untuk memeriksa apakah email sudah ada
     const q = query(
@@ -95,15 +118,18 @@ export async function signWithGoogle(userData: any) {
     );
     const snapshot = await getDocs(q);
 
-    const data: any = snapshot.docs.map((doc) => ({
+    const data = snapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
-    }));
+    })) as UserData[];
 
     if (data.length > 0) {
       userData.role = data[0].role;
       // Jika email sudah ada, perbarui data pengguna
-      await updateDoc(doc(firestore, "users", data[0].id), userData);
+      await updateDoc(
+        doc(firestore, "users", data[0].id!),
+        JSON.parse(JSON.stringify(userData))
+      );
       return {
         status: true,
         message: "User updated successfully",

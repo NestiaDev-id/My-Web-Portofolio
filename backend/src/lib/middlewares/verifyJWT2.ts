@@ -5,7 +5,7 @@ type JwtPayload = {
   email: string;
   iat?: number;
   exp?: number;
-  [key: string]: any; // jika ada properti lain yang mungkin ikut
+  [key: string]: unknown; // jika ada properti lain yang mungkin ikut
 };
 
 export async function verifyJWT_baru(

@@ -8,11 +8,11 @@ function runMiddleware(
   fn: (
     req: NextApiRequest,
     res: NextApiResponse,
-    callback: (result: any) => void
+    callback: (result: Error | void) => void
   ) => void
 ): Promise<void> {
   return new Promise((resolve, reject) => {
-    fn(req, res, (result: any) => {
+    fn(req, res, (result: Error | void) => {
       if (result instanceof Error) return reject(result);
       return resolve(result);
     });

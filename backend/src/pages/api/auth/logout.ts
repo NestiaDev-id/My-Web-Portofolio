@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma/prisma";
-import { getJTIFromToken, verifyJWT } from "@/lib/security/jwt";
+import { getJTIFromToken } from "@/lib/security/jwt";
 import type { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(

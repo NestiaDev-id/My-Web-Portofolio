@@ -47,9 +47,7 @@ export default async function handler(
 
     const newCsrfToken = await createCSRFToken({
       userId: payload.userId,
-      jwtId: payload.jti,
-      iat: now,
-      exp: now + 30 * 60, // Berlaku selama 30 menit
+      sessionId: payload.jti,
     });
 
     // Set token baru di cookie

@@ -28,7 +28,7 @@ export function createJWT(payload: JwtPayload): string {
     kid: "auth-key-001",
   };
 
-  const encode = (obj: any) =>
+  const encode = (obj: unknown) =>
     Buffer.from(JSON.stringify(obj))
       .toString("base64")
       .replace(/=/g, "")

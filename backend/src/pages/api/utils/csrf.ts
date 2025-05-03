@@ -5,7 +5,7 @@ const tokens = new csrf();
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   const token = tokens.create(process.env.CSRF_SECRET!);
-  const isProd = process.env.NODE_ENV === "production";
+  // const isProd = process.env.NODE_ENV === "production";
 
   // Kirim token via cookie (atau JSON jika kamu lebih suka fetch + simpan manual)
   //   res.setHeader(

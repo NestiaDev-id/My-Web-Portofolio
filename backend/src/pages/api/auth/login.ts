@@ -89,7 +89,7 @@ export default async function handler(
       },
     });
 
-    // 🔐 Buat payload JWT untuk otorisasi
+    // 🔐 Buat payload JWT untuk otorisasix
     const payload = {
       userId: user.id,
       email: user.email,

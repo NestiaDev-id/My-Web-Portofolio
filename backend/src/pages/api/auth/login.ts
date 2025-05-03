@@ -121,15 +121,21 @@ export default async function handler(
 
     // Set cookie untuk token dan CSRF token
     res.setHeader("Set-Cookie", [
-      `token=${accessToken}; Path=/; Max-Age=3600; SameSite=Strict; Secure${
-        isProd ? "; HttpOnly" : ""
+      `token=${accessToken}; Path=/; Max-Age=3600; SameSite=Strict; ${
+        isProd ? "Secure; HttpOnly" : ""
       }`,
-      `token2=${refreshToken}; Path=/; Max-Age=604800; SameSite=Strict; Secure${
-        isProd ? "; HttpOnly" : ""
+      `token=${refreshToken}; Path=/; Max-Age=3600; SameSite=Strict; ${
+        isProd ? "Secure; HttpOnly" : ""
       }`,
-      `csrfToken=${csrfToken}; Path=/; Max-Age=1800; SameSite=Strict; Secure${
-        isProd ? "; HttpOnly" : ""
+      `token=${csrfToken}; Path=/; Max-Age=3600; SameSite=Strict; ${
+        isProd ? "Secure; HttpOnly" : ""
       }`,
+      // `token2=${refreshToken}; Path=/; Max-Age=604800; SameSite=Strict; Secure${
+      //   isProd ? "; HttpOnly" : ""
+      // }`,
+      // `csrfToken=${csrfToken}; Path=/; Max-Age=1800; SameSite=Strict; Secure${
+      //   isProd ? "; HttpOnly" : ""
+      // }`,
     ]);
 
     // // ! TODO : Tambahkan sessionId setelah login

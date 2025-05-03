@@ -42,7 +42,7 @@ const ChatApp = () => {
   const [topP, setTopP] = useState(0.8);
   const [seed, setSeed] = useState(10);
   const [topk, setTopk] = useState(40);
-  const [maxTokens, setMaxTokens] = useState(2048);
+  const [maxTokens, setMaxTokens] = useState(750);
   const [model, setModel] = useState("llama3-8b-8192");
   const [systemPrompt, setSystemPrompt] = useState(
     "You are a helpful assistant."
@@ -63,7 +63,10 @@ const ChatApp = () => {
   }, []);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    // messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({
+      behavior: messages.length === 1 ? "auto" : "smooth",
+    });
   }, [messages]);
 
   const sendMessage = async () => {
@@ -351,6 +354,7 @@ const ChatApp = () => {
               </div>
             </motion.div>
           )}
+          <div ref={messagesEndRef} />
         </div>
 
         <div className="flex items-center bg-gray-700 rounded-lg mt-2">

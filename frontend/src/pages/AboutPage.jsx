@@ -193,8 +193,8 @@ export default function ProfilePage() {
 
   // get api from localhost:3000/api/about
   useEffect(() => {
-    const url = import.meta.env.API_URL;
-    const userId = import.meta.env.USER_ID;
+    const url = import.meta.env.VITE_API_URL;
+    const userId = import.meta.env.VITE_USER_ID;
     const fetchData = async () => {
       try {
         const response = await fetch(

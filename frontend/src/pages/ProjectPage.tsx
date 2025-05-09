@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Github, Globe } from "lucide-react";
 import { useNavigate } from "react-router-dom";

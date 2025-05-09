@@ -1,12 +1,4 @@
-import {
-  Moon,
-  Sun,
-  User,
-  FolderKanban,
-  BookOpen,
-  Home,
-  Gamepad2,
-} from "lucide-react";
+import { User, FolderKanban, BookOpen, Home, Gamepad2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { DarkModeToggle } from "./DarkModeToggle";
 

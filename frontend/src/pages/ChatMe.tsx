@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { requestToAi } from "@/utils/groq";
 import {
@@ -9,9 +9,6 @@ import {
   DollarSign,
   Sun,
   Languages,
-  Send,
-  BotMessageSquare,
-  User,
   Plus,
 } from "lucide-react";
 
@@ -20,8 +17,6 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,7 +49,7 @@ const ChatApp = () => {
 
   const [input, setInput] = useState("");
   const [time, setTime] = useState("");
-  const messagesEndRef = useRef(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isTyping, setIsTyping] = useState(false);
 
   // AI parameters with default values
@@ -112,7 +107,7 @@ const ChatApp = () => {
         model: model,
         temperature: temperature,
         top_p: topP,
-        max_tokens: maxTokens,
+        maxTokens: maxTokens,
         seed: seed,
       });
 

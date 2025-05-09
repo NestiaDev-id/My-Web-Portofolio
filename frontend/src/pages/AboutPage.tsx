@@ -7,6 +7,14 @@ import {
 } from "react-vertical-timeline-component";
 import "react-vertical-timeline-component/style.min.css";
 import {
+  Brain,
+  Code2,
+  ServerCog,
+  Users,
+  Lightbulb,
+  BarChart4,
+} from "lucide-react";
+import {
   FaPython,
   FaFigma,
   FaGitAlt,
@@ -64,11 +72,11 @@ interface ExperienceData {
 }
 
 // Tipe untuk teknologi
-interface TechStack {
-  name: string;
-  icon: React.ReactNode;
-  color: string;
-}
+// interface TechStack {
+//   name: string;
+//   icon: React.ReactNode;
+//   color: string;
+// }
 
 const techStack = [
   // Bahasa Pemrograman
@@ -117,20 +125,56 @@ const techStack = [
 
 const experiences: ExperienceData[] = [
   {
-    img: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
-    role: "Software Engineer",
-    company: "TechCorp",
-    date: "Jan 2020 - Present",
-    desc: "Developing and maintaining web applications.",
-    skills: ["JavaScript", "React", "Node.js"],
+    img: "https://www.usd.ac.id/logo/usd.png",
+    role: "Computer Science Undergraduate",
+    company: "Sanata Dharma University",
+    date: "Aug 2021 – Dec 2024",
+    desc: "Pursuing a Bachelor's degree in Computer Science with a focus on software engineering and data-driven technologies. Actively involved in academic projects and research, including web application development, machine learning experiments, and system design. Engaged in collaborative team work and presentations to solve real-world problems with code.",
+    skills: [
+      "JavaScript",
+      "Java",
+      "Python",
+      "SQL",
+      "Git",
+      "Kotlin",
+      "Team Work",
+      "Critical Thinking",
+      "Problem Solving",
+      "Leadership",
+      "Communication",
+      "Time Management",
+      "Project Management",
+      "Collaboration",
+      "Agile Development",
+      "Scrum Methodology",
+      "Kanban Methodology",
+      "Agile Methodology",
+    ],
   },
   {
-    img: "https://seeklogo.com/images/N/netlify-logo-BD8F8A77E2-seeklogo.com.png",
-    role: "Frontend Developer",
-    company: "Web Solutions",
-    date: "Jun 2018 - Dec 2019",
-    desc: "Building responsive UI components and optimizing performance.",
-    skills: ["HTML", "CSS", "Vue.js"],
+    img: "https://www.logo.wine/a/logo/Microsoft_Store/Microsoft_Store-Logo.wine.svg",
+    role: "Artificial Intelligence Scholarship Student",
+    company: "Elevate Program by Dicoding",
+    date: "Jan 2025 – Present",
+    desc: "Awarded the Artificial Intelligence Scholarship through the Elevate Program by Dicoding, a comprehensive initiative by Microsoft that equips participants with the skills to design and deploy AI solutions using Azure AI services. This program covers everything from natural language processing and computer vision to building generative AI applications, empowering students to tackle real-world challenges with cutting-edge AI technologies.",
+    skills: [
+      "Natural Language Processing (NLP)",
+      "Azure OpenAI",
+      "Microsoft Azure",
+      "GitHub",
+      "Computer Vision",
+      "OpenCV",
+      "Git",
+      "Document Processing with Form Recognizer",
+      "Azure AI Vision Solutions",
+      "Semantic Kernel",
+      "Azure DevOps",
+      "AI Security",
+      "Cloud-Native App Development with Azure",
+      "AI and Data Science Solutions",
+      "Azure Container Apps",
+      "Generative AI Applications",
+    ],
   },
 ];
 
@@ -161,27 +205,28 @@ const ExperienceCard: React.FC<{ experience: ExperienceData }> = ({
           alt={experience.company}
           className="h-12 w-12 rounded-lg sm:h-10 sm:w-10"
         />
-        <div>
-          <h3 className="text-lg font-semibold text-gray-300 sm:text-base">
+        <div className="flex flex-col leading-tight space-y-0.5">
+          <span className="text-lg font-semibold text-gray-300 sm:text-base">
             {experience.role}
-          </h3>
-          <p className="text-sm font-medium text-gray-400 sm:text-xs">
+          </span>
+          <span className="text-sm font-medium text-gray-400 sm:text-sm">
             {experience.company}
-          </p>
-          <p className="text-xs text-gray-500 sm:text-[10px]">
+          </span>
+          <span className="text-xs text-gray-500 sm:text-[11px]">
             {experience.date}
-          </p>
+          </span>
         </div>
       </div>
+
       <p className="text-gray-300 text-sm mt-2 sm:text-xs">{experience.desc}</p>
-      {experience.skills && (
-        <div className="mt-2">
-          <b className="text-gray-300">Skills:</b>
-          <div className="flex flex-wrap gap-2 mt-1">
+      {experience.skills && experience.skills.length > 0 && (
+        <div className="mt-4">
+          <h4 className="text-sm text-gray-400 font-semibold mb-1">Skills</h4>
+          <div className="flex flex-wrap gap-2">
             {experience.skills.map((skill, index) => (
               <span
                 key={index}
-                className="text-sm text-gray-400 bg-gray-700 px-2 py-1 rounded-md"
+                className="bg-gray-700 text-gray-300 text-xs font-medium px-3 py-1 rounded-full hover:bg-gray-600 transition"
               >
                 {skill}
               </span>
@@ -265,31 +310,38 @@ const AboutPage: React.FC = () => {
               className="overflow-hidden relative"
             >
               <p className="text-justify text-gray-900 dark:text-gray-200">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Quod,
-                nobis optio quaerat distinctio in sunt quam voluptas, commodi,
-                minus dicta deleniti! Animi corrupti, exercitationem odio
-                adipisci iste natus officiis iure ea error. Ad eum nisi fugit
-                deleniti quasi! Voluptate aut dolore quaerat accusantium
-                excepturi pariatur eos perspiciatis mollitia, distinctio ducimus
-                sequi consequatur id. Sed nemo, saepe possimus voluptate
-                repellendus dolorem non nihil assumenda illo tempora? Quis,
-                dolores dolorem. Numquam dolorem quasi neque velit quas, autem
-                nam ut sit sint laborum modi vero, quaerat architecto ea odio
-                quia asperiores omnis dolore necessitatibus porro illum animi
-                labore? Commodi harum tempore error, ea illum, laboriosam
-                consequatur temporibus qui exercitationem aut ratione
-                cupiditate, animi inventore dignissimos facere ab asperiores at!
-                Eum quos sapiente neque labore voluptatibus incidunt, cumque
-                earum commodi amet ea perspiciatis, qui aperiam id suscipit unde
-                quaerat quisquam beatae facere ipsa itaque, dolorem tenetur
-                temporibus atque? Magnam ad, accusantium eius eum rem cupiditate
-                perferendis explicabo expedita minima! Assumenda, maxime
-                corrupti optio saepe perspiciatis vero ad temporibus, delectus
-                odio eos, eligendi error harum magnam! Natus reiciendis facere
-                impedit molestias consequuntur voluptatem adipisci officia quod
-                inventore accusantium sint, nihil vero eius deserunt
-                reprehenderit ab labore repellat quasi autem in assumenda illum
-                blanditiis. Officia, maxime.
+                Hi, I’m Christian, a passionate software engineer with a strong
+                background in full-stack development, artificial intelligence,
+                and data analytics. I specialize in building intelligent,
+                scalable, and high-performance applications. I’ve worked with
+                various technologies including Python, JavaScript, TypeScript,
+                Golang, Next.js, FastAPI, and Flutter. My backend expertise
+                spans RESTful APIs, microservices, and database optimization. I
+                also have experience in modern frontend development using React,
+                Tailwind CSS, and Figma for prototyping. Throughout my academic
+                and professional journey, I’ve consistently pursued innovation.
+                My interest in AI began during university, where I worked on
+                time series forecasting using Holt-Winters optimized by Genetic
+                Algorithms. Later, I explored YOLO, CNNs, and LSTM models,
+                combining them into intelligent pipelines for real-time
+                detection and prediction tasks. These experiences taught me how
+                to turn raw data into actionable insights. I’m also proficient
+                in data visualization tools like Tableau and adept at
+                communicating technical insights in a simple and effective
+                manner. My goal is to solve complex problems with clean,
+                efficient code while ensuring a seamless user experience. I
+                enjoy collaborating with diverse teams and thrive in
+                environments that encourage learning and experimentation. I
+                believe that teamwork, empathy, and communication are just as
+                important as technical skills. Curiosity drives me. I’m always
+                eager to learn new frameworks, study emerging technologies, and
+                contribute to open-source projects. Currently, I’m focused on
+                integrating AI with software products to create intelligent,
+                automated solutions for real-world problems. I believe that
+                technology should serve people not the other way around. I’m
+                available for collaboration, freelance projects, or full-time
+                opportunities where I can bring value through my unique blend of
+                AI, software engineering, and strategic thinking.
               </p>
             </motion.div>
 

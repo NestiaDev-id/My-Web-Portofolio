@@ -23,6 +23,14 @@ function App() {
           }
         />
 
+        <Route
+          path="/projects/detail"
+          element={
+            <div className="flex items-center justify-center h-screen">
+              <h1 className="text-3xl font-bold">Under Maintenance</h1>
+            </div>
+          }
+        />
         {/* <Route path="/projects" element={<ProjectPage />} /> */}
         {/* <Route path="/projects/detail" element={<DetailProject />} /> */}
         {/* <Route path="/projects/:id" element={<ProjectPage />} /> */}

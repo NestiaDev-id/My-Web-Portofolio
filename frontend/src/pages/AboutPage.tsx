@@ -6,18 +6,44 @@ import {
   VerticalTimelineElement,
 } from "react-vertical-timeline-component";
 import "react-vertical-timeline-component/style.min.css";
-import { FaPython, FaFigma, FaGitAlt } from "react-icons/fa";
+import {
+  FaPython,
+  FaFigma,
+  FaGitAlt,
+  FaReact,
+  FaNodeJs,
+  FaDocker,
+  FaLinux,
+  FaJava,
+} from "react-icons/fa";
 import {
   SiFastapi,
-  SiDjango,
   SiPytorch,
   SiTypescript,
   SiNextdotjs,
-  SiTableau,
   SiPostgresql,
   SiTensorflow,
   SiHuggingface,
+  SiJavascript,
+  SiPhp,
+  SiDart,
+  SiFlutter,
+  SiGo,
+  SiTailwindcss,
+  SiBootstrap,
+  SiExpress,
+  SiLaravel,
+  SiMongodb,
+  SiMysql,
+  SiFirebase,
+  SiSupabase,
+  SiPostman,
+  SiPowers,
+  SiGooglecloud,
 } from "react-icons/si";
+
+import { Badge } from "@/components/ui/badge";
+import Marquee from "react-fast-marquee";
 
 // Tipe untuk data pengguna
 interface UserData {
@@ -44,19 +70,49 @@ interface TechStack {
   color: string;
 }
 
-const techStack: TechStack[] = [
-  { name: "Figma", icon: <FaFigma />, color: "text-purple-400" },
+const techStack = [
+  // Bahasa Pemrograman
+  { name: "JavaScript", icon: <SiJavascript />, color: "text-yellow-400" },
   { name: "TypeScript", icon: <SiTypescript />, color: "text-blue-400" },
-  { name: "Next.js", icon: <SiNextdotjs />, color: "text-gray-300" },
-  { name: "Git", icon: <FaGitAlt />, color: "text-orange-500" },
   { name: "Python", icon: <FaPython />, color: "text-yellow-400" },
+  { name: "Go", icon: <SiGo />, color: "text-teal-400" },
+  { name: "PHP", icon: <SiPhp />, color: "text-indigo-400" },
+  { name: "Dart", icon: <SiDart />, color: "text-blue-500" },
+  { name: "Java", icon: <FaJava />, color: "text-red-500" },
+
+  // Pengembangan Frontend
+  { name: "React", icon: <FaReact />, color: "text-blue-400" },
+  { name: "Next.js", icon: <SiNextdotjs />, color: "text-gray-300" },
+  { name: "Flutter", icon: <SiFlutter />, color: "text-blue-400" },
+  { name: "Tailwind CSS", icon: <SiTailwindcss />, color: "text-teal-400" },
+  { name: "Bootstrap", icon: <SiBootstrap />, color: "text-purple-400" },
+  { name: "Figma", icon: <FaFigma />, color: "text-purple-400" },
+
+  // Pengembangan Backend
+  { name: "Node.js", icon: <FaNodeJs />, color: "text-green-500" },
+  { name: "Express.js", icon: <SiExpress />, color: "text-gray-300" },
   { name: "FastAPI", icon: <SiFastapi />, color: "text-teal-400" },
-  { name: "Django", icon: <SiDjango />, color: "text-green-500" },
-  { name: "Tableau", icon: <SiTableau />, color: "text-indigo-400" },
+  { name: "Laravel", icon: <SiLaravel />, color: "text-red-500" },
+
+  // Basis Data
+  { name: "MongoDB", icon: <SiMongodb />, color: "text-green-500" },
+  { name: "PostgreSQL", icon: <SiPostgresql />, color: "text-blue-500" },
+  { name: "MySQL", icon: <SiMysql />, color: "text-blue-400" },
+  { name: "Firebase", icon: <SiFirebase />, color: "text-yellow-400" },
+  { name: "Supabase", icon: <SiSupabase />, color: "text-green-400" },
+
+  // Alat dan DevOps
+  { name: "Git", icon: <FaGitAlt />, color: "text-orange-500" },
+  { name: "Docker", icon: <FaDocker />, color: "text-blue-400" },
+  { name: "Postman", icon: <SiPostman />, color: "text-orange-400" },
+  { name: "Linux", icon: <FaLinux />, color: "text-gray-500" },
+  { name: "PowerShell", icon: <SiPowers />, color: "text-blue-500" },
+  { name: "Google Cloud", icon: <SiGooglecloud />, color: "text-blue-400" },
+
+  // Pembelajaran Mesin dan Analisis Data
+  { name: "TensorFlow", icon: <SiTensorflow />, color: "text-orange-400" },
   { name: "PyTorch", icon: <SiPytorch />, color: "text-red-500" },
   { name: "Hugging Face", icon: <SiHuggingface />, color: "text-yellow-500" },
-  { name: "TensorFlow", icon: <SiTensorflow />, color: "text-orange-400" },
-  { name: "PostgreSQL", icon: <SiPostgresql />, color: "text-blue-500" },
 ];
 
 const experiences: ExperienceData[] = [
@@ -160,29 +216,36 @@ const AboutPage: React.FC = () => {
   return (
     <div className="container mx-auto mt-20 p-4 text-gray-200">
       {/* Profile Section */}
-      <section className="container flex flex-col xl:flex-row items-center xl:items-start gap-6 text-center xl:text-left">
+      <section className="container flex flex-col text-black xl:flex-row items-center xl:items-start gap-6 text-center xl:text-left">
         {/* Profile Image & Details */}
-        <section className="flex flex-col items-center text-center gap-4">
+        <section className="flex flex-col items-center text-center gap-4 bg-white dark:bg-gray-900 rounded-lg p-6 shadow-lg transition-all">
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-            className="w-32 h-32 rounded-full overflow-hidden border-4 border-gray-700"
+            whileHover={{ rotateY: 360 }}
+            transition={{ duration: 0.8 }}
+            className="w-32 h-32 rounded-full overflow-hidden border-4 border-gray-700 dark:border-gray-300"
+            style={{ perspective: 1000 }}
           >
-            <img
+            <motion.img
               src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
               alt="Profile Picture"
               className="w-full h-full object-cover"
+              style={{ backfaceVisibility: "hidden" }}
             />
           </motion.div>
 
-          <h1 className="text-2xl font-bold">{userData?.name}</h1>
-          <p className="text-gray-400 container">{userData?.university}</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            Yohanes Christian Devano
+          </h1>
+          <p className="text-gray-400 dark:text-gray-300">
+            Mahasiswa Sanata Dharma
+          </p>
 
           <motion.button
             whileHover={{ scale: 1.05 }}
             transition={{ duration: 0.3 }}
-            className="mt-2 px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-gray-300 hover:bg-gray-700"
+            className="mt-2 px-4 py-2 bg-gray-800 dark:bg-gray-700 border border-gray-600 dark:border-gray-500 rounded-lg text-gray-300 dark:text-gray-200 hover:bg-gray-700 dark:hover:bg-gray-600"
             onClick={() => navigate("/chat-me")}
           >
             Chat with My AI Assistant
@@ -190,59 +253,115 @@ const AboutPage: React.FC = () => {
         </section>
 
         {/* About Me Section */}
-        <section className="mt-8 xl:mt-0 xl:ml-12 text-center xl:text-left container">
-          <h3 className="text-2xl font-bold">About Me</h3>
-          <section className="mt-2 mb-4 text-gray-400 relative">
+        <section className="mt-8 xl:mt-0 xl:ml-12 text-center text-black xl:text-left container">
+          <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+            About Me
+          </h3>
+          <section className="mt-2 mb-4 relative">
             <motion.div
               initial={false}
               animate={{ height: isExpanded ? "auto" : "100px" }}
               transition={{ duration: 0.5 }}
-              className={`overflow-hidden relative`}
+              className="overflow-hidden relative"
             >
-              <p>{userData?.aboutme}</p>
+              <p className="text-justify text-gray-900 dark:text-gray-200">
+                Lorem ipsum dolor sit amet consectetur adipisicing elit. Quod,
+                nobis optio quaerat distinctio in sunt quam voluptas, commodi,
+                minus dicta deleniti! Animi corrupti, exercitationem odio
+                adipisci iste natus officiis iure ea error. Ad eum nisi fugit
+                deleniti quasi! Voluptate aut dolore quaerat accusantium
+                excepturi pariatur eos perspiciatis mollitia, distinctio ducimus
+                sequi consequatur id. Sed nemo, saepe possimus voluptate
+                repellendus dolorem non nihil assumenda illo tempora? Quis,
+                dolores dolorem. Numquam dolorem quasi neque velit quas, autem
+                nam ut sit sint laborum modi vero, quaerat architecto ea odio
+                quia asperiores omnis dolore necessitatibus porro illum animi
+                labore? Commodi harum tempore error, ea illum, laboriosam
+                consequatur temporibus qui exercitationem aut ratione
+                cupiditate, animi inventore dignissimos facere ab asperiores at!
+                Eum quos sapiente neque labore voluptatibus incidunt, cumque
+                earum commodi amet ea perspiciatis, qui aperiam id suscipit unde
+                quaerat quisquam beatae facere ipsa itaque, dolorem tenetur
+                temporibus atque? Magnam ad, accusantium eius eum rem cupiditate
+                perferendis explicabo expedita minima! Assumenda, maxime
+                corrupti optio saepe perspiciatis vero ad temporibus, delectus
+                odio eos, eligendi error harum magnam! Natus reiciendis facere
+                impedit molestias consequuntur voluptatem adipisci officia quod
+                inventore accusantium sint, nihil vero eius deserunt
+                reprehenderit ab labore repellat quasi autem in assumenda illum
+                blanditiis. Officia, maxime.
+              </p>
             </motion.div>
 
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="mt-3 text-blue-400 hover:underline focus:outline-none"
+              className="mt-3 text-blue-400 hover:underline focus:outline-none dark:text-blue-300 dark:hover:text-blue-500"
             >
               {isExpanded ? "Show Less" : "Show More"}
             </button>
           </section>
 
-          <h3 className="text-2xl font-bold mb-4">My Skills</h3>
+          <h3 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
+            My Skills
+          </h3>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
             className="flex gap-2 flex-wrap justify-center xl:justify-start"
           >
-            {userData?.skills?.map((skill) => (
-              <motion.span
-                key={skill}
-                className="badge badge-outline"
-                whileHover={{ scale: 1.1 }}
-              >
-                {skill}
-              </motion.span>
+            {[
+              "Artificial Intelligence",
+              "Machine Learning",
+              "Computer Vision",
+              "Forecasting",
+              "Data Analysis",
+              "Data Visualization",
+              "Problem Solving",
+              "Team Work & Collaboration",
+              "Personal Growth",
+              "Curious & Passionate",
+            ].map((skill) => (
+              <motion.div key={skill} whileHover={{ scale: 1.1 }}>
+                <Badge
+                  variant="outline"
+                  className="text-sm dark:bg-gray-800 dark:text-white border-gray-400 dark:border-gray-600"
+                >
+                  {skill}
+                </Badge>
+              </motion.div>
             ))}
           </motion.div>
         </section>
       </section>
 
       {/* Tech Stack Section */}
-      <section className="container mx-auto mt-8">
+      <section className="container mx-auto mt-8 px-4">
         <h2 className="text-3xl font-bold text-white mb-6">Tech Stack</h2>
-        <div className="grid grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-6">
-          {techStack.map((tech, index) => (
-            <motion.div
-              key={index}
-              className="flex flex-col items-center bg-gray-800 p-4 rounded-lg shadow-lg hover:bg-gray-700 transition duration-300"
-              whileHover={{ scale: 1.1 }}
+
+        <div className="flex flex-col gap-4">
+          {[0, 1, 2].map((rowIndex) => (
+            <Marquee
+              key={rowIndex}
+              pauseOnHover
+              speed={50 + rowIndex * 10} // Baris bawah lebih cepat
+              gradient={false}
+              direction={rowIndex % 2 === 0 ? "left" : "right"} // Pola arah: kiri, kanan, kiri
             >
-              <div className={`text-4xl ${tech.color}`}>{tech.icon}</div>
-              <p className="text-gray-300 mt-2">{tech.name}</p>
-            </motion.div>
+              <div className="flex gap-6">
+                {techStack.map((tech, index) => (
+                  <div
+                    key={`${rowIndex}-${index}`}
+                    className="flex flex-col items-center bg-gray-800 p-4 rounded-lg shadow-lg hover:bg-gray-700 transition duration-300 min-w-[120px]"
+                  >
+                    <div className={`text-4xl ${tech.color}`}>{tech.icon}</div>
+                    <p className="text-gray-300 mt-2 text-sm text-center">
+                      {tech.name}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </Marquee>
           ))}
         </div>
       </section>

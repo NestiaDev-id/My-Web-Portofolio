@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { requestToAi } from "../utils/groq";
+import { requestToAi } from "@/utils/groq";
 import {
   Settings,
   Cpu,
@@ -14,6 +14,26 @@ import {
   User,
   Plus,
 } from "lucide-react";
+
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Slider } from "@/components/ui/slider";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 
 const ChatApp = () => {
   const [messages, setMessages] = useState([
@@ -140,148 +160,154 @@ const ChatApp = () => {
 
       <div className="w-full sm:w-[90%] md:w-[80%] lg:w-[60%] xl:w-[50%] mt-6 bg-gray-800 p-4 rounded-lg shadow-md flex flex-col h-[600px]">
         <div className="flex justify-end gap-2 mb-4">
-          <div className="dropdown dropdown-end">
-            <button
-              tabIndex={0}
-              className="btn btn-sm gap-2 text-white bg-gray-700 hover:bg-gray-600"
-            >
-              <Languages className="w-4 h-4" />
-              Bahasa
-            </button>
-            <ul
-              tabIndex={0}
-              className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52"
-            >
-              <li>
-                <button className="btn btn-sm gap-2 text-white bg-gray-700 hover:bg-gray-600 w-full">
-                  <Sun className="w-4 h-4 text-red-400" />
-                  Bahasa Indonesia
-                </button>
-              </li>
-              <li>
-                <button className="btn btn-sm gap-2 text-white bg-gray-700 hover:bg-gray-600 w-full">
-                  <Sun className="w-4 h-4 text-blue-400" />
-                  English
-                </button>
-              </li>
-            </ul>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                size="sm"
+                className="gap-2 bg-gray-700 hover:bg-gray-600 text-white"
+              >
+                <Languages className="w-4 h-4" />
+                Bahasa
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-gray-800 text-white">
+              <DropdownMenuItem className="gap-2 hover:bg-gray-700 cursor-pointer">
+                <Sun className="w-4 h-4 text-red-400" />
+                Bahasa Indonesia
+              </DropdownMenuItem>
+              <DropdownMenuItem className="gap-2 hover:bg-gray-700 cursor-pointer">
+                <Sun className="w-4 h-4 text-blue-400" />
+                English
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
-          <div className="dropdown dropdown-end">
-            <button
-              tabIndex={0}
-              className="btn btn-sm gap-2 text-white bg-gray-700 hover:bg-gray-600"
+          {/* Dropdown Settings */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                size="sm"
+                className="gap-2 bg-gray-700 hover:bg-gray-600 text-white"
+              >
+                <Settings className="w-4 h-4" />
+                Settings
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              className="bg-gray-800 text-white p-4 w-80 space-y-4"
             >
-              <Settings className="w-4 h-4" />
-              Settings
-            </button>
-
-            <div
-              tabIndex={0}
-              className="dropdown-content z-[1] bg-base-300 p-4 shadow-xl rounded-lg w-80 space-y-4 text-sm text-white"
-            >
+              {/* Model Select */}
               <div>
-                <label className="flex items-center gap-2 font-semibold mb-1">
+                <label className="flex items-center gap-2 font-semibold mb-1 text-sm">
                   <Cpu className="w-4 h-4" />
                   Select Model
                 </label>
-                <select
-                  className="select select-sm w-full bg-gray-700 text-white"
-                  value={model}
-                  onChange={(e) => setModel(e.target.value)}
-                >
-                  {/* Daftar model... */}
-                  <option value="llama3-8b-8192">LLaMA 3 8B 8192</option>
-                  <option value="llama3-70b-8192">LLaMA 3 70B 8192</option>
-                  <option value="meta-llama/llama-4-scout-17b-16e-instruct">
-                    LLaMA 4 Scout 17B
-                  </option>
-                </select>
+                <Select value={model} onValueChange={setModel}>
+                  <SelectTrigger className="bg-gray-700 text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-700 text-white">
+                    <SelectItem value="llama3-8b-8192">
+                      LLaMA 3 8B 8192
+                    </SelectItem>
+                    <SelectItem value="llama3-70b-8192">
+                      LLaMA 3 70B 8192
+                    </SelectItem>
+                    <SelectItem value="meta-llama/llama-4-scout-17b-16e-instruct">
+                      LLaMA 4 Scout 17B
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
+              {/* System Prompt */}
               <div>
-                <label className="flex items-center gap-2 font-semibold mb-1">
+                <label className="flex items-center gap-2 font-semibold mb-1 text-sm">
                   <MessageSquareCode className="w-4 h-4" />
                   System Prompt
                 </label>
-                <textarea
-                  className="textarea textarea-sm w-full bg-gray-700 text-white resize-none"
+                <Textarea
                   rows={2}
                   value={systemPrompt}
                   onChange={(e) => setSystemPrompt(e.target.value)}
+                  className="bg-gray-700 text-white resize-none"
                 />
               </div>
 
+              {/* Parameters */}
               <div>
-                <label className="flex items-center gap-2 font-semibold mb-1">
+                <label className="flex items-center gap-2 font-semibold mb-1 text-sm">
                   <SlidersHorizontal className="w-4 h-4" />
                   Parameters
                 </label>
 
-                <div className="mb-2">
-                  <div className="flex justify-between text-xs mb-1">
-                    <span className="text-gray-300">Temperature</span>
-                    <span className="text-gray-400">
-                      {temperature.toFixed(2)}
-                    </span>
+                <div className="space-y-2">
+                  {/* Temperature */}
+                  <div>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-gray-300">Temperature</span>
+                      <span className="text-gray-400">
+                        {temperature.toFixed(2)}
+                      </span>
+                    </div>
+                    <Slider
+                      min={0}
+                      max={1}
+                      step={0.01}
+                      value={[temperature]}
+                      onValueChange={([val]) => setTemperature(val)}
+                    />
                   </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.01"
-                    value={temperature}
-                    onChange={(e) => setTemperature(parseFloat(e.target.value))}
-                    className="range range-xs"
-                  />
-                </div>
 
-                <div className="mb-2">
-                  <div className="flex justify-between text-xs mb-1">
-                    <span className="text-gray-300">Top_p</span>
-                    <span className="text-gray-400">{topP.toFixed(2)}</span>
+                  {/* Top_p */}
+                  <div>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-gray-300">Top_p</span>
+                      <span className="text-gray-400">{topP.toFixed(2)}</span>
+                    </div>
+                    <Slider
+                      min={0}
+                      max={1}
+                      step={0.01}
+                      value={[topP]}
+                      onValueChange={([val]) => setTopP(val)}
+                    />
                   </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.01"
-                    value={topP}
-                    onChange={(e) => setTopP(parseFloat(e.target.value))}
-                    className="range range-xs"
-                  />
-                </div>
-                <div className="mb-2">
-                  <div className="flex justify-between text-xs mb-1">
-                    <span className="text-gray-300">Seed</span>
-                    <span className="text-gray-400">{seed.toFixed(2)}</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    step="0.01"
-                    value={seed}
-                    onChange={(e) => setSeed(parseFloat(e.target.value))}
-                    className="range range-xs"
-                  />
-                </div>
 
-                <div className="mb-2">
-                  <label className="text-xs text-gray-300">Max Tokens</label>
-                  <input
-                    type="number"
-                    className="input input-sm w-full bg-gray-700 text-white mt-1"
-                    min={10}
-                    max={4096}
-                    value={maxTokens}
-                    onChange={(e) => setMaxTokens(Number(e.target.value))}
-                  />
+                  {/* Seed */}
+                  <div>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span className="text-gray-300">Seed</span>
+                      <span className="text-gray-400">{seed.toFixed(0)}</span>
+                    </div>
+                    <Slider
+                      min={0}
+                      max={100}
+                      step={1}
+                      value={[seed]}
+                      onValueChange={([val]) => setSeed(val)}
+                    />
+                  </div>
+
+                  {/* Max Tokens */}
+                  <div>
+                    <label className="text-xs text-gray-300">Max Tokens</label>
+                    <Input
+                      type="number"
+                      min={10}
+                      max={4096}
+                      value={maxTokens}
+                      onChange={(e) => setMaxTokens(Number(e.target.value))}
+                      className="bg-gray-700 text-white mt-1"
+                    />
+                  </div>
                 </div>
               </div>
 
+              {/* Token Usage */}
               <div>
-                <label className="flex items-center gap-2 font-semibold mb-1">
+                <label className="flex items-center gap-2 font-semibold mb-1 text-sm">
                   <DollarSign className="w-4 h-4" />
                   Token Usage (Est.)
                 </label>
@@ -289,8 +315,8 @@ const ChatApp = () => {
                   This message used ~127 tokens. Estimated cost: $0.0001
                 </p>
               </div>
-            </div>
-          </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         <div className="flex-grow overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-gray-700">

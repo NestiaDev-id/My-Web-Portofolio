@@ -2,8 +2,8 @@ import { motion } from "framer-motion";
 import { Github, Linkedin, Mail, Phone } from "lucide-react";
 import { TypeAnimation } from "react-type-animation";
 import reactLogo from "../assets/react.svg";
-import CertificationCard from "../components/CertificationCarousel";
-import { ContactIcon } from "../components/ContactIcon";
+// import CertificationCard from "../components/CertificationCarouse";
+import ContactIcon from "../components/ContactIcon";
 
 function HomePage() {
   return (
@@ -18,7 +18,7 @@ function HomePage() {
             transition={{ duration: 0.5 }}
           >
             <h1 className="text-4xl font-bold text-primary">Hi 👋</h1>
-            <h2 className="mt-2 text-3xl font-semibold text-secondary">
+            <h2 className="mt-2 text-3xl font-semibold">
               I'm Yohanes Christian Devano
             </h2>
             <TypeAnimation
@@ -35,7 +35,7 @@ function HomePage() {
               wrapper="span"
               speed={50}
               repeat={Infinity}
-              className="mt-4 block text-accent text-xl font-semibold md:text-2xl"
+              className="mt-4 block text-accent text-xl font-semibold md:text-2xl dark:text-white text-black"
             />
           </motion.div>
 
@@ -120,7 +120,7 @@ function HomePage() {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5 }}
-          className="text-left text-secondary"
+          className="text-left"
         >
           <p className="text-lg font-semibold">
             I am a{" "}

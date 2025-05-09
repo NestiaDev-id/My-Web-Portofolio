@@ -1,6 +1,11 @@
 import { motion } from "framer-motion";
 
-export const ContactIcon = ({ href, icon }) => (
+interface ContactIconProps {
+  href: string;
+  icon: React.ReactNode;
+}
+
+const ContactIcon = ({ href, icon }: ContactIconProps) => (
   <motion.a
     href={href}
     target="_blank"
@@ -12,3 +17,5 @@ export const ContactIcon = ({ href, icon }) => (
     {icon}
   </motion.a>
 );
+
+export default ContactIcon;

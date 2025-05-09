@@ -7,7 +7,7 @@ const BlogPage = () => {
   const [copied, setCopied] = useState(false);
 
   // Fungsi untuk menyalin teks
-  const handleCopy = (text) => {
+  const handleCopy = (text: string): void => {
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);

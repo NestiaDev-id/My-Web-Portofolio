@@ -1,9 +1,9 @@
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination } from "swiper/modules";
 import { motion } from "framer-motion";
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
+// import "swiper/css";
+// import "swiper/css/navigation";
+// import "swiper/css/pagination";
 
 const certifications = [
   {

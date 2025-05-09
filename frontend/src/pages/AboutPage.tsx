@@ -40,7 +40,7 @@ interface ExperienceData {
 // Tipe untuk teknologi
 interface TechStack {
   name: string;
-  icon: JSX.Element;
+  icon: React.ReactNode;
   color: string;
 }
 

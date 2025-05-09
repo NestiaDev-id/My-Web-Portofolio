@@ -9,7 +9,5 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "jsx": "react" // required for react
-    
   }
 }

@@ -18,8 +18,6 @@ interface News {
   url: string;
 }
 
-const content = import.meta.env.VITE_GROQ_CONTENT;
-
 // Inisialisasi Grog SDK
 const grog = new Grog({
   apiKey: import.meta.env.VITE_GROQ_API_KEY as string,

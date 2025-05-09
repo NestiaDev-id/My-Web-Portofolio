@@ -6,14 +6,14 @@ import {
   VerticalTimelineElement,
 } from "react-vertical-timeline-component";
 import "react-vertical-timeline-component/style.min.css";
-import {
-  Brain,
-  Code2,
-  ServerCog,
-  Users,
-  Lightbulb,
-  BarChart4,
-} from "lucide-react";
+// import {
+//   Brain,
+//   Code2,
+//   ServerCog,
+//   Users,
+//   Lightbulb,
+//   BarChart4,
+// } from "lucide-react";
 import {
   FaPython,
   FaFigma,
@@ -241,7 +241,7 @@ const ExperienceCard: React.FC<{ experience: ExperienceData }> = ({
 const AboutPage: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const navigate = useNavigate();
-  const [userData, setUserData] = useState<UserData | null>(null);
+  const [, setUserData] = useState<UserData | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {

@@ -120,3 +120,18 @@
   }
 }
 
+@layer utilities {
+  .timeline-item::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 18px; /* sesuaikan dengan posisi default timeline */
+    width: 4px;
+    height: 100%;
+    background-color: black;
+  }
+
+  .dark .timeline-item::before {
+    background-color: white;
+  }
+}

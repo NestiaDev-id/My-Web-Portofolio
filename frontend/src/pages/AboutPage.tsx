@@ -48,6 +48,7 @@ import {
   SiPostman,
   SiPowers,
   SiGooglecloud,
+  SiLangchain,
 } from "react-icons/si";
 
 import { Badge } from "@/components/ui/badge";
@@ -120,6 +121,7 @@ const techStack = [
   // Pembelajaran Mesin dan Analisis Data
   { name: "TensorFlow", icon: <SiTensorflow />, color: "text-orange-400" },
   { name: "PyTorch", icon: <SiPytorch />, color: "text-red-500" },
+  { name: "LangChain", icon: <SiLangchain />, color: "text-purple-500" },
   { name: "Hugging Face", icon: <SiHuggingface />, color: "text-yellow-500" },
 ];
 

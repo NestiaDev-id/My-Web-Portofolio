@@ -145,11 +145,11 @@ const ChatApp = () => {
   };
 
   return (
-    <section className="min-h-screen pt-20 bg-gray-900 text-white flex flex-col items-center px-4">
+    <section className="min-h-screen pt-20 dark:text-white flex flex-col items-center px-4">
       <h1 className="text-2xl sm:text-3xl font-bold mt-4 text-center">
         Ask anything
       </h1>
-      <p className="text-gray-400 text-sm sm:text-base text-center">
+      <p className="dark:text-gray-400 text-sm sm:text-base text-center">
         Kamu bisa menanyakan apa saja soal diriku...
       </p>
 
@@ -177,7 +177,7 @@ const ChatApp = () => {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Dropdown Settings */}
+          {/* Settings */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -331,9 +331,9 @@ const ChatApp = () => {
                 alt="Avatar"
                 className="w-8 h-8 rounded-full"
               />
-              <div className="flex flex-col max-w">
-                <div className="flex items-center space-x-2 text-sm">
-                  <span className="font-semibold">{msg.sender}</span>
+              <div className="flex flex-col max-w ">
+                <div className="flex items-center space-x-2 text-sm ">
+                  <span className="text-gray-300">{msg.sender}</span>
                   <span className="text-xs text-gray-400">{msg.time}</span>
                 </div>
                 <div
@@ -380,12 +380,12 @@ const ChatApp = () => {
         </div>
 
         <div className="flex items-center bg-gray-700 rounded-lg mt-2">
-          <button className="p-2 rounded-l-lg bg-gray-600">
-            <Plus className="size-6" />
+          <button className="p-2 rounded-l-lg hover:bg-gray-600 outline-white">
+            <Plus className="size-6 text-white" />
           </button>
           <input
             type="text"
-            className="w-full p-2 bg-transparent outline-none text-sm"
+            className="w-full p-2 bg-transparent outline-none text-sm text-white"
             placeholder="Adakah yang ingin ditanyakan?"
             value={input}
             onChange={(e) => setInput(e.target.value)}

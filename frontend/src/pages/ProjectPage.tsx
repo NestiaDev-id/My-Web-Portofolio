@@ -7,84 +7,105 @@ import ScrollToTop from "../components/ScrollToTop";
 
 const projects = [
   {
-    title: "Pancarima",
-    category: "Website",
+    title: "Forecasting with Holt-Winter and Genetic Algorithm",
+    category: "Data Science", // Data Science (Machine Learning + Data Analysis)
     description:
-      "Pancarima adalah sebuah website yang memberikan informasi terkait tempat wisata yang ada di Indonesia. Dibuat pada saat kegiatan lomba Sagasitas Februari 2024.",
+      "A forecasting model that utilizes the Holt-Winter method, optimized using Genetic Algorithms, to predict time series data with improved accuracy.",
     image: "https://picsum.photos/400/300?random=1",
-    status: "Production",
-    github: "#",
-    demo: "#",
-  },
-  {
-    title: "Kasir Festo",
-    category: "Website",
-    description:
-      "Kasir Festo merupakan sebuah platform kasir sederhana yang dibuat karena tugas dari sekolah saya.",
-    image: "https://picsum.photos/400/300?random=2",
-    status: "Production",
-    github: "#",
-    demo: "#",
-  },
-  {
-    title: "Zabod",
-    category: "Website",
-    description:
-      "Zabod merupakan sebuah platform toko online keyboard yang memungkinkan pembeli untuk kostumisasi keyboard sesuai keinginan.",
-    image: "https://picsum.photos/400/300?random=3",
-    status: "Development",
-    github: "#",
-    demo: "#",
-  },
-  {
-    title: "Analisis Penjualan",
-    category: "Data Analysis",
-    description:
-      "Analisis data penjualan menggunakan Python dan Pandas untuk mendapatkan insight dari data transaksi.",
-    image: "https://picsum.photos/400/300?random=4",
     status: "Completed",
-    github: "#",
+    github:
+      "https://github.com/NestiaDev-id/Optimization-Holt-winter-using-Genetic-algorithm",
+    demo: "https://passager-ga-hw.vercel.app/",
+  },
+  {
+    title: "Wakul - Food & Ride Sharing App",
+    category: "Mobile Development", // Mobile App (Flutter)
+    description:
+      "A Dart/Flutter-based mobile app combining food ordering and ride-sharing features. Users can order food/drinks and schedule delivery while using Google Maps for location tracking.",
+    image: "https://picsum.photos/400/300?random=2",
+    status: "Completed",
+    github: "https://github.com/NestiaDev-id/Wakul",
     demo: "#",
   },
   {
-    title: "Prediksi Harga Saham",
-    category: "Machine Learning",
+    title: "Movie Recommendation System",
+    category: "Data Science", // Machine Learning + Data Analysis
     description:
-      "Model machine learning untuk memprediksi harga saham berdasarkan data historis menggunakan LSTM.",
-    image: "https://picsum.photos/400/300?random=5",
+      "A machine learning-based movie recommendation system utilizing collaborative filtering. Integrated with a ViteJS frontend, this system provides personalized recommendations to users.",
+    image: "https://picsum.photos/400/300?random=3",
     status: "Ongoing",
     github: "#",
     demo: "#",
   },
   {
-    title: "Sistem Rekomendasi Film",
-    category: "Machine Learning",
-    description:
-      "Menggunakan algoritma collaborative filtering untuk merekomendasikan film berdasarkan preferensi pengguna.",
-    image: "https://picsum.photos/400/300?random=6",
-    status: "Completed",
-    github: "#",
-    demo: "#",
-  },
-  {
     title: "Chatbot AI",
-    category: "Artificial Intelligence",
+    category: "Data Science", // AI + Machine Learning
     description:
-      "Chatbot berbasis NLP yang dapat memahami dan merespons percakapan pengguna secara natural.",
-    image: "https://picsum.photos/400/300?random=7",
+      "A natural language processing (NLP)-based chatbot designed to engage in meaningful conversations with users, providing intelligent responses and improving interaction.",
+    image: "https://picsum.photos/400/300?random=4",
     status: "Development",
     github: "#",
     demo: "#",
   },
   {
-    title: "Face Recognition System",
-    category: "Computer Vision",
+    title: "Authentication System",
+    category: "Website Development", // Web Security
     description:
-      "Sistem pengenalan wajah menggunakan OpenCV dan deep learning untuk identifikasi pengguna.",
-    image: "https://picsum.photos/400/300?random=8",
+      "A robust authentication system providing security features such as CSRF, token-based authentication, refresh tokens, rate limiting, sliding sessions, IP blocking, and Argon2 encryption.",
+    image: "https://picsum.photos/400/300?random=5",
     status: "Completed",
-    github: "#",
+    github: "https://github.com/NestiaDev-id/Auth-Defense-System",
     demo: "#",
+  },
+  {
+    title: "Smart CCTV for Vehicle Detection",
+    category: "Data Science", // AI/Computer Vision + ML
+    description:
+      "A smart CCTV system for vehicle detection using YOLO, CNN, and LSTM algorithms, optimized with genetic algorithms to improve accuracy in real-time monitoring.",
+    image: "https://picsum.photos/400/300?random=6",
+    status: "Development",
+    github: "https://github.com/NestiaDev-id/Smart-CCTV",
+    demo: "#",
+  },
+  {
+    title: "Kasir System (Point-of-Sale)",
+    category: "Website Development", // Web Application
+    description:
+      "A point-of-sale (POS) system designed for retail businesses with two user roles: customers and cashiers. It allows seamless transaction handling and product management.",
+    image: "https://picsum.photos/400/300?random=7",
+    status: "Production",
+    github: "https://scapa.vercel.app/",
+    demo: "#",
+  },
+  {
+    title: "Weather Forecasting & Rain Prediction in Indonesia",
+    category: "Data Science", // Machine Learning + Data Analysis
+    description:
+      "A machine learning model designed to forecast weather conditions and predict rainfall in Indonesia. The system will be integrated into a website for easy access by users.",
+    image: "https://picsum.photos/400/300?random=8",
+    status: "Ongoing",
+    github: "https://github.com/NestiaDev-id/Map-Weathers",
+    demo: "#",
+  },
+  {
+    title: "ChatMessage MultiUser",
+    category: "Website Development", // Web Application
+    description:
+      "A messaging platform with multi-user support, similar to traditional chat apps, allowing users to communicate in real-time in a secure environment.",
+    image: "https://picsum.photos/400/300?random=9",
+    status: "Completed",
+    github: "https://github.com/NestiaDev-id/ChatApp",
+    demo: "#",
+  },
+  {
+    title: "Bible",
+    category: "Website Development", // Web Application
+    description:
+      "A comprehensive online platform providing the complete Bible in various formats, allowing users to access scriptures easily and engage with spiritual content.",
+    image: "https://picsum.photos/400/300?random=10",
+    status: "Completed",
+    github: "https://github.com/NestiaDev-id/Kitabku-Api",
+    demo: "https://kitabku-api.vercel.app/",
   },
 ];
 
@@ -101,7 +122,12 @@ export default function ProjectPage() {
 
       {/* Filter Buttons */}
       <div className="flex justify-center space-x-4 mb-8">
-        {["All", "Website", "Data Analysis"].map((category) => (
+        {[
+          "All",
+          "Website Development",
+          "Data Science",
+          "Mobile Development",
+        ].map((category) => (
           <button
             key={category}
             onClick={() => setFilter(category)}

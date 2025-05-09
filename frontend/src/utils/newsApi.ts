@@ -75,9 +75,9 @@ export const fetchLatestNews = async (query: string): Promise<News[]> => {
   await Promise.all(
     newsApis.map(async ({ name, url, extract }) => {
       try {
-        console.log(`📡 Fetching data from: ${name}`); // 🔹 Log API yang sedang diambil
+        // console.log(`📡 Fetching data from: ${name}`); // 🔹 Log API yang sedang diambil
         const response = await axios.get(url(query));
-        console.log(`✅ Success fetching from: ${name}`, response.data); // 🔹 Log response data
+        // console.log(`✅ Success fetching from: ${name}`, response.data); // 🔹 Log response data
 
         if (response.data) {
           let extractedNews = extract(response.data);
@@ -92,7 +92,8 @@ export const fetchLatestNews = async (query: string): Promise<News[]> => {
           allNews.push(...extractedNews);
         }
       } catch (error: any) {
-        console.warn(`⚠️ Gagal mengambil berita dari ${name}:`, error.message);
+        // console.warn(`⚠️ Gagal mengambil berita dari ${name}:`, error.message);
+        throw new Error(error.message); // 🔹 Rethrow error;
       }
     })
   );
@@ -105,17 +106,17 @@ export const fetchLatestNews = async (query: string): Promise<News[]> => {
       index === self.findIndex((n) => n.title === news.title)
   );
 
-  console.log("✅ Total unique news after filtering:", uniqueNews.length);
+  // console.log("✅ Total unique news after filtering:", uniqueNews.length);
 
   // 🔹 Acak urutan berita agar lebih variatif
   const shuffledNews = uniqueNews.sort(() => Math.random() - 0.5);
-  console.log("🎲 Shuffled news order");
+  // console.log("🎲 Shuffled news order");
 
   // 🔹 Log total berita setelah semua proses selesai
-  console.log(`📊 Total berita akhir yang tersedia: ${shuffledNews.length}`);
+  // console.log(`📊 Total berita akhir yang tersedia: ${shuffledNews.length}`);
 
   // 🔹 Log isi berita dalam bentuk array objek
-  console.log("📜 Daftar berita akhir:", shuffledNews);
+  // console.log("📜 Daftar berita akhir:", shuffledNews);
 
   return shuffledNews;
 };

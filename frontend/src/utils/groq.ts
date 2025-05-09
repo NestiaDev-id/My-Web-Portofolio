@@ -94,7 +94,7 @@ export const requestToAi = async (
 
     // Terjemahkan respons ke bahasa Indonesia
     const translatedContent = await translateToIndonesian(
-      reply.choices[0].message.content
+      reply.choices[0].message.content ?? ""
     );
     reply.choices[0].message.content =
       translatedContent || reply.choices[0].message.content;

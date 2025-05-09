@@ -212,6 +212,7 @@ const ChatApp = () => {
                     <SelectItem value="meta-llama/llama-4-scout-17b-16e-instruct">
                       LLaMA 4 Scout 17B
                     </SelectItem>
+                    <SelectItem value="allam-2-7b">Allam 2 7B</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

@@ -1,0 +1,6 @@
+{
+  "devDependencies": {
+    "@types/react-syntax-highlighter": "^15.5.13",
+    "@types/react-vertical-timeline-component": "^3.3.6"
+  }
+}

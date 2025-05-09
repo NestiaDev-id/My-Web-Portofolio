@@ -1,17 +1,30 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { BookOpen, Clipboard, CheckCircle, X, Menu } from "lucide-react";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { dracula } from "react-syntax-highlighter/dist/cjs/styles/hljs";
+import { Clipboard, CheckCircle, X, Menu } from "lucide-react";
 import ScrollToTop from "../components/ScrollToTop";
+// import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+// import { dracula } from "react-syntax-highlighter/dist/cjs/styles/hljs";
 
-const DetailProject = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [notebookContent, setNotebookContent] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [titles, setTitles] = useState([]); // Daftar judul untuk sidebar
-  const [copiedIndex, setCopiedIndex] = useState(null); // State untuk copy per block
+// Define types for notebook content and titles
+type NotebookContent = {
+  id: string;
+  type: "markdown" | "code";
+  content: string;
+};
+
+type Title = {
+  text: string;
+  id: string;
+  level: "h1" | "h2" | "h3";
+};
+
+const DetailProject: React.FC = () => {
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
+  const [notebookContent, setNotebookContent] = useState<NotebookContent[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [titles, setTitles] = useState<Title[]>([]); // Sidebar titles
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null); // Index of copied code block
 
   useEffect(() => {
     const fetchNotebook = async () => {
@@ -21,35 +34,36 @@ const DetailProject = () => {
         );
 
         if (!response.ok) {
-          throw new Error("Gagal mengambil data dari GitHub");
+          throw new Error("Failed to fetch data from GitHub");
         }
 
         const data = await response.json();
         const cells = data.cells;
 
-        let extractedTitles = []; // Simpan judul untuk sidebar
-        let processedContent = [];
+        const extractedTitles: Title[] = [];
+        const processedContent: NotebookContent[] = [];
 
-        cells.forEach((cell, index) => {
+        cells.forEach((cell: any, index: number) => {
           if (cell.cell_type === "markdown") {
             const markdownContent = cell.source.join("\n").trim();
-            markdownContent.split("\n").forEach((line, i) => {
+            markdownContent.split("\n").forEach((line: string, i: number) => {
               if (
                 line.startsWith("# ") ||
                 line.startsWith("## ") ||
                 line.startsWith("### ")
               ) {
-                const level = line.startsWith("# ")
+                const level: "h1" | "h2" | "h3" = line.startsWith("# ")
                   ? "h1"
                   : line.startsWith("## ")
                   ? "h2"
                   : "h3";
-                const id = `title-${index}-${i}`;
-                extractedTitles.push({
+                const id: string = `title-${index}-${i}`;
+                const title: Title = {
                   text: line.replace(/^#+ /, ""),
                   id,
                   level,
-                });
+                };
+                extractedTitles.push(title);
               }
             });
 
@@ -69,8 +83,8 @@ const DetailProject = () => {
 
         setNotebookContent(processedContent);
         setTitles(extractedTitles);
-      } catch (error) {
-        setError(error.message);
+      } catch (error: any) {
+        setError(error.message || "An unknown error occurred");
       } finally {
         setLoading(false);
       }
@@ -79,14 +93,13 @@ const DetailProject = () => {
     fetchNotebook();
   }, []);
 
-  const handleCopy = (text, index) => {
+  const handleCopy = (text: string, index: number) => {
     navigator.clipboard.writeText(text);
     setCopiedIndex(index);
     setTimeout(() => setCopiedIndex(null), 2000);
   };
 
-  // Fungsi scroll ke bagian yang diklik
-  const scrollToTitle = (id) => {
+  const scrollToTitle = (id: string) => {
     const element = document.getElementById(id);
     if (element) {
       element.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -95,7 +108,7 @@ const DetailProject = () => {
 
   return (
     <div className="flex min-h-screen mt-16 p-4 bg-gray-900 text-gray-200">
-      {/* Tombol Open Sidebar untuk Mobile */}
+      {/* Mobile Sidebar Toggle Button */}
       <button
         className="lg:hidden fixed top-4 left-4 z-50 bg-gray-800 p-2 rounded-lg"
         onClick={() => setSidebarOpen(true)}
@@ -103,7 +116,7 @@ const DetailProject = () => {
         <Menu size={24} className="text-white" />
       </button>
 
-      {/* Overlay untuk mode mobile */}
+      {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black opacity-50 z-40 lg:hidden"
@@ -140,12 +153,12 @@ const DetailProject = () => {
 
       {/* Main Content */}
       <main className="flex-1 max-w-4xl mx-auto overflow-x-auto">
-        {loading && <p className="text-gray-400 mt-4">Memuat data...</p>}
+        {loading && <p className="text-gray-400 mt-4">Loading data...</p>}
         {error && <p className="text-red-400 mt-4">{error}</p>}
 
         <div className="mt-6 bg-gray-800 p-4 rounded-lg">
           {notebookContent.map((item, index) => (
-            <div key={index} id={item.id} className="mt-6">
+            <div key={item.id} id={item.id} className="mt-6">
               {item.type === "markdown" ? (
                 <div className="text-gray-300">
                   {item.content.split("\n").map((line, i) => {
@@ -187,13 +200,13 @@ const DetailProject = () => {
                       <Clipboard size={18} />
                     )}
                   </button>
-                  <SyntaxHighlighter
+                  {/* <SyntaxHighlighter
                     language="python"
                     style={dracula}
                     className="text-sm"
                   >
                     {item.content}
-                  </SyntaxHighlighter>
+                  </SyntaxHighlighter> */}
                 </div>
               )}
             </div>
@@ -201,7 +214,7 @@ const DetailProject = () => {
         </div>
       </main>
 
-      {/* Right Sidebar - Daftar Judul */}
+      {/* Right Sidebar - Table of Contents */}
       <aside className="hidden lg:block w-64 bg-gray-800 p-6 fixed right-0 top-16 bottom-0 overflow-y-auto">
         <h2 className="text-lg font-bold mb-4">Daftar Isi</h2>
         <ul className="space-y-2">

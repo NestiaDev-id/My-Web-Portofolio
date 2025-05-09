@@ -2,7 +2,6 @@ import { motion } from "framer-motion";
 import { Github, Linkedin, Mail, Phone } from "lucide-react";
 import { TypeAnimation } from "react-type-animation";
 import reactLogo from "../assets/react.svg";
-// import CertificationCard from "../components/CertificationCarouse";
 import ContactIcon from "../components/ContactIcon";
 
 function HomePage() {
@@ -35,7 +34,7 @@ function HomePage() {
               wrapper="span"
               speed={50}
               repeat={Infinity}
-              className="mt-4 block text-accent text-xl font-semibold md:text-2xl dark:text-white text-black"
+              className="mt-4 block text-xl font-semibold md:text-2xl dark:text-white text-black"
             />
           </motion.div>
 

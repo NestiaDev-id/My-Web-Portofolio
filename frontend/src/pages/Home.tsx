@@ -111,9 +111,7 @@ function HomePage() {
           transition={{ duration: 0.5 }}
           className="flex justify-start"
         >
-          <span className="text-4xl md:text-5xl font-bold text-accent">
-            &ldquo;
-          </span>
+          <span className="text-4xl md:text-5xl font-bold">&ldquo;</span>
         </motion.div>
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
@@ -122,16 +120,16 @@ function HomePage() {
           className="text-left"
         >
           <p className="text-lg font-semibold">
-            I am a{" "}
-            <span className="text-accent font-bold">
-              lorem ipsum dolor sit amet
-            </span>{" "}
-            and <span className="text-accent font-bold">lorem ipsum</span>{" "}
-            enthusiast with a passion for{" "}
-            <span className="text-accent font-bold">lorem ipsum</span>.
+            <span className="dark:text-white  font-bold">
+              Jack of all trades, master of none
+            </span>
+            , but often better than master of one.
           </p>
           <p className="text-lg font-semibold mt-6">
-            -- <span className="text-accent font-bold">Unknown</span>
+            --{" "}
+            <span className="dark:text-white  font-bold">
+              William Shakespeare
+            </span>
           </p>
         </motion.div>
         <motion.div
@@ -140,9 +138,7 @@ function HomePage() {
           transition={{ duration: 0.5 }}
           className="flex justify-end xl:mt-6 sm:mt-2"
         >
-          <span className="text-4xl md:text-5xl font-bold text-accent">
-            &rdquo;
-          </span>
+          <span className="text-4xl md:text-5xl font-bold t">&rdquo;</span>
         </motion.div>
       </section>
 

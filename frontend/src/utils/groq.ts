@@ -78,7 +78,7 @@ export const requestToAi = async (
       model: option.model,
       temperature: option.temperature,
       top_p: option.top_p,
-      maxTokens: option.maxTokens,
+      max_tokens: option.maxTokens,
       seed: option.seed,
     });
 

@@ -70,7 +70,7 @@ const summarizeText = (text: string, maxLength = 150): string => {
 // 🔹 Fungsi untuk mengambil berita dari semua API berdasarkan query
 export const fetchLatestNews = async (query: string): Promise<News[]> => {
   console.log("🔍 Mencari berita dengan query:", query); // 🔹 Log query yang digunakan
-  let allNews: News[] = [];
+  const allNews: News[] = [];
 
   await Promise.all(
     newsApis.map(async ({ name, url, extract }) => {
@@ -83,7 +83,7 @@ export const fetchLatestNews = async (query: string): Promise<News[]> => {
           let extractedNews = extract(response.data);
           extractedNews = extractedNews.map((news) => ({
             ...news,
-            summary: summarizeText(news.description || news.content),
+            summary: summarizeText(news.description),
           }));
 
           console.log(

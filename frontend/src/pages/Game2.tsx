@@ -1,23 +1,13 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import backgroundImage from "../assets/img/Pellet Town.png";
 import playerDownImage from "../assets/img/playerDown.png";
 
 const Game: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  const [keys, setKeys] = useState({
-    w: false,
-    a: false,
-    s: false,
-    d: false,
-  });
-
-  const [lastKey, setLastKey] = useState("");
-
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
-
     if (!canvas || !ctx) return;
 
     canvas.width = 1024;
@@ -30,16 +20,36 @@ const Game: React.FC = () => {
     player.src = playerDownImage;
 
     const backgroundPosition = { x: -500, y: -400 };
-
     const speed = 3;
 
+    const keysPressed: Record<string, boolean> = {
+      w: false,
+      a: false,
+      s: false,
+      d: false,
+    };
+    let lastKeyPressed = "";
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (["w", "a", "s", "d"].includes(e.key)) {
+        keysPressed[e.key] = true;
+        lastKeyPressed = e.key;
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (["w", "a", "s", "d"].includes(e.key)) {
+        keysPressed[e.key] = false;
+      }
+    };
+
     const draw = () => {
+      if (!background.complete || !player.complete) return;
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Gambar background
       ctx.drawImage(background, backgroundPosition.x, backgroundPosition.y);
 
-      // Gambar player di tengah
       const playerWidth = 48;
       const playerHeight = 68;
       ctx.drawImage(
@@ -56,38 +66,38 @@ const Game: React.FC = () => {
     };
 
     const update = () => {
-      if (keys.w && lastKey === "w") backgroundPosition.y += speed;
-      if (keys.a && lastKey === "a") backgroundPosition.x += speed;
-      if (keys.s && lastKey === "s") backgroundPosition.y -= speed;
-      if (keys.d && lastKey === "d") backgroundPosition.x -= speed;
+      if (keysPressed.w && lastKeyPressed === "w")
+        backgroundPosition.y += speed;
+      if (keysPressed.a && lastKeyPressed === "a")
+        backgroundPosition.x += speed;
+      if (keysPressed.s && lastKeyPressed === "s")
+        backgroundPosition.y -= speed;
+      if (keysPressed.d && lastKeyPressed === "d")
+        backgroundPosition.x -= speed;
 
       draw();
       requestAnimationFrame(update);
     };
 
-    update();
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (["w", "a", "s", "d"].includes(e.key)) {
-        setKeys((prev) => ({ ...prev, [e.key]: true }));
-        setLastKey(e.key);
-      }
-    };
-
-    const handleKeyUp = (e: KeyboardEvent) => {
-      if (["w", "a", "s", "d"].includes(e.key)) {
-        setKeys((prev) => ({ ...prev, [e.key]: false }));
-      }
-    };
-
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
+
+    // Mulai game loop hanya setelah gambar dimuat
+    const startGame = () => {
+      if (background.complete && player.complete) {
+        requestAnimationFrame(update);
+      } else {
+        setTimeout(startGame, 100); // tunggu gambar selesai
+      }
+    };
+
+    startGame();
 
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [keys, lastKey]);
+  }, []);
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-black">

@@ -6,6 +6,9 @@ import playerLeftImage from "../assets/img/playerLeft.png";
 import playerRightImage from "../assets/img/playerRight.png";
 import backgroundImage from "../assets/img/Pellet Town.png";
 import collisions from "@/assets/data/collisions";
+import villagerImage from "@/assets/img/villager/Idle.png";
+import oldManImage from "@/assets/img/oldMan/Idle.png";
+
 import { Boundary } from "./Boundary";
 
 const Game: React.FC = () => {
@@ -27,6 +30,12 @@ const Game: React.FC = () => {
 
     const background = new Image();
     background.src = backgroundImage;
+
+    const villager = new Image();
+    villager.src = villagerImage;
+
+    const oldMan = new Image();
+    oldMan.src = oldManImage;
 
     const playerDown = new Image();
     playerDown.src = playerDownImage;
@@ -76,12 +85,51 @@ const Game: React.FC = () => {
       },
       image: playerDown,
       frames: { max: 4, hold: 10 },
-      animate: false,
+      animate: true,
       sprites: {
         up: playerUp,
         down: playerDown,
         left: playerLeft,
         right: playerRight,
+      },
+    });
+
+    const offset = {
+      x: -735,
+      y: -650,
+    };
+
+    const npc1 = new Sprite({
+      position: {
+        x: canvas.width / 2 - 24,
+        y: canvas.height / 2 - 90,
+      },
+      image: villager,
+      frames: { max: 4, hold: 10 },
+      animate: true,
+      scale: 3,
+      sprites: {
+        // up: playerUp,
+        // down: playerDown,
+        // left: playerLeft,
+        // right: playerRight,
+      },
+    });
+
+    const npc2 = new Sprite({
+      position: {
+        x: canvas.width / 2 - 24,
+        y: canvas.height / 2 + 30,
+      },
+      image: oldMan,
+      frames: { max: 4, hold: 10 },
+      animate: true,
+      scale: 3,
+      sprites: {
+        // up: playerUp,
+        // down: playerDown,
+        // left: playerLeft,
+        // right: playerRight,
       },
     });
 
@@ -91,6 +139,9 @@ const Game: React.FC = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       ctx.drawImage(background, backgroundPosition.x, backgroundPosition.y);
+
+      npc1.draw(ctx);
+      npc2.draw(ctx);
 
       player.draw(ctx);
     };

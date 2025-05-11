@@ -4,7 +4,7 @@ import AboutPage from "./pages/AboutPage";
 import ChatMe from "./pages/ChatMe";
 import Navbar from "./components/Navbar";
 import ProjectPage from "./pages/ProjectPage";
-import Game from "./pages/Game";
+import Game from "./pages/Game2";
 
 function App() {
   return (

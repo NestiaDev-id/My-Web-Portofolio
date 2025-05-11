@@ -10,6 +10,12 @@ import { Boundary } from "./Boundary";
 
 const Game: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const keys = useRef<Record<string, boolean>>({
+    w: false,
+    a: false,
+    s: false,
+    d: false,
+  });
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -34,12 +40,6 @@ const Game: React.FC = () => {
     const playerRight = new Image();
     playerRight.src = playerRightImage;
 
-    const keys: Record<string, boolean> = {
-      w: false,
-      a: false,
-      s: false,
-      d: false,
-    };
     let lastKey = "s";
 
     const backgroundPosition = { x: -500, y: -400 };
@@ -120,7 +120,7 @@ const Game: React.FC = () => {
           rect1.position.y + rect1.height > rect2.position.y
         );
       }
-      if (keys.w) {
+      if (keys.current.w) {
         player.image = player.sprites?.up || player.image; // Menentukan sprite pemain untuk bergerak ke atas
         player.animate = true; // Memulai animasi pemain
         lastKey = "w"; // Menyimpan tombol terakhir yang ditekan
@@ -151,7 +151,7 @@ const Game: React.FC = () => {
         }
         // Jika tidak ada tabrakan, maka background bergerak ke bawah (seolah-olah pemain bergerak ke atas)
         if (canMove) backgroundPosition.y += speed;
-      } else if (keys.a) {
+      } else if (keys.current.a) {
         player.image = player.sprites?.left || player.image; // Menentukan sprite pemain untuk bergerak ke kiri
         player.animate = true; // Memulai animasi pemain
         lastKey = "a"; // Menyimpan tombol terakhir yang ditekan
@@ -187,7 +187,7 @@ const Game: React.FC = () => {
         if (canMove) backgroundPosition.x += speed;
       }
       // Mengecek apakah tombol 'S' ditekan (bergerak ke bawah)
-      else if (keys.s) {
+      else if (keys.current.s) {
         player.image = player.sprites?.down || player.image; // Menentukan sprite pemain untuk bergerak ke bawah
         player.animate = true; // Memulai animasi pemain
         lastKey = "s"; // Menyimpan tombol terakhir yang ditekan
@@ -223,7 +223,7 @@ const Game: React.FC = () => {
         if (canMove) backgroundPosition.y -= speed;
       }
       // Mengecek apakah tombol 'D' ditekan (bergerak ke kanan)
-      else if (keys.d) {
+      else if (keys.current.d) {
         player.image = player.sprites?.right || player.image; // Menentukan sprite pemain untuk bergerak ke kanan
         player.animate = true; // Memulai animasi pemain
         lastKey = "d"; // Menyimpan tombol terakhir yang ditekan
@@ -265,13 +265,13 @@ const Game: React.FC = () => {
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (["w", "a", "s", "d"].includes(e.key)) {
-        keys[e.key] = true;
+        keys.current[e.key] = true;
       }
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
       if (["w", "a", "s", "d"].includes(e.key)) {
-        keys[e.key] = false;
+        keys.current[e.key] = false;
       }
     };
 
@@ -296,6 +296,47 @@ const Game: React.FC = () => {
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-black">
+      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col items-center space-y-2 md:hidden">
+        <button
+          className="w-12 h-12 bg-white bg-opacity-20 rounded-full text-white text-xl touch-none"
+          onTouchStart={() => (keys.current.w = true)}
+          onTouchEnd={() => (keys.current.w = false)}
+          onMouseDown={() => (keys.current.w = true)}
+          onMouseUp={() => (keys.current.w = false)}
+        >
+          ↑
+        </button>
+        <div className="flex space-x-2">
+          <button
+            className="w-12 h-12 bg-white bg-opacity-20 rounded-full text-white text-xl touch-none"
+            onTouchStart={() => (keys.current.a = true)}
+            onTouchEnd={() => (keys.current.a = false)}
+            onMouseDown={() => (keys.current.a = true)}
+            onMouseUp={() => (keys.current.a = false)}
+          >
+            ←
+          </button>
+          <button
+            className="w-12 h-12 bg-white bg-opacity-20 rounded-full text-white text-xl touch-none"
+            onTouchStart={() => (keys.current.s = true)}
+            onTouchEnd={() => (keys.current.s = false)}
+            onMouseDown={() => (keys.current.s = true)}
+            onMouseUp={() => (keys.current.s = false)}
+          >
+            ↓
+          </button>
+          <button
+            className="w-12 h-12 bg-white bg-opacity-20 rounded-full text-white text-xl touch-none"
+            onTouchStart={() => (keys.current.d = true)}
+            onTouchEnd={() => (keys.current.d = false)}
+            onMouseDown={() => (keys.current.d = true)}
+            onMouseUp={() => (keys.current.d = false)}
+          >
+            →
+          </button>
+        </div>
+      </div>
+
       <canvas ref={canvasRef} className="border border-white" />
     </div>
   );

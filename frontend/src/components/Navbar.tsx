@@ -49,13 +49,21 @@ const Navbar = () => {
         <BookOpen className="w-4 h-4" />
         <span>Blog</span>
       </Link>
-      <div
+      {/* <div
         className="flex items-center gap-2 px-3 py-2 rounded-lg opacity-50 cursor-not-allowed text-sm"
         title="Segera hadir"
       >
         <Gamepad2 className="w-4 h-4" />
         <span>Games</span>
-      </div>
+      </div> */}
+      <Link
+        to="/game"
+        className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-primary/20 dark:hover:bg-primary/20 transition-all text-sm"
+        onClick={() => setIsOpen(false)}
+      >
+        <Gamepad2 className="w-4 h-4" />
+        <span>Game</span>
+      </Link>
       <DarkModeToggle />
     </>
   );

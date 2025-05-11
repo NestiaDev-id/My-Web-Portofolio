@@ -4,6 +4,7 @@ import AboutPage from "./pages/AboutPage";
 import ChatMe from "./pages/ChatMe";
 import Navbar from "./components/Navbar";
 import ProjectPage from "./pages/ProjectPage";
+import Game from "./pages/Game";
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/chat-me" element={<ChatMe />} />
         <Route path="/projects" element={<ProjectPage />} />
+        <Route path="/game" element={<Game />} />
         <Route
           path="/blog"
           element={

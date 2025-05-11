@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Sprite } from "../classes/classes";
-import { rectangularCollision } from "../utils/utils";
+import {
+  checkForCharacterCollision,
+  rectangularCollision,
+} from "../utils/utils";
 import idleSprite from "../assets/img/villager/Idle.png";
 import backgroundImage from "../assets/img/Pellet Town.png";
 import foregroundImage from "../assets/img/foregroundObjects.png";
@@ -43,13 +46,15 @@ const Game: React.FC = () => {
         image: { src: playerDownImage },
         frames: { max: 4, hold: 10 },
         animate: true,
-        scale: 3,
+        scale: 1,
         sprites: {
           up: createImage(playerUpImage),
           left: createImage(playerLeftImage),
           right: createImage(playerRightImage),
           down: createImage(playerDownImage),
         },
+        // width: 48, // Tambahkan width
+        // height: 48, // Tambahkan height
       });
 
       // Inisialisasi background dan foreground
@@ -68,9 +73,13 @@ const Game: React.FC = () => {
         static width = 48; // Example width, adjust as needed
         static height = 48; // Example height, adjust as needed
         position: { x: number; y: number };
+        width: number;
+        height: number;
 
         constructor({ position }: { position: { x: number; y: number } }) {
           this.position = position;
+          this.width = Boundary.width; // Tambahkan width
+          this.height = Boundary.height; // Tambahkan height
         }
 
         draw(ctx: CanvasRenderingContext2D) {
@@ -78,8 +87,8 @@ const Game: React.FC = () => {
           ctx.fillRect(
             this.position.x,
             this.position.y,
-            Boundary.width,
-            Boundary.height
+            this.width,
+            this.height
           );
         }
       }
@@ -136,6 +145,25 @@ const Game: React.FC = () => {
         if (keys.w.pressed && lastKey === "w") {
           playerSprite.image = playerSprite.sprites?.up || playerSprite.image;
 
+          interface Character {
+            position: { x: number; y: number };
+            width: number;
+            height: number;
+          }
+
+          const characters: Character[] = [
+            {
+              position: { x: 100, y: 100 },
+              width: 50,
+              height: 50,
+            },
+          ]; // Example characters, replace with actual data
+          checkForCharacterCollision({
+            characters,
+            player: playerSprite,
+            characterOffset: { x: 0, y: 3 },
+          });
+
           // Deteksi tabrakan dengan boundaries
           for (let i = 0; i < boundaries.length; i++) {
             const boundary = boundaries[i];
@@ -143,11 +171,12 @@ const Game: React.FC = () => {
               rectangularCollision({
                 rectangle1: playerSprite,
                 rectangle2: {
-                  ...boundary,
                   position: {
                     x: boundary.position.x,
                     y: boundary.position.y + 3,
                   },
+                  width: Boundary.width,
+                  height: Boundary.height,
                 },
               })
             ) {
@@ -170,11 +199,12 @@ const Game: React.FC = () => {
               rectangularCollision({
                 rectangle1: playerSprite,
                 rectangle2: {
-                  ...boundary,
                   position: {
                     x: boundary.position.x + 3,
                     y: boundary.position.y,
                   },
+                  width: Boundary.width,
+                  height: Boundary.height,
                 },
               })
             ) {
@@ -197,11 +227,12 @@ const Game: React.FC = () => {
               rectangularCollision({
                 rectangle1: playerSprite,
                 rectangle2: {
-                  ...boundary,
                   position: {
                     x: boundary.position.x,
                     y: boundary.position.y - 3,
                   },
+                  width: Boundary.width,
+                  height: Boundary.height,
                 },
               })
             ) {
@@ -225,11 +256,12 @@ const Game: React.FC = () => {
               rectangularCollision({
                 rectangle1: playerSprite,
                 rectangle2: {
-                  ...boundary,
                   position: {
                     x: boundary.position.x - 3,
                     y: boundary.position.y,
                   },
+                  width: Boundary.width,
+                  height: Boundary.height,
                 },
               })
             ) {

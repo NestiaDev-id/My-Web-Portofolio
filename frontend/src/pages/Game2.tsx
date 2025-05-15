@@ -92,6 +92,7 @@ class MainScene extends Phaser.Scene {
   private boundaries!: Phaser.Physics.Arcade.StaticGroup;
   private battleZones!: Phaser.Physics.Arcade.StaticGroup;
   private speed: number = 200;
+  private lastKey: string = "down";
   private moving: boolean = false;
   private battleInitiated: boolean = false;
   private dialogueBox!: Phaser.GameObjects.Container;
@@ -477,8 +478,18 @@ class MainScene extends Phaser.Scene {
     }
 
     // Stop animations if not moving
+    // if (!this.moving) {
+    //   this.player.anims.stop();
+    // }
     if (!this.moving) {
-      this.player.anims.stop();
+      switch (this.lastKey) {
+        case "left":
+          this.player.anims.play("idle-left", true);
+          break;
+        case "right":
+          this.player.anims.play("idle-right", true);
+          break;
+      }
     }
   }
 

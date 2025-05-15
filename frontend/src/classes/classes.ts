@@ -218,91 +218,91 @@ class Monster extends Sprite {
 
     recipient.health -= attack.damage;
 
-    // switch (attack.name) {
-    //   case "Fireball":
-    //     audio.initFireball.play();
-    //     const fireballImage = new Image();
-    //     fireballImage.src = "./img/fireball.png";
-    //     const fireball = new Sprite({
-    //       position: {
-    //         x: this.position.x,
-    //         y: this.position.y,
-    //       },
-    //       image: { src: fireballImage.src },
-    //       frames: {
-    //         max: 4,
-    //         hold: 10,
-    //       },
-    //       animate: true,
-    //       rotation,
-    //     });
-    //     renderedSprites.splice(1, 0, fireball);
+    switch (attack.name) {
+      case "Fireball":
+        audio.initFireball.play();
+        const fireballImage = new Image();
+        fireballImage.src = "./img/fireball.png";
+        const fireball = new Sprite({
+          position: {
+            x: this.position.x,
+            y: this.position.y,
+          },
+          image: { src: fireballImage.src },
+          frames: {
+            max: 4,
+            hold: 10,
+          },
+          animate: true,
+          rotation,
+        });
+        renderedSprites.splice(1, 0, fireball);
 
-    //     gsap.to(fireball.position, {
-    //       x: recipient.position.x,
-    //       y: recipient.position.y,
-    //       onComplete: () => {
-    //         audio.fireballHit.play();
-    //         gsap.to(healthBar, {
-    //           width: `${recipient.health}%`,
-    //         });
+        gsap.to(fireball.position, {
+          x: recipient.position.x,
+          y: recipient.position.y,
+          onComplete: () => {
+            audio.fireballHit.play();
+            gsap.to(healthBar, {
+              width: `${recipient.health}%`,
+            });
 
-    //         gsap.to(recipient.position, {
-    //           x: recipient.position.x + 10,
-    //           yoyo: true,
-    //           repeat: 5,
-    //           duration: 0.08,
-    //         });
+            gsap.to(recipient.position, {
+              x: recipient.position.x + 10,
+              yoyo: true,
+              repeat: 5,
+              duration: 0.08,
+            });
 
-    //         gsap.to(recipient, {
-    //           opacity: 0,
-    //           repeat: 5,
-    //           yoyo: true,
-    //           duration: 0.08,
-    //         });
-    //         renderedSprites.splice(1, 1);
-    //       },
-    //     });
+            gsap.to(recipient, {
+              opacity: 0,
+              repeat: 5,
+              yoyo: true,
+              duration: 0.08,
+            });
+            renderedSprites.splice(1, 1);
+          },
+        });
 
-    //     break;
-    //   case "Tackle":
-    //     const tl = gsap.timeline();
+        break;
+      case "Tackle":
+        const tl = gsap.timeline();
 
-    //     let movementDistance = 20;
-    //     if (this.isEnemy) movementDistance = -20;
+        let movementDistance = 20;
+        if (this.isEnemy) movementDistance = -20;
 
-    //     tl.to(this.position, {
-    //       x: this.position.x - movementDistance,
-    //     })
-    //       .to(this.position, {
-    //         x: this.position.x + movementDistance * 2,
-    //         duration: 0.1,
-    //         onComplete: () => {
-    //           audio.tackleHit.play();
-    //           gsap.to(healthBar, {
-    //             width: `${recipient.health}%`,
-    //           });
+        tl.to(this.position, {
+          x: this.position.x - movementDistance,
+        })
+          .to(this.position, {
+            x: this.position.x + movementDistance * 2,
+            duration: 0.1,
+            onComplete: () => {
+              audio.tackleHit.play();
+              gsap.to(healthBar, {
+                width: `${recipient.health}%`,
+              });
 
-    //           gsap.to(recipient.position, {
-    //             x: recipient.position.x + 10,
-    //             yoyo: true,
-    //             repeat: 5,
-    //             duration: 0.08,
-    //           });
+              gsap.to(recipient.position, {
+                x: recipient.position.x + 10,
+                yoyo: true,
+                repeat: 5,
+                duration: 0.08,
+              });
 
-    //           gsap.to(recipient, {
-    //             opacity: 0,
-    //             repeat: 5,
-    //             yoyo: true,
-    //             duration: 0.08,
-    //           });
-    //         },
-    //       })
-    //       .to(this.position, {
-    //         x: this.position.x,
-    //       });
-    //     break;
-    // }
+              gsap.to(recipient, {
+                opacity: 0,
+                repeat: 5,
+                yoyo: true,
+                duration: 0.08,
+              });
+            },
+          })
+          .to(this.position, {
+            x: this.position.x,
+          });
+        break;
+    }
   }
 }
 

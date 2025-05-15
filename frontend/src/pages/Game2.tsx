@@ -92,7 +92,6 @@ class MainScene extends Phaser.Scene {
   private boundaries!: Phaser.Physics.Arcade.StaticGroup;
   private battleZones!: Phaser.Physics.Arcade.StaticGroup;
   private speed: number = 200;
-  private lastKey: string = "down";
   private moving: boolean = false;
   private battleInitiated: boolean = false;
   private dialogueBox!: Phaser.GameObjects.Container;

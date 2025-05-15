@@ -185,6 +185,7 @@ class MainScene extends Phaser.Scene {
 
     // Create animations
     this.createPlayerAnimations();
+    this.createNPCAnimations();
 
     // Setup camera
     this.cameras.main.startFollow(this.player);
@@ -489,6 +490,12 @@ class MainScene extends Phaser.Scene {
         case "right":
           this.player.anims.play("idle-right", true);
           break;
+        case "up":
+          this.player.anims.play("idle-up", true);
+          break;
+        case "down":
+          this.player.anims.play("idle-down", true);
+          break;
       }
     }
   }
@@ -535,6 +542,72 @@ class MainScene extends Phaser.Scene {
         end: 3,
       }),
       frameRate: 10,
+      repeat: -1,
+    });
+  }
+
+  createNPCAnimations() {
+    // Villager animations
+    this.anims.create({
+      key: "villager-down",
+      frames: this.anims.generateFrameNumbers("villager", { start: 0, end: 3 }),
+      frameRate: 5,
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: "villager-left",
+      frames: this.anims.generateFrameNumbers("villager", { start: 4, end: 7 }),
+      frameRate: 5,
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: "villager-right",
+      frames: this.anims.generateFrameNumbers("villager", {
+        start: 8,
+        end: 11,
+      }),
+      frameRate: 5,
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: "villager-up",
+      frames: this.anims.generateFrameNumbers("villager", {
+        start: 12,
+        end: 15,
+      }),
+      frameRate: 5,
+      repeat: -1,
+    });
+
+    // Old Man animations (sama dengan villager, jika strukturnya sama)
+    this.anims.create({
+      key: "oldMan-down",
+      frames: this.anims.generateFrameNumbers("oldMan", { start: 0, end: 3 }),
+      frameRate: 5,
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: "oldMan-left",
+      frames: this.anims.generateFrameNumbers("oldMan", { start: 4, end: 7 }),
+      frameRate: 5,
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: "oldMan-right",
+      frames: this.anims.generateFrameNumbers("oldMan", { start: 8, end: 11 }),
+      frameRate: 5,
+      repeat: -1,
+    });
+
+    this.anims.create({
+      key: "oldMan-up",
+      frames: this.anims.generateFrameNumbers("oldMan", { start: 12, end: 15 }),
+      frameRate: 5,
       repeat: -1,
     });
   }

@@ -131,6 +131,9 @@ class Sprite {
 
     if (this.frames.max > 1) {
       this.frames.elapsed!++;
+    } else if (this.frames.max <= 0) {
+      console.warn("frames.max <= 0, fallback ke 1");
+      this.frames.max = 1;
     }
 
     if (this.frames.elapsed! % this.frames.hold === 0) {

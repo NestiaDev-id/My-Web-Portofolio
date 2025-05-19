@@ -21,3 +21,7 @@ pdfminer.six
 
 # Environment Management
 python-dotenv
+
+langchain
+langchain-google-genai
+pydantic

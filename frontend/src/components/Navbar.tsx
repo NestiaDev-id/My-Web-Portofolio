@@ -5,66 +5,143 @@ import {
   BookOpen,
   Home,
   Gamepad2,
+  Sparkles,
   Menu,
   X,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { DarkModeToggle } from "./DarkModeToggle";
 import { AnimatePresence, motion } from "framer-motion";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
+  const MotionLink = motion(Link);
+
   const navLinks = (
     <>
-      <Link
-        to="/"
-        className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-primary/20 dark:hover:bg-primary/20 transition-all text-sm"
-        onClick={() => setIsOpen(false)}
+      {/* HOME */}
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <MotionLink
+            to="/"
+            whileHover={{ scale: 1.05 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-primary/20 dark:hover:bg-primary/20 transition-all text-sm"
+            onClick={() => setIsOpen(false)}
+          >
+            <Home className="w-4 h-4" />
+            <span>Home</span>
+          </MotionLink>
+        </TooltipTrigger>
+        <TooltipContent side="bottom">Halaman utama</TooltipContent>
+      </Tooltip>
+
+      {/* ABOUT */}
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <MotionLink
+            to="/about"
+            whileHover={{ scale: 1.05 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35 }}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-primary/20 dark:hover:bg-primary/20 transition-all text-sm"
+            onClick={() => setIsOpen(false)}
+          >
+            <User className="w-4 h-4" />
+            <span>About Me</span>
+          </MotionLink>
+        </TooltipTrigger>
+        <TooltipContent side="bottom">Tentang saya</TooltipContent>
+      </Tooltip>
+
+      {/* PROJECTS */}
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <MotionLink
+            to="/projects"
+            whileHover={{ scale: 1.05 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-primary/20 dark:hover:bg-primary/20 transition-all text-sm"
+            onClick={() => setIsOpen(false)}
+          >
+            <FolderKanban className="w-4 h-4" />
+            <span>Projects</span>
+          </MotionLink>
+        </TooltipTrigger>
+        <TooltipContent side="bottom">
+          Proyek-proyek yang pernah saya buat
+        </TooltipContent>
+      </Tooltip>
+
+      {/* BLOG */}
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <MotionLink
+            to="/blog"
+            whileHover={{ scale: 1.05 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45 }}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-primary/20 dark:hover:bg-primary/20 transition-all text-sm"
+            onClick={() => setIsOpen(false)}
+          >
+            <BookOpen className="w-4 h-4" />
+            <span>Blog</span>
+          </MotionLink>
+        </TooltipTrigger>
+        <TooltipContent side="bottom">
+          Catatan dan artikel pribadi
+        </TooltipContent>
+      </Tooltip>
+
+      {/* GAME */}
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <MotionLink
+            to="/game"
+            whileHover={{ scale: 1.05, rotate: 1 }}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-primary/20 transition-all text-sm group relative"
+            onClick={() => setIsOpen(false)}
+          >
+            <Gamepad2 className="w-4 h-4 text-primary group-hover:rotate-12 transition-transform" />
+            <span>Game</span>
+            <Badge
+              variant="outline"
+              className="text-xs ml-1 px-1.5 py-0.5 border-primary text-primary"
+            >
+              Beta
+            </Badge>
+            <Sparkles className="absolute -top-1 -right-1 h-3 w-3 text-yellow-400 animate-ping opacity-60" />
+          </MotionLink>
+        </TooltipTrigger>
+        <TooltipContent side="bottom">
+          Fitur eksperimen: mainkan game kecil langsung di aplikasi!
+        </TooltipContent>
+      </Tooltip>
+
+      {/* DARK MODE TOGGLE */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.55 }}
       >
-        <Home className="w-4 h-4" />
-        <span>Home</span>
-      </Link>
-      <Link
-        to="/about"
-        className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-primary/20 dark:hover:bg-primary/20 transition-all text-sm"
-        onClick={() => setIsOpen(false)}
-      >
-        <User className="w-4 h-4" />
-        <span>About Me</span>
-      </Link>
-      <Link
-        to="/projects"
-        className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-primary/20 dark:hover:bg-primary/20 transition-all text-sm"
-        onClick={() => setIsOpen(false)}
-      >
-        <FolderKanban className="w-4 h-4" />
-        <span>Project</span>
-      </Link>
-      <Link
-        to="/blog"
-        className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-primary/20 dark:hover:bg-primary/20 transition-all text-sm"
-        onClick={() => setIsOpen(false)}
-      >
-        <BookOpen className="w-4 h-4" />
-        <span>Blog</span>
-      </Link>
-      {/* <div
-        className="flex items-center gap-2 px-3 py-2 rounded-lg opacity-50 cursor-not-allowed text-sm"
-        title="Segera hadir"
-      >
-        <Gamepad2 className="w-4 h-4" />
-        <span>Games</span>
-      </div> */}
-      <Link
-        to="/game"
-        className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-primary/20 dark:hover:bg-primary/20 transition-all text-sm"
-        onClick={() => setIsOpen(false)}
-      >
-        <Gamepad2 className="w-4 h-4" />
-        <span>Game</span>
-      </Link>
-      <DarkModeToggle />
+        <DarkModeToggle />
+      </motion.div>
     </>
   );
 

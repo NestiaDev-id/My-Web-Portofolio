@@ -12,3 +12,6 @@ async def generate_text(prompt: PromptRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@router.get("/healthcheck")
+async def healthcheck():
+    return {"status": "ok"}

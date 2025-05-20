@@ -8,7 +8,9 @@ router = APIRouter()
 async def generate_text(prompt: PromptRequest):
     try:
         output = run_gemini_chain(prompt.prompt)
-        return PromptResponse(response=output)
+        if output<1:
+            print("Ada datanya")
+            return PromptResponse(response=output)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

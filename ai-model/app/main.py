@@ -1,9 +1,9 @@
-# ai-model/app/main.py (Tidak perlu diubah, hanya untuk referensi)
 from fastapi import FastAPI
 from app.api.endpoints import router as api_router
 from dotenv import load_dotenv
 
-load_dotenv() # Pastikan dotenv dimuat di awal
+# Load .env untuk pengembangan lokal. Vercel akan menggunakan environment variables-nya sendiri.
+load_dotenv()
 
 app = FastAPI(
     title="AI Model API",
@@ -15,7 +15,6 @@ app.include_router(api_router, prefix="/api")
 
 @app.get("/")
 async def read_root():
-    return {"message": "Selamat datang di AI Model API. Kunjungi /docs untuk dokumentasi API."}
+    return {"message": "Selamat datang di AI Model API. Kunjungi /docs atau /api/docs untuk dokumentasi API."}
 
-# Untuk menjalankan aplikasi (biasanya dari terminal):
-# uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+# Tidak perlu `uvicorn.run(app, ...)` di sini, Vercel akan menanganinya.

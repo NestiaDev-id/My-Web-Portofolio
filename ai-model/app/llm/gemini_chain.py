@@ -12,49 +12,39 @@ if not GEMINI_API_KEY:
 
 genai.configure(api_key=GEMINI_API_KEY)
 
-# Inisialisasi model GenerativeModel
-# Pilih model yang sesuai dengan kebutuhan Anda, misalnya 'gemini-pro' untuk teks
-# Untuk daftar model yang tersedia: https://ai.google.dev/gemini-api/docs/models/generative
-model = genai.GenerativeModel('gemini-1.5-flash-latest') # atau 'gemini-pro'
+
+SYSTEM_INSTRUCTION = "Anda adalah asisten AI dari Nestia Dev. Anda harus merespons seolah-olah Anda adalah Nestia Dev sendiri, dengan pengetahuan dan gaya Nestia Dev. Bersikaplah membantu dan informatif."
+
+
+model = genai.GenerativeModel(
+    model_name='gemini-1.5-flash-latest',
+    system_instruction=SYSTEM_INSTRUCTION  
+)
 
 async def generate_text_with_gemini(prompt_text: str) -> str:
-    """
-    Mengirim prompt ke Gemini API dan mengembalikan teks yang dihasilkan.
-
-    Args:
-        prompt_text: Teks prompt yang akan dikirim ke model.
-
-    Returns:
-        Teks yang dihasilkan oleh model Gemini.
-    """
     try:
-        # Membuat konten untuk dikirim ke model
-        # Untuk kasus penggunaan yang lebih kompleks (misalnya chat), Anda bisa menggunakan start_chat()
-        # response = model.generate_content(prompt_text)
-        
-        # Jika Anda ingin menggunakan versi chat (untuk percakapan multi-turn)
-        chat = model.start_chat(history=[])
+       
+        chat = model.start_chat(history=[]) 
         response = await chat.send_message_async(prompt_text)
         
-        # Pastikan untuk mengakses teks dari respons dengan benar
-        # Terkadang, respons mungkin memiliki beberapa kandidat atau bagian
-        # Periksa dokumentasi Gemini API untuk struktur respons yang tepat
-        # Untuk 'gemini-1.5-flash-latest' dan 'gemini-pro', biasanya 'response.text' sudah cukup
         return response.text
     except Exception as e:
         print(f"Terjadi kesalahan saat memanggil Gemini API: {e}")
-        # Anda mungkin ingin menangani error ini dengan cara yang lebih baik,
-        # misalnya dengan melempar kembali error atau mengembalikan pesan error khusus.
         return f"Error: Tidak dapat menghasilkan teks. {str(e)}"
 
-# Contoh penggunaan (opsional, untuk testing langsung file ini)
 if __name__ == "__main__":
     import asyncio
 
     async def main():
-        test_prompt = "Ceritakan sebuah fakta menarik tentang Indonesia."
-        print(f"Mengirim prompt: {test_prompt}")
-        generated_text = await generate_text_with_gemini(test_prompt)
-        print(f"Respons Gemini: {generated_text}")
+       
+        test_prompt_1 = "Halo! Siapa Anda?"
+        print(f"Mengirim prompt: {test_prompt_1}")
+        generated_text_1 = await generate_text_with_gemini(test_prompt_1)
+        print(f"Respons Gemini: {generated_text_1}")
+
+        test_prompt_2 = "Bisakah Anda membantu saya dengan masalah coding?"
+        print(f"\nMengirim prompt: {test_prompt_2}")
+        generated_text_2 = await generate_text_with_gemini(test_prompt_2)
+        print(f"Respons Gemini: {generated_text_2}")
 
     asyncio.run(main())

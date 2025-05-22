@@ -1,78 +1,60 @@
 import os
-import nltk
-
-from langchain_google_genai import (
-    ChatGoogleGenerativeAI,
-    GoogleGenerativeAIEmbeddings,
-)
-from langchain.chains import RetrievalQA
-from langchain.prompts import PromptTemplate
-from langchain_text_splitters import NLTKTextSplitter
-from langchain_community.vectorstores import Chroma
-from langchain.document_loaders import PyPDFLoader
+import google.generativeai as genai
 from dotenv import load_dotenv
-import glob
 
+# Muat environment variables dari file .env
+load_dotenv()
 
-load_dotenv()  # load .env if not loaded globally
+# Konfigurasi API key
+GEMINI_API_KEY = os.getenv("GOOGLE_API_KEY")
+if not GEMINI_API_KEY:
+    raise ValueError("GOOGLE_API_KEY tidak ditemukan di environment variables.")
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-PDF_PATH = os.path.join(BASE_DIR, "docs", "10_Penerapan Algoritma Genetika Untuk Optimasi penjadwalan pada mts negeri 1 pangkalpinang.pdf")
-if not os.path.exists(PDF_PATH):
-    raise FileNotFoundError(f"PDF file tidak ditemukan di path: {PDF_PATH}")
+genai.configure(api_key=GEMINI_API_KEY)
 
-CHROMA_PATH = "./chroma_db"
-API_KEY = os.getenv("GOOGLE_API_KEY")
+# Inisialisasi model GenerativeModel
+# Pilih model yang sesuai dengan kebutuhan Anda, misalnya 'gemini-pro' untuk teks
+# Untuk daftar model yang tersedia: https://ai.google.dev/gemini-api/docs/models/generative
+model = genai.GenerativeModel('gemini-1.5-flash-latest') # atau 'gemini-pro'
 
+async def generate_text_with_gemini(prompt_text: str) -> str:
+    """
+    Mengirim prompt ke Gemini API dan mengembalikan teks yang dihasilkan.
 
-def load_documents():
-    loader = PyPDFLoader(PDF_PATH)
-    
-    pages = loader.load_and_split()
-    splitter = NLTKTextSplitter(chunk_size=1000, chunk_overlap=0)
-    return splitter.split_documents(pages)
+    Args:
+        prompt_text: Teks prompt yang akan dikirim ke model.
 
+    Returns:
+        Teks yang dihasilkan oleh model Gemini.
+    """
+    try:
+        # Membuat konten untuk dikirim ke model
+        # Untuk kasus penggunaan yang lebih kompleks (misalnya chat), Anda bisa menggunakan start_chat()
+        # response = model.generate_content(prompt_text)
+        
+        # Jika Anda ingin menggunakan versi chat (untuk percakapan multi-turn)
+        chat = model.start_chat(history=[])
+        response = await chat.send_message_async(prompt_text)
+        
+        # Pastikan untuk mengakses teks dari respons dengan benar
+        # Terkadang, respons mungkin memiliki beberapa kandidat atau bagian
+        # Periksa dokumentasi Gemini API untuk struktur respons yang tepat
+        # Untuk 'gemini-1.5-flash-latest' dan 'gemini-pro', biasanya 'response.text' sudah cukup
+        return response.text
+    except Exception as e:
+        print(f"Terjadi kesalahan saat memanggil Gemini API: {e}")
+        # Anda mungkin ingin menangani error ini dengan cara yang lebih baik,
+        # misalnya dengan melempar kembali error atau mengembalikan pesan error khusus.
+        return f"Error: Tidak dapat menghasilkan teks. {str(e)}"
 
-def setup_vectorstore(docs):
-    embedding_model = GoogleGenerativeAIEmbeddings(
-        google_api_key=API_KEY, model="models/embedding-001"
-    )
-    db = Chroma.from_documents(
-        docs, embedding=embedding_model, persist_directory=CHROMA_PATH
-    )
-    db.persist()
-    return db
-
-
-def get_retriever():
-    embedding_model = GoogleGenerativeAIEmbeddings(
-        google_api_key=API_KEY, model="models/embedding-001"
-    )
-    db = Chroma(
-        persist_directory=CHROMA_PATH,
-        embedding_function=embedding_model,
-    )
-    return db.as_retriever(search_kwargs={"k": 4})
-
-
-def get_answer(query: str) -> str:
-    retriever = get_retriever()
-
-    llm = ChatGoogleGenerativeAI(
-        model="gemini-1.5-pro-latest",
-        google_api_key=API_KEY,
-        temperature=0.7,
-    )
-
-    qa_chain = RetrievalQA.from_chain_type(
-        llm=llm, retriever=retriever, return_source_documents=True
-    )
-
-    result = qa_chain.invoke({"query": query})
-    return result["result"]
-
+# Contoh penggunaan (opsional, untuk testing langsung file ini)
 if __name__ == "__main__":
-    docs = load_documents()
-    setup_vectorstore(docs)
-    response = get_answer("Jelaskan apa itu algoritma genetika?")
-    print(response)
+    import asyncio
+
+    async def main():
+        test_prompt = "Ceritakan sebuah fakta menarik tentang Indonesia."
+        print(f"Mengirim prompt: {test_prompt}")
+        generated_text = await generate_text_with_gemini(test_prompt)
+        print(f"Respons Gemini: {generated_text}")
+
+    asyncio.run(main())

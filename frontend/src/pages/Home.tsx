@@ -3,8 +3,11 @@ import { Github, Linkedin, Mail, Phone } from "lucide-react";
 import { TypeAnimation } from "react-type-animation";
 import reactLogo from "../assets/react.svg";
 import ContactIcon from "../components/ContactIcon";
+import { useState } from "react";
 
 function HomePage() {
+  const [isCoinHovered, setIsCoinHovered] = useState(false);
+
   return (
     <div className="container mx-auto md:mt-16 flex flex-col items-center justify-center px-4">
       {/* Hero Section */}
@@ -20,6 +23,7 @@ function HomePage() {
             <h2 className="mt-2 text-3xl font-semibold">
               I'm Yohanes Christian Devano
             </h2>
+
             <TypeAnimation
               sequence={[
                 "Fullstack Development",
@@ -67,30 +71,45 @@ function HomePage() {
         </div>
 
         {/* Right Side */}
-        <div className="relative flex justify-center items-center mt-12">
-          <motion.svg
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-            viewBox="0 0 200 200"
-            xmlns="http://www.w3.org/2000/svg"
-            className="w-64 md:w-80 opacity-80 absolute"
+        <motion.div
+          className="relative group z-10 mt-12 md:mt-0"
+          style={{ perspective: "1000px" }} // Tambahkan perspektif untuk efek 3D
+          onHoverStart={() => setIsCoinHovered(true)}
+          onHoverEnd={() => setIsCoinHovered(false)}
+        >
+          <motion.div
+            className="relative w-64 h-64 md:w-80 md:h-80" // Ukuran kontainer koin
+            style={{ transformStyle: "preserve-3d" }} // Penting untuk rotasi 3D anak-anak
+            animate={{ rotateY: isCoinHovered ? 180 : 0 }} // Berputar saat di-hover
+            transition={{ duration: 0.7, ease: "easeInOut" }}
           >
-            <path
-              fill="var(--color-accent-hover)"
-              d="M38.9,-64.4C48.4,-61.9,52.8,-47.5,60.3,-34.8C67.7,-22,78.1,-11,77.6,-0.3C77.1,10.4,65.7,20.9,57,31.4C48.3,41.8,42.3,52.3,33.2,50.5C24.2,48.7,12.1,34.7,-0.8,36.1C-13.7,37.5,-27.5,54.5,-41.5,59.1C-55.4,63.7,-69.7,56.1,-69.4,44.2C-69.2,32.3,-54.6,16.1,-51.6,1.7C-48.5,-12.6,-57.1,-25.3,-54.9,-33C-52.7,-40.6,-39.6,-43.3,-28.7,-45C-17.7,-46.8,-8.9,-47.5,2.9,-52.5C14.7,-57.6,29.4,-66.9,38.9,-64.4Z"
-              transform="translate(100 100)"
-            />
-          </motion.svg>
-          <motion.img
-            initial={{ opacity: 0, rotate: -180 }}
-            animate={{ opacity: 1, rotate: 0 }}
-            transition={{ duration: 0.5 }}
-            src={reactLogo}
-            alt="React Logo"
-            className="w-32 md:w-48 relative"
-          />
-        </div>
+            {/* Sisi Depan Koin (Gambar Profil) */}
+            <motion.div
+              className="absolute w-full h-full rounded-full"
+              style={{ backfaceVisibility: "hidden" }} // Sembunyikan saat menghadap ke belakang
+            >
+              <div className="absolute -inset-1 bg-gradient-to-r from-pink-600 to-purple-600 rounded-full blur-md opacity-60 group-hover:opacity-80 transition-opacity duration-500 animate-tilt"></div>
+              <img
+                src={reactLogo}
+                alt="Yohanes Christian Devano - Profile"
+                className="relative w-full h-full rounded-full object-cover shadow-xl border-4 border-background"
+              />
+            </motion.div>
+
+            {/* Sisi Belakang Koin (Contoh: Logo lain atau teks) */}
+            <motion.div
+              className="absolute w-full h-full rounded-full bg-slate-700 dark:bg-slate-800 flex items-center justify-center"
+              style={{
+                backfaceVisibility: "hidden", // Sembunyikan saat menghadap ke belakang
+                transform: "rotateY(180deg)", // Awalnya menghadap ke belakang
+              }}
+            >
+              {/* Anda bisa meletakkan logo lain, inisial, atau ikon di sini */}
+              <span className="text-4xl font-bold text-white"></span>
+              {/* <img src="/path/to/logo-belakang.png" alt="Coin Back" className="w-1/2 h-1/2 object-contain" /> */}
+            </motion.div>
+          </motion.div>
+        </motion.div>
       </section>
 
       {/* Motivation Section */}

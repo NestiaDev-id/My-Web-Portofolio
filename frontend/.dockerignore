@@ -1,0 +1,25 @@
+# Jangan masukkan virtual environment ke dalam Docker image
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Jangan masukkan kredensial & file konfigurasi lokal
+.env
+config.json
+
+# Jangan masukkan dataset & knowledge base ke dalam Docker image
+/dataset/
+/knowledge_base/
+/models/
+/retrieval/
+
+# Jangan masukkan file sementara
+logs/
+*.log
+*.swp
+*.swo
+.DS_Store
+.vscode/
+.idea/

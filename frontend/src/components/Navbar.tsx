@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation, Link } from "react-router-dom";
 import {
   User,
   FolderKanban,
@@ -9,7 +10,6 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import { Link } from "react-router-dom";
 import { DarkModeToggle } from "./DarkModeToggle";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -18,143 +18,89 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+
+const NAV_ITEMS = [
+  { path: "/", label: "Home", icon: Home, description: "Halaman utama" },
+  { path: "/about", label: "About Me", icon: User, description: "Tentang saya" },
+  { path: "/projects", label: "Projects", icon: FolderKanban, description: "Proyek-proyek yang pernah saya buat" },
+  { path: "/blog", label: "Blog", icon: BookOpen, description: "Catatan dan artikel pribadi" },
+  { 
+    path: "/game", 
+    label: "Game", 
+    icon: Gamepad2, 
+    description: "Fitur eksperimen: mainkan game kecil langsung di aplikasi!",
+    isBeta: true 
+  },
+];
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-
-  const MotionLink = motion(Link);
+  const location = useLocation();
 
   const navLinks = (
     <>
-      {/* HOME */}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <MotionLink
-            to="/"
-            whileHover={{ scale: 1.05 }}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-primary/20 dark:hover:bg-primary/20 transition-all text-sm"
-            onClick={() => setIsOpen(false)}
-          >
-            <Home className="w-4 h-4" />
-            <span>Home</span>
-          </MotionLink>
-        </TooltipTrigger>
-        <TooltipContent side="bottom">Halaman utama</TooltipContent>
-      </Tooltip>
+      {NAV_ITEMS.map((item) => {
+        const isActive = location.pathname === item.path;
+        return (
+          <Tooltip key={item.path}>
+            <TooltipTrigger asChild>
+              <Link
+                to={item.path}
+                className={cn(
+                  "relative flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors",
+                  isActive ? "text-primary dark:text-blue-400 font-medium" : "hover:text-primary/80 dark:hover:text-blue-300"
+                )}
+                onClick={() => setIsOpen(false)}
+              >
+                {/* MAGIC MOTION ACTIVE BACKGROUND */}
+                {isActive && (
+                  <motion.div
+                    layoutId="navbar-active"
+                    className="absolute inset-0 bg-primary/10 dark:bg-blue-500/20 rounded-lg"
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  />
+                )}
 
-      {/* ABOUT */}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <MotionLink
-            to="/about"
-            whileHover={{ scale: 1.05 }}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35 }}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-primary/20 dark:hover:bg-primary/20 transition-all text-sm"
-            onClick={() => setIsOpen(false)}
-          >
-            <User className="w-4 h-4" />
-            <span>About Me</span>
-          </MotionLink>
-        </TooltipTrigger>
-        <TooltipContent side="bottom">Tentang saya</TooltipContent>
-      </Tooltip>
-
-      {/* PROJECTS */}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <MotionLink
-            to="/projects"
-            whileHover={{ scale: 1.05 }}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-primary/20 dark:hover:bg-primary/20 transition-all text-sm"
-            onClick={() => setIsOpen(false)}
-          >
-            <FolderKanban className="w-4 h-4" />
-            <span>Projects</span>
-          </MotionLink>
-        </TooltipTrigger>
-        <TooltipContent side="bottom">
-          Proyek-proyek yang pernah saya buat
-        </TooltipContent>
-      </Tooltip>
-
-      {/* BLOG */}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <MotionLink
-            to="/blog"
-            whileHover={{ scale: 1.05 }}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45 }}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-primary/20 dark:hover:bg-primary/20 transition-all text-sm"
-            onClick={() => setIsOpen(false)}
-          >
-            <BookOpen className="w-4 h-4" />
-            <span>Blog</span>
-          </MotionLink>
-        </TooltipTrigger>
-        <TooltipContent side="bottom">
-          Catatan dan artikel pribadi
-        </TooltipContent>
-      </Tooltip>
-
-      {/* GAME */}
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <MotionLink
-            to="/game"
-            whileHover={{ scale: 1.05, rotate: 1 }}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-primary/20 transition-all text-sm group relative"
-            onClick={() => setIsOpen(false)}
-          >
-            <Gamepad2 className="w-4 h-4 text-primary group-hover:rotate-12 transition-transform" />
-            <span>Game</span>
-            <Badge
-              variant="outline"
-              className="text-xs ml-1 px-1.5 py-0.5 border-primary text-primary"
-            >
-              Beta
-            </Badge>
-            <Sparkles className="absolute -top-1 -right-1 h-3 w-3 text-yellow-400 animate-ping opacity-60" />
-          </MotionLink>
-        </TooltipTrigger>
-        <TooltipContent side="bottom">
-          Fitur eksperimen: mainkan game kecil langsung di aplikasi!
-        </TooltipContent>
-      </Tooltip>
+                {/* CONTENT */}
+                <span className="relative z-10 flex items-center gap-2">
+                   <item.icon className={cn("w-4 h-4", item.path === "/game" && "text-primary group-hover:rotate-12 transition-transform")} />
+                   <span>{item.label}</span>
+                   
+                   {/* BETA BADGE FOR GAME */}
+                   {item.isBeta && (
+                      <span className="relative flex items-center">
+                        <Badge variant="outline" className="text-[10px] ml-1 px-1 py-0 border-primary text-primary h-4">
+                          Beta
+                        </Badge>
+                        <Sparkles className="absolute -top-2 -right-2 h-2.5 w-2.5 text-yellow-500 animate-ping opacity-70" />
+                      </span>
+                   )}
+                </span>
+              </Link>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">{item.description}</TooltipContent>
+          </Tooltip>
+        );
+      })}
 
       {/* DARK MODE TOGGLE */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.55 }}
-      >
+      <div className="ml-2">
         <DarkModeToggle />
-      </motion.div>
+      </div>
     </>
   );
 
   return (
-    <header className="fixed w-full top-0 z-40 border-b bg-white dark:bg-gray-900 transition-colors duration-500">
+    <header className="fixed w-full top-0 z-40 border-b bg-white/80 dark:bg-gray-950/80 backdrop-blur-md transition-colors duration-500">
       <div className="container mx-auto h-16 flex items-center justify-between px-4">
         {/* Logo */}
-        <Link to="/" className="text-xl font-bold text-primary dark:text-white">
+        <Link to="/" className="text-xl font-bold text-primary dark:text-white flex items-center gap-2">
           NestiaDev
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden sm:flex items-center gap-4 text-black dark:text-white">
+        <nav className="hidden sm:flex items-center gap-1 text-black dark:text-white">
           {navLinks}
         </nav>
 
@@ -178,16 +124,16 @@ const Navbar = () => {
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="sm:hidden fixed top-15 left-0 h-full w-64 bg-white dark:bg-gray-900 shadow-lg z-50 p-4 flex flex-col gap-2 text-black dark:text-white"
+              className="sm:hidden fixed top-0 left-0 h-full w-64 bg-white dark:bg-gray-900 shadow-2xl z-50 p-4 pt-20 flex flex-col gap-2 text-black dark:text-white border-r border-gray-200 dark:border-gray-800"
             >
               {navLinks}
             </motion.div>
 
             {/* Overlay */}
             <motion.div
-              className="sm:hidden fixed inset-0 bg-black/50 z-40"
+              className="sm:hidden fixed inset-0 bg-black/50 z-40 backdrop-blur-sm"
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
+              animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               onClick={() => setIsOpen(false)}

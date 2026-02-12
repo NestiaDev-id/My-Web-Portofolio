@@ -1,37 +1,38 @@
 import { Moon, Sun } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "@/providers/ThemeProvider";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 export function DarkModeToggle() {
-  const { setTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
+  const isDark = theme === "dark";
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="icon">
-          <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-          <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-          <span className="sr-only">Toggle theme</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme("light")}>
-          Light
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("dark")}>
-          Dark
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")}>
-          System
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <div className="flex items-center space-x-2">
+      <Switch
+        id="dark-mode-switch"
+        checked={isDark}
+        onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
+        className="data-[state=checked]:bg-slate-950 data-[state=unchecked]:bg-slate-200 border-2 border-transparent"
+        thumbContent={
+          <motion.div
+            key={isDark ? "moon" : "sun"}
+            initial={{ scale: 0.5, rotate: -90, opacity: 0 }}
+            animate={{ scale: 1, rotate: 0, opacity: 1 }}
+            exit={{ scale: 0.5, rotate: 90, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="flex items-center justify-center w-full h-full"
+          >
+            {isDark ? (
+              <Moon className="h-4 w-4 " fill="currentColor" />
+            ) : (
+              <Sun className="h-4 w-4 text-orange-500" fill="currentColor" />
+            )}
+          </motion.div>
+        }
+      />
+      <Label htmlFor="dark-mode-switch" className="sr-only">Toggle Theme</Label>
+    </div>
   );
 }

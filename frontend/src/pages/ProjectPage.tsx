@@ -125,11 +125,13 @@ export default function ProjectPage() {
     filter === "All" ? projects : projects.filter((p) => p.category === filter);
 
   return (
-    <div className="container mx-auto mt-16 p-6">
-      <h2 className="text-4xl font-bold text-center mb-12">Proyek</h2>
+    <div className="container mx-auto mt-16 p-6 min-h-screen">
+      <h2 className="text-4xl font-bold text-center mb-12 text-gray-900 dark:text-white transition-colors duration-300">
+        Proyek
+      </h2>
 
       {/* Filter Buttons */}
-      <div className="flex justify-center space-x-4 mb-8">
+      <div className="flex flex-wrap justify-center gap-4 mb-8">
         {[
           "All",
           "Website Development",
@@ -139,10 +141,10 @@ export default function ProjectPage() {
           <button
             key={category}
             onClick={() => setFilter(category)}
-            className={`px-4 py-2 text-sm sm:text-base rounded-lg font-semibold transition ${
+            className={`px-4 py-2 text-sm sm:text-base rounded-lg font-semibold transition-all duration-300 ${
               filter === category
-                ? "bg-blue-600 text-white"
-                : "bg-gray-800 hover:bg-gray-700 text-gray-300"
+                ? "bg-blue-600 text-white shadow-lg scale-105"
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
             }`}
           >
             {category}
@@ -159,7 +161,7 @@ export default function ProjectPage() {
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
-            className="bg-gray-900 p-6 rounded-lg shadow-lg"
+            className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg"
             onClick={() => navigate("/projects/detail")}
           >
             <img
@@ -168,12 +170,14 @@ export default function ProjectPage() {
               className="w-full h-48 object-cover rounded-md mb-4"
             />
             <h3
-              className="text-xl font-bold mb-2 cursor-pointer hover:text-blue-400"
+              className="text-xl font-bold mb-2 cursor-pointer text-gray-900 dark:text-white hover:text-blue-400"
               onClick={() => navigate("/projects/detail")}
             >
               {project.title}
             </h3>
-            <p className="text-gray-400 mb-4">{project.description}</p>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              {project.description}
+            </p>
             <span
               className={`px-3 py-1 text-sm font-semibold rounded-lg ${
                 project.status === "Production"
@@ -188,7 +192,7 @@ export default function ProjectPage() {
             <div className="flex gap-4 mt-4">
               <a
                 href={project.github}
-                className="flex items-center gap-2 bg-gray-800 px-4 py-2 rounded-lg text-white hover:bg-gray-700 transition"
+                className="flex items-center gap-2 bg-gray-200 dark:bg-gray-800 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-700 transition"
               >
                 <Github size={18} />
                 Github

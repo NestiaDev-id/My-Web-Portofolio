@@ -53,6 +53,7 @@ import {
 
 import { Badge } from "@/components/ui/badge";
 import Marquee from "react-fast-marquee";
+import { useTheme } from "@/providers/ThemeProvider";
 
 // Tipe untuk data pengguna
 interface UserData {
@@ -180,8 +181,9 @@ const experiences: ExperienceData[] = [
   },
 ];
 
-const ExperienceCard: React.FC<{ experience: ExperienceData }> = ({
+const ExperienceCard: React.FC<{ experience: ExperienceData; isDark: boolean }> = ({
   experience,
+  isDark,
 }) => {
   return (
     <VerticalTimelineElement
@@ -193,42 +195,72 @@ const ExperienceCard: React.FC<{ experience: ExperienceData }> = ({
         />
       }
       contentStyle={{
-        background: "#1d1836",
-        color: "#fff",
-        borderRadius: "6px",
-        border: "1px solid rgba(255, 255, 255, 0.125)",
+        background: isDark ? "#1d1836" : "#f3f4f6",
+        color: isDark ? "#fff" : "#111827",
+        borderRadius: "8px",
+        border: isDark
+          ? "1px solid rgba(255, 255, 255, 0.125)"
+          : "1px solid rgba(0, 0, 0, 0.1)",
+        boxShadow: isDark
+          ? "0 3px 0 rgba(0,0,0,0.2)"
+          : "0 3px 0 rgba(0,0,0,0.1)",
       }}
-      contentArrowStyle={{ borderRight: "7px solid rgba(255, 255, 255, 0.3)" }}
+      contentArrowStyle={{
+        borderRight: isDark ? "7px solid #1d1836" : "7px solid #f3f4f6",
+      }}
       date={experience.date}
+      dateClassName={isDark ? "text-white/80" : "text-gray-700 font-bold"}
     >
       <div className="flex gap-3">
         <img
           src={experience.img}
           alt={experience.company}
-          className="h-12 w-12 rounded-lg sm:h-10 sm:w-10"
+          className="h-12 w-12 rounded-lg sm:h-10 sm:w-10 object-cover"
         />
-        <div className="flex flex-col leading-tight space-y-0.5">
-          <span className="text-lg font-semibold text-gray-300 sm:text-base">
+        <div className="flex flex-col leading-tight space-y-1">
+          <span
+            className={`text-lg font-bold sm:text-base ${
+              isDark ? "text-white" : "text-gray-900"
+            }`}
+          >
             {experience.role}
           </span>
-          <span className="text-sm font-medium text-gray-400 sm:text-sm">
+          <span
+            className={`text-sm font-medium sm:text-sm ${
+              isDark ? "text-gray-400" : "text-gray-600"
+            }`}
+          >
             {experience.company}
-          </span>
-          <span className="text-xs text-gray-500 sm:text-[11px]">
-            {experience.date}
           </span>
         </div>
       </div>
 
-      <p className="text-gray-300 text-sm mt-2 sm:text-xs">{experience.desc}</p>
+      <p
+        className={`!mt-4 !font-normal text-sm sm:text-xs ${
+          isDark ? "text-gray-300" : "text-gray-700"
+        }`}
+      >
+        {experience.desc}
+      </p>
+
       {experience.skills && experience.skills.length > 0 && (
         <div className="mt-4">
-          <h4 className="text-sm text-gray-400 font-semibold mb-1">Skills</h4>
+          <h4
+            className={`text-sm font-semibold mb-2 ${
+              isDark ? "text-gray-400" : "text-gray-600"
+            }`}
+          >
+            Skills
+          </h4>
           <div className="flex flex-wrap gap-2">
             {experience.skills.map((skill, index) => (
               <span
                 key={index}
-                className="bg-gray-700 text-gray-300 text-xs font-medium px-3 py-1 rounded-full hover:bg-gray-600 transition"
+                className={`text-xs font-medium px-3 py-1 rounded-full transition ${
+                  isDark
+                    ? "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                    : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-100"
+                }`}
               >
                 {skill}
               </span>
@@ -244,6 +276,8 @@ const AboutPage: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState(false);
   const navigate = useNavigate();
   const [, setUserData] = useState<UserData | null>(null);
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
 
   useEffect(() => {
     const fetchData = async () => {
@@ -285,7 +319,7 @@ const AboutPage: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             Yohanes Christian Devano
           </h1>
-          <p className="text-gray-400 dark:text-gray-300">
+          <p className="text-gray-600 dark:text-gray-300">
             Mahasiswa Sanata Dharma
           </p>
 
@@ -349,7 +383,7 @@ const AboutPage: React.FC = () => {
 
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="mt-3 text-blue-400 hover:underline focus:outline-none dark:text-blue-300 dark:hover:text-blue-500"
+              className="mt-3 text-blue-600 hover:underline focus:outline-none dark:text-blue-300 dark:hover:text-blue-500"
             >
               {isExpanded ? "Show Less" : "Show More"}
             </button>
@@ -379,7 +413,7 @@ const AboutPage: React.FC = () => {
               <motion.div key={skill} whileHover={{ scale: 1.1 }}>
                 <Badge
                   variant="outline"
-                  className="text-sm dark:bg-gray-800 dark:text-white border-gray-400 dark:border-gray-600"
+                  className="text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-400 dark:border-gray-600"
                 >
                   {skill}
                 </Badge>
@@ -391,7 +425,7 @@ const AboutPage: React.FC = () => {
 
       {/* Tech Stack Section */}
       <section className="container mx-auto mt-8 px-4">
-        <h2 className="text-3xl font-bold text-white mb-6">Tech Stack</h2>
+        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Tech Stack</h2>
 
         <div className="flex flex-col gap-4">
           {[0, 1, 2].map((rowIndex) => (
@@ -406,10 +440,10 @@ const AboutPage: React.FC = () => {
                 {techStack.map((tech, index) => (
                   <div
                     key={`${rowIndex}-${index}`}
-                    className="flex flex-col items-center bg-gray-800 p-4 rounded-lg shadow-lg hover:bg-gray-700 transition duration-300 min-w-[120px]"
+                    className="flex flex-col items-center bg-gray-100 dark:bg-gray-800 p-4 rounded-lg shadow-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition duration-300 min-w-[120px]"
                   >
                     <div className={`text-4xl ${tech.color}`}>{tech.icon}</div>
-                    <p className="text-gray-300 mt-2 text-sm text-center">
+                    <p className="text-gray-700 dark:text-gray-300 mt-2 text-sm text-center">
                       {tech.name}
                     </p>
                   </div>
@@ -421,20 +455,21 @@ const AboutPage: React.FC = () => {
       </section>
 
       {/* Experience Section */}
-      <div id="Experience" className="flex flex-col items-center mt-12 z-10">
+      <div id="Experience" className="flex flex-col items-center mt-12 z-10 pb-20">
         <div className="max-w-5xl w-full flex flex-col items-center gap-4">
-          <h2 className="text-4xl font-semibold text-center text-gray-100 sm:text-2xl">
+          <h2 className="text-4xl font-semibold text-center text-gray-900 dark:text-gray-100 sm:text-2xl">
             Experience
           </h2>
-          <p className="text-lg text-center text-gray-400 mb-10 sm:text-sm">
+          <p className="text-lg text-center text-gray-600 dark:text-gray-400 mb-10 sm:text-sm">
             My work experience as a software engineer and working on different
             companies and projects.
           </p>
-          <VerticalTimeline>
+          <VerticalTimeline lineColor={isDark ? "#fff" : "#e5e7eb"}>
             {experiences.map((experience, index) => (
               <ExperienceCard
                 key={`experience-${index}`}
                 experience={experience}
+                isDark={isDark}
               />
             ))}
           </VerticalTimeline>

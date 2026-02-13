@@ -7,8 +7,9 @@ import ScrollToTop from "../components/ScrollToTop";
 
 const projects = [
   {
+    slug: "forecasting-holt-winter",
     title: "Forecasting with Holt-Winter and Genetic Algorithm",
-    category: "Data Science", // Data Science (Machine Learning + Data Analysis)
+    category: "Data Science",
     description:
       "A forecasting model that utilizes the Holt-Winter method, optimized using Genetic Algorithms, to predict time series data with improved accuracy.",
     image: "/gambar2.png",
@@ -18,8 +19,9 @@ const projects = [
     demo: "https://passager-ga-hw.vercel.app/",
   },
   {
+    slug: "wakul",
     title: "Wakul - Food & Ride Sharing App",
-    category: "Mobile Development", // Mobile App (Flutter)
+    category: "Mobile Development",
     description:
       "A Dart/Flutter-based mobile app combining food ordering and ride-sharing features. Users can order food/drinks and schedule delivery while using Google Maps for location tracking.",
     image:
@@ -29,8 +31,9 @@ const projects = [
     demo: "#",
   },
   {
+    slug: "movie-recommendation",
     title: "Movie Recommendation System",
-    category: "Data Science", // Machine Learning + Data Analysis
+    category: "Data Science",
     description:
       "A machine learning-based movie recommendation system utilizing collaborative filtering. Integrated with a ViteJS frontend, this system provides personalized recommendations to users.",
     image:
@@ -40,8 +43,9 @@ const projects = [
     demo: "#",
   },
   {
+    slug: "chatbot-ai",
     title: "Chatbot AI",
-    category: "Data Science", // AI + Machine Learning
+    category: "Data Science",
     description:
       "A natural language processing (NLP)-based chatbot designed to engage in meaningful conversations with users, providing intelligent responses and improving interaction.",
     image:
@@ -51,8 +55,9 @@ const projects = [
     demo: "#",
   },
   {
+    slug: "auth-system",
     title: "Authentication System",
-    category: "Web Development", // Web Security
+    category: "Web Development",
     description:
       "A robust authentication system providing security features such as CSRF, token-based authentication, refresh tokens, rate limiting, sliding sessions, IP blocking, and Argon2 encryption.",
     image: "/gambar1.jpeg",
@@ -61,8 +66,9 @@ const projects = [
     demo: "#",
   },
   {
+    slug: "smart-cctv",
     title: "Smart CCTV for Vehicle Detection",
-    category: "Data Science", // AI/Computer Vision + ML
+    category: "Data Science",
     description:
       "A smart CCTV system for vehicle detection using YOLO, CNN, and LSTM algorithms, optimized with genetic algorithms to improve accuracy in real-time monitoring.",
     image:
@@ -72,19 +78,21 @@ const projects = [
     demo: "#",
   },
   {
+    slug: "kasir-pos",
     title: "Kasir System (Point-of-Sale)",
-    category: "Website Development", // Web Application
+    category: "Website Development",
     description:
       "A point-of-sale (POS) system designed for retail businesses with two user roles: customers and cashiers. It allows seamless transaction handling and product management.",
     image:
       "https://i0.wp.com/isellerdotblog.wpcomstaging.com/wp-content/uploads/2023/10/aben08381.jpg?resize=750%2C666&ssl=1",
     status: "Production",
-    github: "https://scapa.vercel.app/",
+    github: "https://github.com/NestiaDev-id/Scapa-POS",
     demo: "#",
   },
   {
+    slug: "weather-forecasting",
     title: "Weather Forecasting & Rain Prediction in Indonesia",
-    category: "Data Science", // Machine Learning + Data Analysis
+    category: "Data Science",
     description:
       "A machine learning model designed to forecast weather conditions and predict rainfall in Indonesia. The system will be integrated into a website for easy access by users.",
     image:
@@ -94,8 +102,9 @@ const projects = [
     demo: "#",
   },
   {
+    slug: "chat-multiuser",
     title: "ChatMessage MultiUser",
-    category: "Website Development", // Web Application
+    category: "Website Development",
     description:
       "A messaging platform with multi-user support, similar to traditional chat apps, allowing users to communicate in real-time in a secure environment.",
     image:
@@ -105,8 +114,9 @@ const projects = [
     demo: "#",
   },
   {
+    slug: "bible",
     title: "Bible",
-    category: "Website Development", // Web Application
+    category: "Website Development",
     description:
       "A comprehensive online platform providing the complete Bible in various formats, allowing users to access scriptures easily and engage with spiritual content.",
     image:
@@ -162,7 +172,11 @@ export default function ProjectPage() {
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
             className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg"
-            onClick={() => navigate("/projects/detail")}
+            onClick={() =>
+              navigate(`/projects/${project.slug}`, {
+                state: { github: project.github, demo: project.demo },
+              })
+            }
           >
             <img
               src={project.image}
@@ -171,7 +185,12 @@ export default function ProjectPage() {
             />
             <h3
               className="text-xl font-bold mb-2 cursor-pointer text-gray-900 dark:text-white hover:text-blue-400"
-              onClick={() => navigate("/projects/detail")}
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/projects/${project.slug}`, {
+                  state: { github: project.github, demo: project.demo },
+                });
+              }}
             >
               {project.title}
             </h3>
@@ -193,6 +212,7 @@ export default function ProjectPage() {
               <a
                 href={project.github}
                 className="flex items-center gap-2 bg-gray-200 dark:bg-gray-800 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-700 transition"
+                onClick={(e) => e.stopPropagation()}
               >
                 <Github size={18} />
                 Github
@@ -200,6 +220,7 @@ export default function ProjectPage() {
               <a
                 href={project.demo}
                 className="flex items-center gap-2 bg-blue-600 px-4 py-2 rounded-lg text-white hover:bg-blue-500 transition"
+                onClick={(e) => e.stopPropagation()}
               >
                 <Globe size={18} />
                 Demo

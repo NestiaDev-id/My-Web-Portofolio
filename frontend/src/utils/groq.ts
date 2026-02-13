@@ -1,6 +1,4 @@
-import Grog from "groq-sdk";
-import { fetchLatestNews } from "./newsApi";
-import { translateToIndonesian } from "./translateApi";
+import Groq from "groq-sdk";
 
 // Tipe untuk opsi permintaan ke AI
 interface RequestOptions {
@@ -11,15 +9,10 @@ interface RequestOptions {
   seed: number;
 }
 
-// Tipe untuk berita terkini
-interface News {
-  title: string;
-  summary: string;
-  url: string;
-}
 
-// Inisialisasi Grog SDK
-const grog = new Grog({
+
+// Inisialisasi Groq SDK
+const groq = new Groq({
   apiKey: import.meta.env.VITE_GROQ_API_KEY as string,
   dangerouslyAllowBrowser: true,
 });
@@ -30,31 +23,8 @@ export const requestToAi = async (
   option: RequestOptions
 ): Promise<string> => {
   try {
-    let latestNews: News[] = [];
-
-    // Ambil berita terkini
-    try {
-      latestNews = await fetchLatestNews(content);
-      console.log("📡 Berita terbaru berhasil diambil:", latestNews);
-    } catch (newsError) {
-      console.warn("⚠️ Gagal mengambil berita, melanjutkan tanpa berita...");
-      console.error("Error fetching news:", newsError);
-      latestNews = [];
-    }
-
-    // Ringkas berita terkini jika tersedia
-    const newsSummary = latestNews.length
-      ? latestNews
-          .slice(0, 5)
-          .map(
-            (news) =>
-              `- ${news.title}: ${news.summary} (Baca selengkapnya: ${news.url})`
-          )
-          .join("\n")
-      : "Saat ini tidak ada berita terbaru yang tersedia.";
-
-    // Kirim permintaan ke AI
-    const reply = await grog.chat.completions.create({
+    // Kirim permintaan ke Groq AI
+    const reply = await groq.chat.completions.create({
       messages: [
         {
           role: "system",
@@ -125,10 +95,7 @@ export const requestToAi = async (
           - "Apakah kamu bisa memberikan contoh kode?", jawab bahwa kamu tidak dapat memberikan kode secara langsung, tetapi kamu dapat menjelaskan konsep dan teori yang relevan.
           - "Apakah kamu bisa memberikan penjelasan tentang teknologi tertentu?", jawab bahwa kamu dapat memberikan penjelasan tentang berbagai teknologi, tetapi tidak dapat memberikan kode atau implementasi langsung.
           - "Apakah kamu bisa memberikan rekomendasi teknologi?", jawab bahwa kamu dapat memberikan rekomendasi berdasarkan pengetahuan dan pengalaman, tetapi tidak dapat memberikan kode atau implementasi langsung.
-          - "Apa kamu tau berita terkini?", jawab bahwa kamu dapat memberitakan berita terkini dan kamu akan diberikan akses ${newsSummary} sebagai bahan referensi untuk menjawab pertanyaan pengguna.
-
-          Jika anda tidak bisa menjawab atau kurang nya informasi anda bisa menggunakan berita terkini yang ada di bawah ini sebagai bahan referensi untuk menjawab pertanyaan pengguna:
-          ${newsSummary}
+          - "Apa kamu tau berita terkini?", jawab bahwa kamu adalah asisten AI yang fokus membantu NestiaDev dalam pengembangan teknologi.
 
           Tugas utamamu adalah membantu pengguna dengan profesionalisme dan keramahan, seolah-olah kamu adalah asisten pribadi eksklusif milik NestiaDev.`,
         },
@@ -153,13 +120,6 @@ export const requestToAi = async (
     ) {
       throw new Error("AI tidak memberikan respons yang valid.");
     }
-
-    // Terjemahkan respons ke bahasa Indonesia
-    const translatedContent = await translateToIndonesian(
-      reply.choices[0].message.content ?? ""
-    );
-    reply.choices[0].message.content =
-      translatedContent || reply.choices[0].message.content;
 
     return reply.choices[0].message.content ?? "";
   } catch (error) {

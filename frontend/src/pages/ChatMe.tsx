@@ -58,7 +58,7 @@ const ChatApp = () => {
   const [seed, setSeed] = useState(10);
   // const [topk, setTopk] = useState(40);
   const [maxTokens, setMaxTokens] = useState(750);
-  const [model, setModel] = useState("llama3-8b-8192");
+  const [model, setModel] = useState("llama-3.3-70b-versatile");
   const [systemPrompt, setSystemPrompt] = useState(
     "You are a helpful assistant."
   );
@@ -203,16 +203,31 @@ const ChatApp = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-gray-700 text-white">
-                    <SelectItem value="llama3-8b-8192">
-                      LLaMA 3 8B 8192
+                    <SelectItem value="llama-3.3-70b-versatile">
+                      Llama 3.3 70B Versatile
                     </SelectItem>
-                    <SelectItem value="llama3-70b-8192">
-                      LLaMA 3 70B 8192
+                    <SelectItem value="llama-3.1-8b-instant">
+                      Llama 3.1 8B Instant
                     </SelectItem>
-                    <SelectItem value="meta-llama/llama-4-scout-17b-16e-instruct">
-                      LLaMA 4 Scout 17B
+                    <SelectItem value="deepseek-r1-distill-llama-70b">
+                      DeepSeek R1 Distill Llama 70B
                     </SelectItem>
-                    <SelectItem value="allam-2-7b">Allam 2 7B</SelectItem>
+                    <SelectItem value="mixtral-8x7b-32768">
+                      Mixtral 8x7B 32k
+                    </SelectItem>
+                    <SelectItem value="gemma2-9b-it">Gemma 2 9B IT</SelectItem>
+                    <SelectItem value="openai/gpt-oss-120b">
+                      OpenAI GPT-OSS 120B
+                    </SelectItem>
+                    <SelectItem value="openai/gpt-oss-20b">
+                      OpenAI GPT-OSS 20B
+                    </SelectItem>
+                    <SelectItem value="whisper-large-v3">
+                      Whisper Large V3
+                    </SelectItem>
+                    <SelectItem value="whisper-large-v3-turbo">
+                      Whisper Large V3 Turbo
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>

@@ -2,7 +2,7 @@ name: Security Audit & Auto-Fix
 
 on:
   schedule:
-    - cron: '0 0 * * 1' # Every Monday at midnight
+    - cron: '0 0 1 * *' # 1st day of every month at midnight
   workflow_dispatch: # Allows manual trigger
 
 jobs:
@@ -11,6 +11,8 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+    env:
+      NPM_CONFIG_LEGACY_PEER_DEPS: true
 
     steps:
       - name: Checkout Repository

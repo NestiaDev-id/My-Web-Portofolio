@@ -1,0 +1,16 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "lib": ["es6", "dom", "dom.iterable", "scripthost"],
+  "typeRoots": ["./node_modules/phaser/types", "./node_modules/@types"],
+  "types": ["Phaser", "@react-three/fiber", "three"]
+}

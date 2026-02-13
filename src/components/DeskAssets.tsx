@@ -2,7 +2,7 @@ import { useCompoundBody } from "@react-three/cannon";
 import { RoundedBox } from "@react-three/drei";
 import * as THREE from "three";
 import { useTheme } from "@/providers/ThemeProvider";
-import { useRef, useMemo } from "react";
+import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 
 // Colors for smooth transition

@@ -86,23 +86,22 @@ export default function Ball({
   });
 
   return (
-    <mesh
-      ref={ref}
-      castShadow
-      onPointerDown={(e: any) => {
-        e.stopPropagation();
-        (e.target as HTMLElement).setPointerCapture(e.pointerId);
-        setIsHeld(true);
-      }}
-      onPointerUp={(e: any) => {
-        e.stopPropagation();
-        (e.target as HTMLElement).releasePointerCapture(e.pointerId);
-        setIsHeld(false);
-        // Add a little downward impulse when released
-        api.velocity.set(0, -2, 0);
-      }}
-      style={{ cursor: isHeld ? "grabbing" : "grab" } as any}
-    >
+      <mesh
+        ref={ref}
+        castShadow
+        onPointerDown={(e: any) => {
+          e.stopPropagation();
+          (e.target as HTMLElement).setPointerCapture(e.pointerId);
+          setIsHeld(true);
+        }}
+        onPointerUp={(e: any) => {
+          e.stopPropagation();
+          (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+          setIsHeld(false);
+          // Add a little downward impulse when released
+          api.velocity.set(0, -2, 0);
+        }}
+      >
       <sphereGeometry args={[radius, 32, 32]} />
       <meshPhysicalMaterial
         color={isHeld ? "#f1c40f" : "#ffffff"} 

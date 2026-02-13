@@ -1,5 +1,5 @@
 import { Moon, Sun } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useTheme } from "@/providers/ThemeProvider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";

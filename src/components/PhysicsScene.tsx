@@ -6,7 +6,6 @@ import * as THREE from "three";
 import Ball from "./Ball";
 import Domino from "./Domino";
 import DeskAssets from "./DeskAssets";
-import { TrendingUp } from "lucide-react";
 
 // Floor component - Invisible but catches shadows
 function Floor() {
@@ -84,7 +83,7 @@ function SceneContent() {
   const groupRef = useRef<THREE.Group>(null);
   const { mouse } = useThree();
 
-  useFrame((state) => {
+  useFrame(() => {
     if (groupRef.current) {
         const targetRotX = -mouse.y * 0.05;
         const targetRotY = mouse.x * 0.05;
@@ -141,8 +140,7 @@ export default function PhysicsScene() {
             alpha: true, 
             antialias: true, 
             powerPreference: "high-performance",
-            preserveDrawingBuffer: false,
-            checkShaderErrors: false 
+            preserveDrawingBuffer: false
         }}
         onCreated={({ gl }) => {
             gl.domElement.addEventListener('webglcontextlost', (event) => {

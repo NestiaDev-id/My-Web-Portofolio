@@ -1,11 +1,13 @@
-import playerDownImage from "@/assets/img/playerDown.png";
-import playerUpImage from "@/assets/img/playerUp.png";
-import playerLeftImage from "@/assets/img/playerLeft.png";
-import playerRightImage from "@/assets/img/playerRight.png";
-import backgroundImage from "@/assets/img/Pellet Town.png";
-import collisions from "@/assets/data/collisions";
-import villagerImage from "@/assets/img/villager/Idle.png";
-import oldManImage from "@/assets/img/oldMan/Idle.png";
+import collisions from "../data/collisions";
+
+// ── Images (Public Assets) ──
+const playerDownImage = "/assets/img/playerDown.png";
+const playerUpImage = "/assets/img/playerUp.png";
+const playerLeftImage = "/assets/img/playerLeft.png";
+const playerRightImage = "/assets/img/playerRight.png";
+const backgroundImage = "/assets/img/Pellet Town.png";
+const villagerImage = "/assets/img/villager/Idle.png";
+const oldManImage = "/assets/img/oldMan/Idle.png";
 
 // ── Constants ──
 export const TILE_SIZE = 48;

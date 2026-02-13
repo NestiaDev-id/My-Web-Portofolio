@@ -3,9 +3,14 @@ updates:
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "weekly"
-    open-pull-requests-limit: 10
+      interval: "monthly"
+    open-pull-requests-limit: 3
     groups:
       dependencies:
+        applies-to: version-updates # Bundle standard updates
+        patterns:
+          - "*"
+      security-updates:
+        applies-to: security-updates # Bundle security patches
         patterns:
           - "*"

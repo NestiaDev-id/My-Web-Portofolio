@@ -436,7 +436,7 @@ const AboutPage: React.FC = () => {
               gradient={false}
               direction={rowIndex % 2 === 0 ? "left" : "right"} // Pola arah: kiri, kanan, kiri
             >
-              <div className="flex gap-6">
+              <div className="flex gap-6 mr-6">
                 {techStack.map((tech, index) => (
                   <div
                     key={`${rowIndex}-${index}`}

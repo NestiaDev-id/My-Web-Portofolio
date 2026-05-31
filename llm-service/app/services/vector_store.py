@@ -26,22 +26,24 @@ def normalize_session_id(session_id: str) -> str:
     return safe or "default"
 
 
-def get_collection(session_id: str):
-    """Return (or create) a ChromaDB collection scoped to a session."""
-    name = f"chat_{normalize_session_id(session_id)}"
+def get_collection(collection_id: str):
+    """Return (or create) a ChromaDB collection scoped to *collection_id*."""
+    name = f"chat_{normalize_session_id(collection_id)}"
     return chroma_client.get_or_create_collection(
         name=name, metadata={"hnsw:space": "cosine"}
     )
 
 
-def ingest_chunks(session_id: str, chunks: list[str], source: str) -> int:
+def ingest_chunks(collection_id: str, chunks: list[str], source: str) -> int:
     """Embed text chunks and add them to the session's collection.
 
     Returns the number of chunks stored.
     """
-    collection = get_collection(session_id)
+    collection = get_collection(collection_id)
     vectors = embeddings.embed_documents(chunks)
-    ids = [f"{normalize_session_id(session_id)}-{uuid.uuid4()}" for _ in chunks]
+    ids = [
+        f"{normalize_session_id(collection_id)}-{uuid.uuid4()}" for _ in chunks
+    ]
     metadatas = [{"source": source}] * len(chunks)
     collection.add(
         documents=chunks, embeddings=vectors, ids=ids, metadatas=metadatas
@@ -49,9 +51,9 @@ def ingest_chunks(session_id: str, chunks: list[str], source: str) -> int:
     return len(chunks)
 
 
-def search(session_id: str, query: str, top_k: int = 3) -> list[str]:
+def search(collection_id: str, query: str, top_k: int = 3) -> list[str]:
     """Return the *top_k* most relevant document chunks for *query*."""
-    collection = get_collection(session_id)
+    collection = get_collection(collection_id)
     if collection.count() == 0:
         return []
 
@@ -64,9 +66,9 @@ def search(session_id: str, query: str, top_k: int = 3) -> list[str]:
     return results.get("documents", [[]])[0]
 
 
-def clear(session_id: str) -> bool:
-    """Delete the collection for *session_id*. Returns True if it existed."""
-    name = f"chat_{normalize_session_id(session_id)}"
+def clear(collection_id: str) -> bool:
+    """Delete the collection for *collection_id*. Returns True if it existed."""
+    name = f"chat_{normalize_session_id(collection_id)}"
     existing = {col.name for col in chroma_client.list_collections()}
     if name not in existing:
         return False

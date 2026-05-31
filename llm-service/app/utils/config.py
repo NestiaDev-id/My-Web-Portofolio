@@ -20,6 +20,13 @@ DEFAULT_CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "200"))
 # ── Retrieval defaults ───────────────────────────────────
 DEFAULT_TOP_K = int(os.getenv("TOP_K", "3"))
 
+# ── RAG data source (static CV) ───────────────────────────
+RAG_COLLECTION_ID = os.getenv("RAG_COLLECTION_ID", "nestia")
+CV_PATH = os.getenv("CV_PATH", "data/cv_nestia.txt")
+
+# ── Upload protection ─────────────────────────────────────
+UPLOAD_TOKEN = os.getenv("UPLOAD_TOKEN", "")
+
 # ── Upstash Redis (short-term chat memory) ───────────────
 REDIS_URL = os.getenv("REDIS_URL", "")
 REDIS_MAX_HISTORY = int(os.getenv("REDIS_MAX_HISTORY", "100"))

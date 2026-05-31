@@ -1,4 +1,7 @@
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from pathlib import Path
+from typing import Optional
+
+from fastapi import FastAPI, File, Form, HTTPException, Header, UploadFile
 
 from app.models.schemas import (
     ChatRequest,
@@ -9,7 +12,13 @@ from app.models.schemas import (
 )
 from app.services import chat_history, vector_store
 from app.services.llm import generate_answer
-from app.utils.config import DEFAULT_CHUNK_OVERLAP, DEFAULT_CHUNK_SIZE
+from app.utils.config import (
+    CV_PATH,
+    DEFAULT_CHUNK_OVERLAP,
+    DEFAULT_CHUNK_SIZE,
+    RAG_COLLECTION_ID,
+    UPLOAD_TOKEN,
+)
 from app.utils.text import extract_text_from_file, split_text
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -43,13 +52,38 @@ def root():
         ),
     }
 
+
+@app.on_event("startup")
+def index_cv_on_startup():
+    cv_file = Path(CV_PATH)
+    if not cv_file.exists():
+        return
+
+    text = cv_file.read_text(encoding="utf-8").strip()
+    if not text:
+        return
+
+    vector_store.clear(RAG_COLLECTION_ID)
+    chunks = split_text(text, DEFAULT_CHUNK_SIZE, DEFAULT_CHUNK_OVERLAP)
+    if not chunks:
+        return
+
+    vector_store.ingest_chunks(RAG_COLLECTION_ID, chunks, source=cv_file.name)
+
+
 @app.post("/upload", response_model=UploadResponse)
 async def upload_document(
     file: UploadFile = File(...),
-    session_id: str = Form("default"),
+    session_id: str = Form(RAG_COLLECTION_ID),
     chunk_size: int = Form(DEFAULT_CHUNK_SIZE),
     chunk_overlap: int = Form(DEFAULT_CHUNK_OVERLAP),
+    x_upload_token: Optional[str] = Header(default=None, alias="X-Upload-Token"),
 ):
+    if not UPLOAD_TOKEN:
+        raise HTTPException(status_code=403, detail="Upload disabled.")
+    if x_upload_token != UPLOAD_TOKEN:
+        raise HTTPException(status_code=401, detail="Invalid upload token.")
+
     filename = file.filename or "upload"
     data = await file.read()
     text = extract_text_from_file(filename, data)
@@ -73,14 +107,14 @@ async def upload_document(
 @app.post("/chat", response_model=ChatResponse)
 def chat(request: ChatRequest):
     # 1. Retrieve relevant document chunks
-    documents = vector_store.search(
-        request.session_id, request.question, request.top_k
+    cv_documents = vector_store.search(
+        RAG_COLLECTION_ID, request.question, request.top_k
     )
-    if not documents:
-        raise HTTPException(
-            status_code=400,
-            detail="No documents indexed for this session or no relevant results.",
-        )
+    client_collection_id = f"client_{request.session_id}"
+    client_documents = vector_store.search(
+        client_collection_id, request.question, request.top_k
+    )
+    documents = cv_documents + client_documents
 
     # 2. Generate answer via LLM
     try:

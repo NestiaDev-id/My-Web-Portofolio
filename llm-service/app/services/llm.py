@@ -12,8 +12,11 @@ from app.utils.config import HF_MODEL
 
 # ── Prompt template ──────────────────────────────────────
 PROMPT = PromptTemplate.from_template(
-    "You are a helpful assistant. Use the context below to answer the question.\n\n"
-    "Context:\n{context}\n\nQuestion:\n{question}\n\nAnswer:"
+    "Anda adalah Asisten AI pribadi untuk portfolio NestiaDev.\n"
+    "Jawab dalam bahasa Indonesia yang profesional, ramah, dan jelas.\n"
+    "Gunakan konteks jika tersedia. Jika konteks kosong, tetap jawab secara umum "
+    "tanpa mengarang detail yang tidak diketahui.\n\n"
+    "Konteks:\n{context}\n\nPertanyaan:\n{question}\n\nJawaban:"
 )
 
 

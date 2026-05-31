@@ -15,8 +15,9 @@ from app.utils.text import extract_text_from_file, split_text
 app = FastAPI(
     title="LLM RAG Service",
     description=(
-        "RAG chatbot backed by ChromaDB (ephemeral vector store) and SQLite "
-        "(chat history). Deployed on Hugging Face Spaces."
+        "RAG chatbot backed by ChromaDB (ephemeral vector store), "
+        "Upstash Redis (short-term chat memory), and MongoDB Atlas "
+        "(permanent chat archive). Deployed on Hugging Face Spaces."
     ),
     version="1.0.0",
 )

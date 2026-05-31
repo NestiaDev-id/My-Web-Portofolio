@@ -1,167 +1,234 @@
 """
-Chat history service — persists every prompt and AI response to a local
-SQLite database so conversation logs survive within a single runtime session.
+Chat history service — dual-write to Upstash Redis AND MongoDB Atlas.
 
-Schema
-------
-conversations
-    id          TEXT PRIMARY KEY   — UUID per conversation / session
-    user_id     TEXT               — optional user identifier
-    title       TEXT               — auto-generated from first prompt
-    created_at  TEXT (ISO-8601)
-    updated_at  TEXT (ISO-8601)
+Strategy
+--------
+- **Redis (Upstash)**: Fast short-term memory. Stores the most recent messages
+  per session using a capped list (window memory). Ideal for feeding context
+  back to the LLM on subsequent turns.
+- **MongoDB (Atlas)**: Permanent long-term archive. Every single message is
+  persisted as a document so chat logs are never lost, even if Redis evicts
+  old entries.
 
-messages
-    id              TEXT PRIMARY KEY
-    conversation_id TEXT  FK → conversations.id
-    role            TEXT  ('user' | 'assistant' | 'system')
-    content         TEXT
-    model_used      TEXT  — e.g. "mistralai/Mistral-7B-Instruct-v0.2"
-    tokens_used     INTEGER  (nullable)
-    created_at      TEXT (ISO-8601)
+Both writes happen on every call so the two stores stay in sync. If one
+backend is unreachable the other still succeeds (best-effort).
 """
 
-import os
-import sqlite3
+import logging
 import uuid
 from datetime import datetime, timezone
 from typing import Optional
 
-from app.utils.config import CHAT_HISTORY_DB, HF_MODEL
+import redis
+from pymongo import MongoClient
+from pymongo.errors import PyMongoError
 
-_conn: Optional[sqlite3.Connection] = None
+from app.utils.config import (
+    HF_MODEL,
+    MONGO_DB_NAME,
+    MONGO_URI,
+    REDIS_MAX_HISTORY,
+    REDIS_URL,
+)
+
+logger = logging.getLogger(__name__)
+
+# ── Redis client ──────────────────────────────────────────
+_redis: Optional[redis.Redis] = None
 
 
-def _get_connection() -> sqlite3.Connection:
-    """Return a module-level SQLite connection, creating the DB if needed."""
-    global _conn
-    if _conn is None:
-        os.makedirs(os.path.dirname(CHAT_HISTORY_DB) or ".", exist_ok=True)
-        _conn = sqlite3.connect(CHAT_HISTORY_DB, check_same_thread=False)
-        _conn.row_factory = sqlite3.Row
-        _conn.execute("PRAGMA journal_mode=WAL")
-        _init_tables(_conn)
-    return _conn
+def _get_redis() -> redis.Redis:
+    global _redis
+    if _redis is None:
+        _redis = redis.from_url(REDIS_URL, decode_responses=True)
+    return _redis
 
 
-def _init_tables(conn: sqlite3.Connection) -> None:
-    conn.executescript(
-        """
-        CREATE TABLE IF NOT EXISTS conversations (
-            id          TEXT PRIMARY KEY,
-            user_id     TEXT,
-            title       TEXT,
-            created_at  TEXT NOT NULL,
-            updated_at  TEXT NOT NULL
-        );
+# ── MongoDB client ────────────────────────────────────────
+_mongo_db = None
 
-        CREATE TABLE IF NOT EXISTS messages (
-            id              TEXT PRIMARY KEY,
-            conversation_id TEXT NOT NULL,
-            role            TEXT NOT NULL CHECK(role IN ('user', 'assistant', 'system')),
-            content         TEXT NOT NULL,
-            model_used      TEXT,
-            tokens_used     INTEGER,
-            created_at      TEXT NOT NULL,
-            FOREIGN KEY (conversation_id) REFERENCES conversations(id)
-        );
 
-        CREATE INDEX IF NOT EXISTS idx_messages_conv
-            ON messages(conversation_id, created_at);
-        """
-    )
-    conn.commit()
+def _get_mongo_db():
+    global _mongo_db
+    if _mongo_db is None:
+        client = MongoClient(MONGO_URI)
+        _mongo_db = client[MONGO_DB_NAME]
+    return _mongo_db
 
+
+# ── Helpers ───────────────────────────────────────────────
 
 def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+def _redis_key(session_id: str) -> str:
+    """Redis list key scoped to a session."""
+    return f"chat:{session_id}:messages"
+
+
+def _build_message_doc(
+    message_id: str,
+    session_id: str,
+    role: str,
+    content: str,
+    model_used: Optional[str] = None,
+    tokens_used: Optional[int] = None,
+) -> dict:
+    """Build a message document used by both Redis and MongoDB."""
+    return {
+        "id": message_id,
+        "session_id": session_id,
+        "role": role,
+        "content": content,
+        "model_used": model_used,
+        "tokens_used": tokens_used,
+        "created_at": _now_iso(),
+    }
+
+
+# ── Write: Redis ──────────────────────────────────────────
+
+def _save_to_redis(session_id: str, message: dict) -> None:
+    """Push message JSON to a Redis list and trim to keep a rolling window."""
+    try:
+        import json
+
+        r = _get_redis()
+        key = _redis_key(session_id)
+        r.rpush(key, json.dumps(message))
+        r.ltrim(key, -REDIS_MAX_HISTORY, -1)
+    except Exception:
+        logger.exception("Failed to write to Redis – continuing with MongoDB only")
+
+
+# ── Write: MongoDB ────────────────────────────────────────
+
+def _save_to_mongo(session_id: str, message: dict) -> None:
+    """Insert the message document into the MongoDB messages collection
+    and upsert the parent conversation metadata."""
+    try:
+        db = _get_mongo_db()
+
+        # Upsert conversation metadata
+        db.conversations.update_one(
+            {"_id": session_id},
+            {
+                "$setOnInsert": {
+                    "created_at": message["created_at"],
+                    "title": message["content"][:80] if message["role"] == "user" else "Untitled",
+                },
+                "$set": {"updated_at": message["created_at"]},
+            },
+            upsert=True,
+        )
+
+        # Insert individual message
+        db.messages.insert_one(message)
+    except PyMongoError:
+        logger.exception("Failed to write to MongoDB – continuing with Redis only")
+
+
 # ── Public API ────────────────────────────────────────────
 
 def ensure_conversation(session_id: str, title: Optional[str] = None) -> str:
-    """Create a conversation row if it doesn't exist yet. Returns the id."""
-    conn = _get_connection()
-    row = conn.execute(
-        "SELECT id FROM conversations WHERE id = ?", (session_id,)
-    ).fetchone()
-
-    if row:
-        return row["id"]
-
-    now = _now_iso()
-    conn.execute(
-        "INSERT INTO conversations (id, user_id, title, created_at, updated_at) "
-        "VALUES (?, ?, ?, ?, ?)",
-        (session_id, None, title or "Untitled", now, now),
-    )
-    conn.commit()
+    """Ensure a conversation document exists in MongoDB. Returns session_id."""
+    try:
+        db = _get_mongo_db()
+        db.conversations.update_one(
+            {"_id": session_id},
+            {
+                "$setOnInsert": {
+                    "title": title or "Untitled",
+                    "created_at": _now_iso(),
+                },
+                "$set": {"updated_at": _now_iso()},
+            },
+            upsert=True,
+        )
+    except PyMongoError:
+        logger.exception("Failed to ensure conversation in MongoDB")
     return session_id
 
 
 def save_message(
-    conversation_id: str,
+    session_id: str,
     role: str,
     content: str,
     model_used: Optional[str] = None,
     tokens_used: Optional[int] = None,
 ) -> str:
-    """Insert a message and return its UUID."""
-    conn = _get_connection()
+    """Dual-write a message to Redis AND MongoDB. Returns the message UUID."""
     msg_id = str(uuid.uuid4())
-    now = _now_iso()
+    doc = _build_message_doc(msg_id, session_id, role, content, model_used, tokens_used)
 
-    conn.execute(
-        "INSERT INTO messages "
-        "(id, conversation_id, role, content, model_used, tokens_used, created_at) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?)",
-        (msg_id, conversation_id, role, content, model_used, tokens_used, now),
-    )
-    # Also bump the conversation's updated_at
-    conn.execute(
-        "UPDATE conversations SET updated_at = ? WHERE id = ?",
-        (now, conversation_id),
-    )
-    conn.commit()
+    # Write to both backends (best-effort)
+    _save_to_redis(session_id, doc)
+    _save_to_mongo(session_id, doc)
+
     return msg_id
 
 
-def save_user_message(conversation_id: str, content: str) -> str:
-    """Shorthand — save a user prompt."""
-    return save_message(conversation_id, "user", content)
+def save_user_message(session_id: str, content: str) -> str:
+    """Save a user prompt to both stores."""
+    return save_message(session_id, "user", content)
 
 
 def save_assistant_message(
-    conversation_id: str, content: str, tokens_used: Optional[int] = None
+    session_id: str, content: str, tokens_used: Optional[int] = None
 ) -> str:
-    """Shorthand — save an AI response."""
+    """Save an AI response to both stores."""
     return save_message(
-        conversation_id,
-        "assistant",
-        content,
-        model_used=HF_MODEL,
-        tokens_used=tokens_used,
+        session_id, "assistant", content, model_used=HF_MODEL, tokens_used=tokens_used
     )
 
 
-def get_history(conversation_id: str, limit: int = 50) -> list[dict]:
-    """Return the most recent *limit* messages for a conversation."""
-    conn = _get_connection()
-    rows = conn.execute(
-        "SELECT id, role, content, model_used, tokens_used, created_at "
-        "FROM messages WHERE conversation_id = ? "
-        "ORDER BY created_at ASC LIMIT ?",
-        (conversation_id, limit),
-    ).fetchall()
-    return [dict(r) for r in rows]
+def get_history(session_id: str, limit: int = 50) -> list[dict]:
+    """Retrieve chat history.
+
+    Tries Redis first (fast, recent window). Falls back to MongoDB
+    if Redis is empty or unreachable.
+    """
+    # 1. Try Redis (fast path)
+    try:
+        import json
+
+        r = _get_redis()
+        key = _redis_key(session_id)
+        raw = r.lrange(key, 0, limit - 1)
+        if raw:
+            return [json.loads(item) for item in raw]
+    except Exception:
+        logger.exception("Redis read failed – falling back to MongoDB")
+
+    # 2. Fallback to MongoDB (permanent archive)
+    try:
+        db = _get_mongo_db()
+        cursor = (
+            db.messages.find({"session_id": session_id}, {"_id": 0})
+            .sort("created_at", 1)
+            .limit(limit)
+        )
+        return list(cursor)
+    except PyMongoError:
+        logger.exception("MongoDB read also failed")
+        return []
 
 
 def list_conversations(limit: int = 20) -> list[dict]:
-    """List recent conversations, newest first."""
-    conn = _get_connection()
-    rows = conn.execute(
-        "SELECT id, user_id, title, created_at, updated_at "
-        "FROM conversations ORDER BY updated_at DESC LIMIT ?",
-        (limit,),
-    ).fetchall()
-    return [dict(r) for r in rows]
+    """List recent conversations from MongoDB, newest first."""
+    try:
+        db = _get_mongo_db()
+        cursor = (
+            db.conversations.find({}, {"_id": 1, "title": 1, "created_at": 1, "updated_at": 1})
+            .sort("updated_at", -1)
+            .limit(limit)
+        )
+        results = []
+        for doc in cursor:
+            doc["id"] = doc.pop("_id")
+            results.append(doc)
+        return results
+    except PyMongoError:
+        logger.exception("Failed to list conversations from MongoDB")
+        return []

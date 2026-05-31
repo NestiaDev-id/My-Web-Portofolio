@@ -12,6 +12,8 @@ from app.services.llm import generate_answer
 from app.utils.config import DEFAULT_CHUNK_OVERLAP, DEFAULT_CHUNK_SIZE
 from app.utils.text import extract_text_from_file, split_text
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI(
     title="LLM RAG Service",
     description=(
@@ -20,6 +22,14 @@ app = FastAPI(
         "(permanent chat archive). Deployed on Hugging Face Spaces."
     ),
     version="1.0.0",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 @app.get("/")

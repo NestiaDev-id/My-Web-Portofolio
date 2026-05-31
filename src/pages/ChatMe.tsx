@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, type ChangeEvent } from "react";
 import { motion } from "framer-motion";
-import { requestToAi } from "@/utils/groq";
+import { chatWithRag, uploadDocument } from "@/utils/rag";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 import {
@@ -54,9 +54,20 @@ const ChatApp = () => {
   const [time, setTime] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isTyping, setIsTyping] = useState(false);
   const [isEmojiOpen, setIsEmojiOpen] = useState(false);
   const [emojiTheme, setEmojiTheme] = useState<"light" | "dark">("light");
+  const [isUploading, setIsUploading] = useState(false);
+  const [sessionId] = useState(() => {
+    if (typeof window === "undefined") return "default";
+    const stored = window.localStorage.getItem("rag-session-id");
+    if (stored) return stored;
+    const freshId =
+      window.crypto?.randomUUID?.() ?? `session-${Date.now()}`;
+    window.localStorage.setItem("rag-session-id", freshId);
+    return freshId;
+  });
 
   // AI parameters with default values
   const [temperature, setTemperature] = useState(0.2);
@@ -107,6 +118,53 @@ const ChatApp = () => {
     inputRef.current?.focus();
   };
 
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleUploadChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    try {
+      const result = await uploadDocument(file, sessionId);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now(),
+          sender: "NestiaDev",
+          text: `Dokumen "${result.filename}" berhasil diunggah (${result.chunks_added} chunk).`,
+          time: new Date().toLocaleTimeString("id-ID", {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          avatar:
+            "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp",
+        },
+      ]);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Terjadi kesalahan.";
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now(),
+          sender: "NestiaDev",
+          text: `Gagal upload dokumen: ${message}`,
+          time: new Date().toLocaleTimeString("id-ID", {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          avatar:
+            "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp",
+        },
+      ]);
+    } finally {
+      setIsUploading(false);
+      event.target.value = "";
+    }
+  };
+
   const sendMessage = async () => {
     if (!input.trim()) return;
 
@@ -126,18 +184,12 @@ const ChatApp = () => {
     setIsTyping(true);
 
     try {
-      const aiResponse = await requestToAi(input, {
-        model: model,
-        temperature: temperature,
-        top_p: topP,
-        maxTokens: maxTokens,
-        seed: seed,
-      });
+      const aiResponse = await chatWithRag(input, sessionId);
 
       const botMessage = {
         id: messages.length + 2,
         sender: "NestiaDev",
-        text: aiResponse || "Maaf, aku tidak bisa menjawab.",
+        text: aiResponse.answer || "Maaf, aku tidak bisa menjawab.",
         time: new Date().toLocaleTimeString("id-ID", {
           hour: "2-digit",
           minute: "2-digit",
@@ -147,13 +199,14 @@ const ChatApp = () => {
       };
       setMessages((prev) => [...prev, botMessage]);
     } catch (error) {
-      console.error("Failed to fetch AI response:", error);
+      const message =
+        error instanceof Error ? error.message : "Terjadi kesalahan.";
       setMessages((prev) => [
         ...prev,
         {
           id: messages.length + 2,
           sender: "NestiaDev",
-          text: "Terjadi kesalahan. Coba lagi nanti.",
+          text: message,
           time: new Date().toLocaleTimeString("id-ID", {
             hour: "2-digit",
             minute: "2-digit",
@@ -435,9 +488,20 @@ const ChatApp = () => {
         </div>
 
         <div className="flex items-center bg-white dark:bg-gray-800 rounded-xl mt-2 border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden p-1">
-          <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+          <button
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={handleUploadClick}
+            disabled={isUploading}
+          >
             <Plus className="size-5 text-gray-500 dark:text-gray-400" />
           </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf,.txt"
+            className="hidden"
+            onChange={handleUploadChange}
+          />
           <DropdownMenu open={isEmojiOpen} onOpenChange={setIsEmojiOpen}>
             <DropdownMenuTrigger asChild>
               <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">

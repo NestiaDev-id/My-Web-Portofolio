@@ -1,17 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { chatWithRag } from "@/utils/rag";
+import { chatWithRag, uploadTask } from "@/utils/rag";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 import {
-  Settings,
-  Cpu,
-  SlidersHorizontal,
-  MessageSquareCode,
-  DollarSign,
   Sun,
   Languages,
   Smile,
+  Paperclip,
+  Loader,
 } from "lucide-react";
 
 import {
@@ -21,16 +18,6 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Slider } from "@/components/ui/slider";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
 
 const ChatApp = () => {
   const [messages, setMessages] = useState([
@@ -56,6 +43,8 @@ const ChatApp = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [isEmojiOpen, setIsEmojiOpen] = useState(false);
   const [emojiTheme, setEmojiTheme] = useState<"light" | "dark">("light");
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [sessionId] = useState(() => {
     if (typeof window === "undefined") return "default";
     const stored = window.localStorage.getItem("rag-session-id");
@@ -65,17 +54,6 @@ const ChatApp = () => {
     window.localStorage.setItem("rag-session-id", freshId);
     return freshId;
   });
-
-  // AI parameters with default values
-  const [temperature, setTemperature] = useState(0.2);
-  const [topP, setTopP] = useState(0.8);
-  const [seed, setSeed] = useState(10);
-  // const [topk, setTopk] = useState(40);
-  const [maxTokens, setMaxTokens] = useState(750);
-  const [model, setModel] = useState("llama-3.3-70b-versatile");
-  const [systemPrompt, setSystemPrompt] = useState(
-    "You are a helpful assistant.",
-  );
 
   useEffect(() => {
     const updateClock = () => {
@@ -113,6 +91,102 @@ const ChatApp = () => {
     setInput((prev) => `${prev}${emoji.native}`);
     setIsEmojiOpen(false);
     inputRef.current?.focus();
+  };
+
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const validExtensions = [".txt", ".pdf", ".doc", ".docx"];
+    const fileName = file.name.toLowerCase();
+    const hasValidExt = validExtensions.some((ext) => fileName.endsWith(ext));
+
+    if (!hasValidExt) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: prev.length + 1,
+          sender: "NestiaDev",
+          text: `Format file tidak didukung. Hanya .txt, .pdf, .docx yang diperbolehkan.`,
+          time: new Date().toLocaleTimeString("id-ID", {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          avatar:
+            "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp",
+        },
+      ]);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: prev.length + 1,
+          sender: "NestiaDev",
+          text: `File terlalu besar. Maksimal 5MB.`,
+          time: new Date().toLocaleTimeString("id-ID", {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          avatar:
+            "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp",
+        },
+      ]);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      const result = await uploadTask(file, sessionId);
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: prev.length + 1,
+          sender: "NestiaDev",
+          text: `✅ Dokumen "${file.name}" berhasil di-upload (${result.chunks_added} chunks ditambahkan).`,
+          time: new Date().toLocaleTimeString("id-ID", {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          avatar:
+            "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp",
+        },
+      ]);
+
+      const autoMessage = `Saya sudah upload dokumen ${file.name}. Bisakah kamu menganalisisnya?`;
+      setInput(autoMessage);
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Gagal upload dokumen.";
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: prev.length + 1,
+          sender: "NestiaDev",
+          text: `❌ Error: ${message}`,
+          time: new Date().toLocaleTimeString("id-ID", {
+            hour: "2-digit",
+            minute: "2-digit",
+          }),
+          avatar:
+            "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp",
+        },
+      ]);
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   };
 
   const sendMessage = async () => {
@@ -207,166 +281,6 @@ const ChatApp = () => {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Settings */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                size="sm"
-                variant="outline"
-                className="gap-2 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-white"
-              >
-                <Settings className="w-4 h-4" />
-                Settings
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white p-4 w-80 space-y-4 border-gray-200 dark:border-gray-700"
-            >
-              {/* Model Select */}
-              <div>
-                <label className="flex items-center gap-2 font-semibold mb-1 text-sm">
-                  <Cpu className="w-4 h-4" />
-                  Select Model
-                </label>
-                <Select value={model} onValueChange={setModel}>
-                  <SelectTrigger className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-200 dark:border-gray-600">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
-                    <SelectItem value="llama-3.3-70b-versatile">
-                      Llama 3.3 70B Versatile
-                    </SelectItem>
-                    <SelectItem value="llama-3.1-8b-instant">
-                      Llama 3.1 8B Instant
-                    </SelectItem>
-                    <SelectItem value="deepseek-r1-distill-llama-70b">
-                      DeepSeek R1 Distill Llama 70B
-                    </SelectItem>
-                    <SelectItem value="mixtral-8x7b-32768">
-                      Mixtral 8x7B 32k
-                    </SelectItem>
-                    <SelectItem value="gemma2-9b-it">Gemma 2 9B IT</SelectItem>
-                    <SelectItem value="openai/gpt-oss-120b">
-                      OpenAI GPT-OSS 120B
-                    </SelectItem>
-                    <SelectItem value="openai/gpt-oss-20b">
-                      OpenAI GPT-OSS 20B
-                    </SelectItem>
-                    <SelectItem value="whisper-large-v3">
-                      Whisper Large V3
-                    </SelectItem>
-                    <SelectItem value="whisper-large-v3-turbo">
-                      Whisper Large V3 Turbo
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* System Prompt */}
-              <div>
-                <label className="flex items-center gap-2 font-semibold mb-1 text-sm">
-                  <MessageSquareCode className="w-4 h-4" />
-                  System Prompt
-                </label>
-                <Textarea
-                  rows={2}
-                  value={systemPrompt}
-                  onChange={(e) => setSystemPrompt(e.target.value)}
-                  className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-200 dark:border-gray-600 resize-none"
-                />
-              </div>
-
-              {/* Parameters */}
-              <div>
-                <label className="flex items-center gap-2 font-semibold mb-1 text-sm">
-                  <SlidersHorizontal className="w-4 h-4" />
-                  Parameters
-                </label>
-
-                <div className="space-y-2">
-                  {/* Temperature */}
-                  <div>
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-gray-500 dark:text-gray-300">
-                        Temperature
-                      </span>
-                      <span className="text-gray-400">
-                        {temperature.toFixed(2)}
-                      </span>
-                    </div>
-                    <Slider
-                      min={0}
-                      max={1}
-                      step={0.01}
-                      value={[temperature]}
-                      onValueChange={([val]) => setTemperature(val)}
-                    />
-                  </div>
-
-                  {/* Top_p */}
-                  <div>
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-gray-500 dark:text-gray-300">
-                        Top_p
-                      </span>
-                      <span className="text-gray-400">{topP.toFixed(2)}</span>
-                    </div>
-                    <Slider
-                      min={0}
-                      max={1}
-                      step={0.01}
-                      value={[topP]}
-                      onValueChange={([val]) => setTopP(val)}
-                    />
-                  </div>
-
-                  {/* Seed */}
-                  <div>
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-gray-500 dark:text-gray-300">
-                        Seed
-                      </span>
-                      <span className="text-gray-400">{seed.toFixed(0)}</span>
-                    </div>
-                    <Slider
-                      min={0}
-                      max={100}
-                      step={1}
-                      value={[seed]}
-                      onValueChange={([val]) => setSeed(val)}
-                    />
-                  </div>
-
-                  {/* Max Tokens */}
-                  <div>
-                    <label className="text-xs text-gray-500 dark:text-gray-300">
-                      Max Tokens
-                    </label>
-                    <Input
-                      type="number"
-                      min={10}
-                      max={4096}
-                      value={maxTokens}
-                      onChange={(e) => setMaxTokens(Number(e.target.value))}
-                      className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-200 dark:border-gray-600 mt-1"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Token Usage */}
-              <div>
-                <label className="flex items-center gap-2 font-semibold mb-1 text-sm">
-                  <DollarSign className="w-4 h-4" />
-                  Token Usage (Est.)
-                </label>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  This message used ~127 tokens. Estimated cost: $0.0001
-                </p>
-              </div>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
 
         <div className="flex-grow overflow-y-auto p-4 space-y-4 custom-scrollbar">
@@ -458,6 +372,26 @@ const ChatApp = () => {
               </div>
             </DropdownMenuContent>
           </DropdownMenu>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Upload dokumen"
+          >
+            {isUploading ? (
+              <Loader className="size-5 text-gray-500 dark:text-gray-400 animate-spin" />
+            ) : (
+              <Paperclip className="size-5 text-gray-500 dark:text-gray-400" />
+            )}
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            hidden
+            accept=".txt,.pdf,.doc,.docx"
+            onChange={handleFileUpload}
+            disabled={isUploading}
+          />
           <input
             type="text"
             ref={inputRef}

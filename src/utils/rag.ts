@@ -67,3 +67,20 @@ export const chatWithRag = async (
 
   return (await response.json()) as ChatResponse;
 };
+
+export const uploadTask = async (file: File, sessionId: string) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("session_id", sessionId);
+
+  const response = await fetch(`${RAG_BASE_URL}/upload-task`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error(await parseErrorMessage(response));
+  }
+
+  return (await response.json()) as UploadResponse;
+};

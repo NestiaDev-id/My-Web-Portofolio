@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+chromadb
+langchain
+langchain-community
+sentence-transformers
+huggingface_hub
+PyPDF2
+python-multipart

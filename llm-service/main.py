@@ -41,6 +41,26 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+ALLOWED_UPLOAD_EXTENSIONS = {".txt", ".pdf", ".doc", ".docx"}
+MAX_UPLOAD_BYTES = 5 * 1024 * 1024
+
+def validate_upload(filename: str, data: bytes):
+    ext = Path(filename).suffix.lower()
+    if ext not in ALLOWED_UPLOAD_EXTENSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail="Unsupported file type. Allowed: .txt, .pdf, .doc, .docx",
+        )
+    if len(data) > MAX_UPLOAD_BYTES:
+        raise HTTPException(
+            status_code=413,
+            detail="File too large. Max size is 5MB.",
+        )
+    if ext == ".doc":
+        raise HTTPException(
+            status_code=400,
+            detail="File .doc belum didukung. Gunakan .docx, .pdf, atau .txt.",
+        )
 @app.get("/")
 def root():
     return {
@@ -86,6 +106,7 @@ async def upload_document(
 
     filename = file.filename or "upload"
     data = await file.read()
+    validate_upload(filename, data)
     text = extract_text_from_file(filename, data)
     if not text.strip():
         raise HTTPException(status_code=400, detail="No text extracted from file.")
@@ -96,6 +117,36 @@ async def upload_document(
 
     count = vector_store.ingest_chunks(session_id, chunks, source=filename)
     collection = vector_store.get_collection(session_id)
+
+    return UploadResponse(
+        status="ok",
+        filename=filename,
+        chunks_added=count,
+        collection=collection.name,
+    )
+
+
+@app.post("/upload-task", response_model=UploadResponse)
+async def upload_client_task(
+    file: UploadFile = File(...),
+    session_id: str = Form("default"),
+    chunk_size: int = Form(DEFAULT_CHUNK_SIZE),
+    chunk_overlap: int = Form(DEFAULT_CHUNK_OVERLAP),
+):
+    filename = file.filename or "upload"
+    data = await file.read()
+    validate_upload(filename, data)
+    text = extract_text_from_file(filename, data)
+    if not text.strip():
+        raise HTTPException(status_code=400, detail="No text extracted from file.")
+
+    chunks = split_text(text, chunk_size, chunk_overlap)
+    if not chunks:
+        raise HTTPException(status_code=400, detail="No valid text chunks found.")
+
+    collection_id = f"client_{session_id}"
+    count = vector_store.ingest_chunks(collection_id, chunks, source=filename)
+    collection = vector_store.get_collection(collection_id)
 
     return UploadResponse(
         status="ok",

@@ -9,6 +9,7 @@ langchain-huggingface
 sentence-transformers
 huggingface_hub
 PyPDF2
+python-docx
 python-multipart
 redis
 pymongo

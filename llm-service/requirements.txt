@@ -2,6 +2,7 @@ fastapi
 uvicorn
 chromadb
 langchain
+langchain-core
 langchain-community
 sentence-transformers
 huggingface_hub

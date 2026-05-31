@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { requestToAi } from "@/utils/groq";
+import data from "@emoji-mart/data";
+import Picker from "@emoji-mart/react";
 import {
   Settings,
   Cpu,
@@ -10,6 +12,7 @@ import {
   Sun,
   Languages,
   Plus,
+  Smile,
 } from "lucide-react";
 
 import {
@@ -50,7 +53,10 @@ const ChatApp = () => {
   const [input, setInput] = useState("");
   const [time, setTime] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const [isTyping, setIsTyping] = useState(false);
+  const [isEmojiOpen, setIsEmojiOpen] = useState(false);
+  const [emojiTheme, setEmojiTheme] = useState<"light" | "dark">("light");
 
   // AI parameters with default values
   const [temperature, setTemperature] = useState(0.2);
@@ -60,7 +66,7 @@ const ChatApp = () => {
   const [maxTokens, setMaxTokens] = useState(750);
   const [model, setModel] = useState("llama-3.3-70b-versatile");
   const [systemPrompt, setSystemPrompt] = useState(
-    "You are a helpful assistant."
+    "You are a helpful assistant.",
   );
 
   useEffect(() => {
@@ -83,6 +89,23 @@ const ChatApp = () => {
       behavior: messages.length === 1 ? "auto" : "smooth",
     });
   }, [messages]);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const updateTheme = () => {
+      setEmojiTheme(root.classList.contains("dark") ? "dark" : "light");
+    };
+    updateTheme();
+    const observer = new MutationObserver(updateTheme);
+    observer.observe(root, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
+
+  const handleEmojiSelect = (emoji: { native: string }) => {
+    setInput((prev) => `${prev}${emoji.native}`);
+    setIsEmojiOpen(false);
+    inputRef.current?.focus();
+  };
 
   const sendMessage = async () => {
     if (!input.trim()) return;
@@ -166,7 +189,10 @@ const ChatApp = () => {
                 Bahasa
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-200 dark:border-gray-700">
+            <DropdownMenuContent
+              align="end"
+              className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-200 dark:border-gray-700"
+            >
               <DropdownMenuItem className="gap-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
                 <Sun className="w-4 h-4 text-red-400" />
                 Bahasa Indonesia
@@ -259,7 +285,9 @@ const ChatApp = () => {
                   {/* Temperature */}
                   <div>
                     <div className="flex justify-between text-xs mb-1">
-                      <span className="text-gray-500 dark:text-gray-300">Temperature</span>
+                      <span className="text-gray-500 dark:text-gray-300">
+                        Temperature
+                      </span>
                       <span className="text-gray-400">
                         {temperature.toFixed(2)}
                       </span>
@@ -276,7 +304,9 @@ const ChatApp = () => {
                   {/* Top_p */}
                   <div>
                     <div className="flex justify-between text-xs mb-1">
-                      <span className="text-gray-500 dark:text-gray-300">Top_p</span>
+                      <span className="text-gray-500 dark:text-gray-300">
+                        Top_p
+                      </span>
                       <span className="text-gray-400">{topP.toFixed(2)}</span>
                     </div>
                     <Slider
@@ -291,7 +321,9 @@ const ChatApp = () => {
                   {/* Seed */}
                   <div>
                     <div className="flex justify-between text-xs mb-1">
-                      <span className="text-gray-500 dark:text-gray-300">Seed</span>
+                      <span className="text-gray-500 dark:text-gray-300">
+                        Seed
+                      </span>
                       <span className="text-gray-400">{seed.toFixed(0)}</span>
                     </div>
                     <Slider
@@ -305,7 +337,9 @@ const ChatApp = () => {
 
                   {/* Max Tokens */}
                   <div>
-                    <label className="text-xs text-gray-500 dark:text-gray-300">Max Tokens</label>
+                    <label className="text-xs text-gray-500 dark:text-gray-300">
+                      Max Tokens
+                    </label>
                     <Input
                       type="number"
                       min={10}
@@ -350,7 +384,9 @@ const ChatApp = () => {
               />
               <div className="flex flex-col max-w ">
                 <div className="flex items-center space-x-2 text-sm mb-1">
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">{msg.sender}</span>
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">
+                    {msg.sender}
+                  </span>
                   <span className="text-[10px] text-gray-400">{msg.time}</span>
                 </div>
                 <div
@@ -380,7 +416,9 @@ const ChatApp = () => {
               />
               <div className="flex flex-col space-y-1 animate-pulse">
                 <div className="flex items-center space-x-2 text-sm">
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">NestiaDev</span>
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">
+                    NestiaDev
+                  </span>
                   <span className="text-xs text-gray-400">{time}</span>
                 </div>
                 <div className="bg-white dark:bg-gray-800 text-gray-800 dark:text-white px-4 py-2 size-8 flex items-center text-center rounded-2xl rounded-tl-none border border-gray-200 dark:border-gray-700 w-fit max-w-xs">
@@ -400,8 +438,29 @@ const ChatApp = () => {
           <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
             <Plus className="size-5 text-gray-500 dark:text-gray-400" />
           </button>
+          <DropdownMenu open={isEmojiOpen} onOpenChange={setIsEmojiOpen}>
+            <DropdownMenuTrigger asChild>
+              <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                <Smile className="size-5 text-gray-500 dark:text-gray-400" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="start"
+              sideOffset={6}
+              className="border-none bg-transparent p-0 shadow-none"
+            >
+              <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+                <Picker
+                  data={data}
+                  theme={emojiTheme}
+                  onEmojiSelect={handleEmojiSelect}
+                />
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <input
             type="text"
+            ref={inputRef}
             className="flex-grow p-2 bg-transparent outline-none text-sm text-gray-800 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500"
             placeholder="Adakah yang ingin ditanyakan?"
             value={input}

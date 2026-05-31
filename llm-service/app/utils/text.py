@@ -5,7 +5,7 @@ Utilities for extracting and splitting text from uploaded files.
 import io
 from typing import List
 
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from PyPDF2 import PdfReader
 
 

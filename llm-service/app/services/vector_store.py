@@ -8,7 +8,7 @@ import os
 import uuid
 
 import chromadb
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 
 from app.utils.config import CHROMA_PATH, EMBED_MODEL
 

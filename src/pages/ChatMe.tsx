@@ -62,15 +62,33 @@ const ChatApp = () => {
     null
   );
 
-  const [sessionId] = useState(() => {
+  const SESSION_TIMEOUT_MS = 5 * 60 * 1000; // 5 menit
+
+  const refreshAndGetSessionId = () => {
     if (typeof window === "undefined") return "default";
-    const stored = window.localStorage.getItem("rag-session-id");
-    if (stored) return stored;
-    const freshId =
-      window.crypto?.randomUUID?.() ?? `session-${Date.now()}`;
+    const storedId = window.localStorage.getItem("rag-session-id");
+    const lastActivity = window.localStorage.getItem("rag-last-activity");
+    const now = Date.now();
+
+    if (storedId && lastActivity) {
+      if (now - parseInt(lastActivity, 10) <= SESSION_TIMEOUT_MS) {
+        // Sesi masih valid, perbarui waktu aktivitas
+        window.localStorage.setItem("rag-last-activity", now.toString());
+        return storedId;
+      }
+    }
+
+    // Jika kedaluwarsa atau tidak ada, buat sesi baru
+    const freshId = window.crypto?.randomUUID?.() ?? `session-${now}`;
     window.localStorage.setItem("rag-session-id", freshId);
+    window.localStorage.setItem("rag-last-activity", now.toString());
+    
+    // Karena ini sesi baru, opsional kita bisa mengosongkan layar chat lama
+    // tapi untuk sekarang kita biarkan history UI tetap ada.
     return freshId;
-  });
+  };
+
+  const [sessionId, setSessionId] = useState(refreshAndGetSessionId);
 
   useEffect(() => {
     const updateClock = () => {
@@ -161,7 +179,10 @@ const ChatApp = () => {
     setIsUploading(true);
 
     try {
-      const result = await uploadTask(file, sessionId);
+      const activeSessionId = refreshAndGetSessionId();
+      setSessionId(activeSessionId);
+
+      const result = await uploadTask(file, activeSessionId);
 
       setMessages((prev) => [
         ...prev,
@@ -283,18 +304,20 @@ const ChatApp = () => {
 
     try {
       let aiText: string;
+      const activeSessionId = refreshAndGetSessionId();
+      setSessionId(activeSessionId);
 
       if (currentImage) {
         // Vision mode: send image to /chat-vision
         const visionResponse = await chatWithVision(
           currentImage,
-          sessionId,
+          activeSessionId,
           currentInput
         );
         aiText = visionResponse.answer || "Maaf, saya tidak bisa menganalisis gambar ini.";
       } else {
         // Text mode: send to /chat
-        const aiResponse = await chatWithRag(currentInput, sessionId);
+        const aiResponse = await chatWithRag(currentInput, activeSessionId);
         aiText = aiResponse.answer || "Maaf, aku tidak bisa menjawab.";
       }
 

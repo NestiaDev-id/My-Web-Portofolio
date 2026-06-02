@@ -6,12 +6,13 @@ from fastapi import FastAPI, File, Form, HTTPException, Header, UploadFile
 from app.models.schemas import (
     ChatRequest,
     ChatResponse,
+    ChatVisionResponse,
     ClearRequest,
     ClearResponse,
     UploadResponse,
 )
 from app.services import chat_history, vector_store
-from app.services.llm import generate_answer
+from app.services.llm import generate_answer, generate_vision_answer
 from app.utils.config import (
     CV_PATH,
     DEFAULT_CHUNK_OVERLAP,
@@ -42,7 +43,16 @@ app.add_middleware(
 )
 
 ALLOWED_UPLOAD_EXTENSIONS = {".txt", ".pdf", ".doc", ".docx"}
+ALLOWED_IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
 MAX_UPLOAD_BYTES = 5 * 1024 * 1024
+MAX_IMAGE_BYTES = 10 * 1024 * 1024
+
+IMAGE_MIME_MAP = {
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".png": "image/png",
+    ".webp": "image/webp",
+}
 
 def validate_upload(filename: str, data: bytes):
     ext = Path(filename).suffix.lower()
@@ -181,6 +191,59 @@ def chat(request: ChatRequest):
     msg_id = chat_history.save_assistant_message(request.session_id, answer)
 
     return ChatResponse(answer=answer, context=documents, message_id=msg_id)
+
+
+@app.post("/chat-vision", response_model=ChatVisionResponse)
+async def chat_vision(
+    file: UploadFile = File(...),
+    question: str = Form(""),
+    session_id: str = Form("default"),
+    top_k: int = Form(3),
+):
+    """Analyse an uploaded image using Vision AI."""
+    filename = file.filename or "image"
+    ext = Path(filename).suffix.lower()
+
+    if ext not in ALLOWED_IMAGE_EXTENSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Format gambar tidak didukung. Gunakan: {', '.join(ALLOWED_IMAGE_EXTENSIONS)}",
+        )
+
+    data = await file.read()
+
+    if len(data) > MAX_IMAGE_BYTES:
+        raise HTTPException(
+            status_code=413,
+            detail="Gambar terlalu besar. Maksimal 10MB.",
+        )
+
+    mime_type = IMAGE_MIME_MAP.get(ext, "image/jpeg")
+
+    # Optionally retrieve RAG context if question is provided
+    context_chunks: list[str] = []
+    if question.strip():
+        cv_docs = vector_store.search(RAG_COLLECTION_ID, question, top_k)
+        client_docs = vector_store.search(f"client_{session_id}", question, top_k)
+        context_chunks = cv_docs + client_docs
+
+    try:
+        answer = generate_vision_answer(
+            image_bytes=data,
+            mime_type=mime_type,
+            question=question.strip() or None,
+            context_chunks=context_chunks if context_chunks else None,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+    # Persist to chat history
+    display_question = question.strip() or f"[Mengirim gambar: {filename}]"
+    chat_history.ensure_conversation(session_id, title=display_question[:80])
+    chat_history.save_user_message(session_id, display_question)
+    chat_history.save_assistant_message(session_id, answer)
+
+    return ChatVisionResponse(answer=answer, filename=filename)
 
 
 @app.post("/clear", response_model=ClearResponse)

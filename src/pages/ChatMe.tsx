@@ -1,12 +1,15 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { chatWithRag, uploadTask } from "@/utils/rag";
+import { chatWithRag, uploadTask, chatWithVision } from "@/utils/rag";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 import {
   Smile,
   Paperclip,
   Loader,
+  FileText,
+  ImageIcon,
+  X,
 } from "lucide-react";
 
 import {
@@ -15,8 +18,17 @@ import {
   DropdownMenuContent,
 } from "@/components/ui/dropdown-menu";
 
+type Message = {
+  id: number;
+  sender: string;
+  text: string;
+  time: string;
+  avatar: string;
+  imageUrl?: string; // optional image to display in bubble
+};
+
 const ChatApp = () => {
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
       sender: "NestiaDev",
@@ -41,6 +53,15 @@ const ChatApp = () => {
   const [emojiTheme, setEmojiTheme] = useState<"light" | "dark">("light");
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const [isAttachOpen, setIsAttachOpen] = useState(false);
+
+  // Image preview state
+  const [pendingImage, setPendingImage] = useState<File | null>(null);
+  const [pendingImagePreview, setPendingImagePreview] = useState<string | null>(
+    null
+  );
+
   const [sessionId] = useState(() => {
     if (typeof window === "undefined") return "default";
     const stored = window.localStorage.getItem("rag-session-id");
@@ -66,7 +87,6 @@ const ChatApp = () => {
   }, []);
 
   useEffect(() => {
-    // messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     messagesEndRef.current?.scrollIntoView({
       behavior: messages.length === 1 ? "auto" : "smooth",
     });
@@ -83,12 +103,19 @@ const ChatApp = () => {
     return () => observer.disconnect();
   }, []);
 
+  const getNowTime = () =>
+    new Date().toLocaleTimeString("id-ID", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
   const handleEmojiSelect = (emoji: { native: string }) => {
     setInput((prev) => `${prev}${emoji.native}`);
     setIsEmojiOpen(false);
     inputRef.current?.focus();
   };
 
+  // ── File upload handler (documents) ────────────────────
   const handleFileUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -106,10 +133,7 @@ const ChatApp = () => {
           id: prev.length + 1,
           sender: "NestiaDev",
           text: `Format file tidak didukung. Hanya .txt, .pdf, .docx yang diperbolehkan.`,
-          time: new Date().toLocaleTimeString("id-ID", {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
+          time: getNowTime(),
           avatar:
             "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp",
         },
@@ -125,10 +149,7 @@ const ChatApp = () => {
           id: prev.length + 1,
           sender: "NestiaDev",
           text: `File terlalu besar. Maksimal 5MB.`,
-          time: new Date().toLocaleTimeString("id-ID", {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
+          time: getNowTime(),
           avatar:
             "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp",
         },
@@ -148,10 +169,7 @@ const ChatApp = () => {
           id: prev.length + 1,
           sender: "NestiaDev",
           text: `✅ Dokumen "${file.name}" berhasil di-upload (${result.chunks_added} chunks ditambahkan).`,
-          time: new Date().toLocaleTimeString("id-ID", {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
+          time: getNowTime(),
           avatar:
             "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp",
         },
@@ -171,10 +189,7 @@ const ChatApp = () => {
           id: prev.length + 1,
           sender: "NestiaDev",
           text: `❌ Error: ${message}`,
-          time: new Date().toLocaleTimeString("id-ID", {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
+          time: getNowTime(),
           avatar:
             "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp",
         },
@@ -185,35 +200,109 @@ const ChatApp = () => {
     }
   };
 
-  const sendMessage = async () => {
-    if (!input.trim()) return;
+  // ── Image selection handler ────────────────────────────
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
 
-    const userMessage = {
+    const validExtensions = [".jpg", ".jpeg", ".png", ".webp"];
+    const fileName = file.name.toLowerCase();
+    const hasValidExt = validExtensions.some((ext) => fileName.endsWith(ext));
+
+    if (!hasValidExt) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: prev.length + 1,
+          sender: "NestiaDev",
+          text: `Format gambar tidak didukung. Gunakan .jpg, .png, atau .webp.`,
+          time: getNowTime(),
+          avatar:
+            "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp",
+        },
+      ]);
+      if (imageInputRef.current) imageInputRef.current.value = "";
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: prev.length + 1,
+          sender: "NestiaDev",
+          text: `Gambar terlalu besar. Maksimal 10MB.`,
+          time: getNowTime(),
+          avatar:
+            "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp",
+        },
+      ]);
+      if (imageInputRef.current) imageInputRef.current.value = "";
+      return;
+    }
+
+    // Set preview
+    setPendingImage(file);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setPendingImagePreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    if (imageInputRef.current) imageInputRef.current.value = "";
+    inputRef.current?.focus();
+  };
+
+  const clearPendingImage = () => {
+    setPendingImage(null);
+    setPendingImagePreview(null);
+  };
+
+  // ── Send message (text + optional image) ───────────────
+  const sendMessage = async () => {
+    const hasText = input.trim().length > 0;
+    const hasImage = pendingImage !== null;
+
+    if (!hasText && !hasImage) return;
+
+    const userMessage: Message = {
       id: messages.length + 1,
       sender: "You",
-      text: input,
-      time: new Date().toLocaleTimeString("id-ID", {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
+      text: input || (hasImage ? `📷 ${pendingImage!.name}` : ""),
+      time: getNowTime(),
       avatar: "https://img.daisyui.com/images/profile/demo/3@94.webp",
+      imageUrl: pendingImagePreview || undefined,
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    const currentInput = input;
+    const currentImage = pendingImage;
     setInput("");
+    clearPendingImage();
     setIsTyping(true);
 
     try {
-      const aiResponse = await chatWithRag(input, sessionId);
+      let aiText: string;
 
-      const botMessage = {
+      if (currentImage) {
+        // Vision mode: send image to /chat-vision
+        const visionResponse = await chatWithVision(
+          currentImage,
+          sessionId,
+          currentInput
+        );
+        aiText = visionResponse.answer || "Maaf, saya tidak bisa menganalisis gambar ini.";
+      } else {
+        // Text mode: send to /chat
+        const aiResponse = await chatWithRag(currentInput, sessionId);
+        aiText = aiResponse.answer || "Maaf, aku tidak bisa menjawab.";
+      }
+
+      const botMessage: Message = {
         id: messages.length + 2,
         sender: "NestiaDev",
-        text: aiResponse.answer || "Maaf, aku tidak bisa menjawab.",
-        time: new Date().toLocaleTimeString("id-ID", {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
+        text: aiText,
+        time: getNowTime(),
         avatar:
           "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp",
       };
@@ -227,10 +316,7 @@ const ChatApp = () => {
           id: messages.length + 2,
           sender: "NestiaDev",
           text: message,
-          time: new Date().toLocaleTimeString("id-ID", {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
+          time: getNowTime(),
           avatar:
             "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp",
         },
@@ -282,6 +368,15 @@ const ChatApp = () => {
                       : "bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 rounded-tl-none border border-gray-200 dark:border-gray-700"
                   }`}
                 >
+                  {/* Display image if present */}
+                  {msg.imageUrl && (
+                    <img
+                      src={msg.imageUrl}
+                      alt="Uploaded"
+                      className="rounded-lg mb-2 max-w-full max-h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() => window.open(msg.imageUrl, "_blank")}
+                    />
+                  )}
                   {msg.text}
                 </div>
               </div>
@@ -320,7 +415,36 @@ const ChatApp = () => {
           <div ref={messagesEndRef} />
         </div>
 
-        <div className="flex items-center bg-white dark:bg-gray-800 rounded-xl mt-2 border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden p-1">
+        {/* ── Image preview bar ───────────────────────────── */}
+        {pendingImagePreview && (
+          <div className="flex items-center gap-2 mx-2 mb-2 p-2 bg-gray-100 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+            <img
+              src={pendingImagePreview}
+              alt="Preview"
+              className="w-16 h-16 rounded-lg object-cover"
+            />
+            <div className="flex-grow min-w-0">
+              <p className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">
+                {pendingImage?.name}
+              </p>
+              <p className="text-[10px] text-gray-400">
+                {pendingImage
+                  ? `${(pendingImage.size / 1024).toFixed(1)} KB`
+                  : ""}
+              </p>
+            </div>
+            <button
+              onClick={clearPendingImage}
+              className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            >
+              <X className="size-4 text-gray-500" />
+            </button>
+          </div>
+        )}
+
+        {/* ── Input bar ──────────────────────────────────── */}
+        <div className="flex items-center bg-white dark:bg-gray-800 rounded-xl mt-2 border border-gray-200 dark:border-gray-700 shadow-sm overflow-visible p-1 relative">
+          {/* Emoji button */}
           <DropdownMenu open={isEmojiOpen} onOpenChange={setIsEmojiOpen}>
             <DropdownMenuTrigger asChild>
               <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
@@ -341,18 +465,57 @@ const ChatApp = () => {
               </div>
             </DropdownMenuContent>
           </DropdownMenu>
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isUploading}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Upload dokumen"
-          >
-            {isUploading ? (
-              <Loader className="size-5 text-gray-500 dark:text-gray-400 animate-spin" />
-            ) : (
-              <Paperclip className="size-5 text-gray-500 dark:text-gray-400" />
-            )}
-          </button>
+
+          {/* Attach button with popup */}
+          <DropdownMenu open={isAttachOpen} onOpenChange={setIsAttachOpen}>
+            <DropdownMenuTrigger asChild>
+              <button
+                disabled={isUploading}
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Lampirkan file"
+              >
+                {isUploading ? (
+                  <Loader className="size-5 text-gray-500 dark:text-gray-400 animate-spin" />
+                ) : (
+                  <Paperclip className="size-5 text-gray-500 dark:text-gray-400" />
+                )}
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="start"
+              sideOffset={6}
+              className="p-1 min-w-[180px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg"
+            >
+              <button
+                onClick={() => {
+                  setIsAttachOpen(false);
+                  fileInputRef.current?.click();
+                }}
+                className="flex items-center gap-3 w-full px-3 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                <FileText className="size-4 text-blue-500" />
+                <span>Dokumen</span>
+                <span className="text-[10px] text-gray-400 ml-auto">
+                  PDF, TXT, DOCX
+                </span>
+              </button>
+              <button
+                onClick={() => {
+                  setIsAttachOpen(false);
+                  imageInputRef.current?.click();
+                }}
+                className="flex items-center gap-3 w-full px-3 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                <ImageIcon className="size-4 text-green-500" />
+                <span>Gambar / Foto</span>
+                <span className="text-[10px] text-gray-400 ml-auto">
+                  JPG, PNG, WEBP
+                </span>
+              </button>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Hidden file inputs */}
           <input
             ref={fileInputRef}
             type="file"
@@ -362,10 +525,22 @@ const ChatApp = () => {
             disabled={isUploading}
           />
           <input
+            ref={imageInputRef}
+            type="file"
+            hidden
+            accept=".jpg,.jpeg,.png,.webp"
+            onChange={handleImageSelect}
+          />
+
+          <input
             type="text"
             ref={inputRef}
             className="flex-grow p-2 bg-transparent outline-none text-sm text-gray-800 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500"
-            placeholder="Adakah yang ingin ditanyakan?"
+            placeholder={
+              pendingImage
+                ? "Tulis pertanyaan tentang gambar ini... (opsional)"
+                : "Adakah yang ingin ditanyakan?"
+            }
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && sendMessage()}

@@ -84,3 +84,32 @@ export const uploadTask = async (file: File, sessionId: string) => {
 
   return (await response.json()) as UploadResponse;
 };
+
+type VisionResponse = {
+  answer: string;
+  filename: string;
+};
+
+export const chatWithVision = async (
+  imageFile: File,
+  sessionId: string,
+  question: string = "",
+) => {
+  const formData = new FormData();
+  formData.append("file", imageFile);
+  formData.append("session_id", sessionId);
+  if (question.trim()) {
+    formData.append("question", question);
+  }
+
+  const response = await fetch(`${RAG_BASE_URL}/chat-vision`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error(await parseErrorMessage(response));
+  }
+
+  return (await response.json()) as VisionResponse;
+};

@@ -40,3 +40,8 @@ class ClearResponse(BaseModel):
     status: str
     cleared: bool
     collection: str
+
+
+class ChatVisionResponse(BaseModel):
+    answer: str
+    filename: str

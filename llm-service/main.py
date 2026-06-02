@@ -83,6 +83,17 @@ def root():
     }
 
 
+@app.get("/healthcheck")
+def healthcheck():
+    """Endpoint for uptime monitors to keep the service awake and check databases."""
+    db_status = chat_history.check_health()
+    return {
+        "status": "ok",
+        "service": "Hugging Face Space (Active)",
+        "databases": db_status
+    }
+
+
 @app.on_event("startup")
 def index_cv_on_startup():
     cv_file = Path(CV_PATH)

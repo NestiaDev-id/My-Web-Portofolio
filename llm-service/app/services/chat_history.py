@@ -232,3 +232,23 @@ def list_conversations(limit: int = 20) -> list[dict]:
     except PyMongoError:
         logger.exception("Failed to list conversations from MongoDB")
         return []
+
+def check_health() -> dict:
+    """Check connections to Redis and MongoDB for uptime monitors."""
+    status = {"redis": "disconnected", "mongodb": "disconnected"}
+    
+    try:
+        r = _get_redis()
+        if r.ping():
+            status["redis"] = "connected"
+    except Exception as e:
+        status["redis"] = f"error: {str(e)}"
+        
+    try:
+        db = _get_mongo_db()
+        db.command("ping")
+        status["mongodb"] = "connected"
+    except Exception as e:
+        status["mongodb"] = f"error: {str(e)}"
+        
+    return status

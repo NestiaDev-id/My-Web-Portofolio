@@ -1,14 +1,10 @@
 """
-LLM generation service via Hugging Face Inference API.
+LLM generation service via Groq API.
 """
 
 import os
-from functools import lru_cache
-
-from huggingface_hub import InferenceClient
+import requests
 from langchain_core.prompts import PromptTemplate
-
-from app.utils.config import HF_MODEL
 
 # ── Prompt template ──────────────────────────────────────
 PROMPT = PromptTemplate.from_template(
@@ -29,19 +25,8 @@ PROMPT = PromptTemplate.from_template(
 )
 
 
-@lru_cache
-def _get_hf_client() -> InferenceClient:
-    """Create (and cache) an authenticated HF Inference client."""
-    token = os.getenv("HUGGINGFACEHUB_API_TOKEN") or os.getenv("HF_TOKEN")
-    if not token:
-        raise ValueError(
-            "Set HUGGINGFACEHUB_API_TOKEN (or HF_TOKEN) to use Hugging Face Inference API."
-        )
-    return InferenceClient(model=HF_MODEL, token=token)
-
-
 def generate_answer(question: str, context_chunks: list[str]) -> str:
-    """Build a RAG prompt and stream an answer from the LLM.
+    """Build a RAG prompt and stream an answer from the LLM via Groq.
 
     Args:
         question: The user's question.
@@ -53,11 +38,23 @@ def generate_answer(question: str, context_chunks: list[str]) -> str:
     context = "\n\n".join(context_chunks)
     prompt = PROMPT.format(context=context, question=question)
 
-    client = _get_hf_client()
-    response = client.chat_completion(
-        messages=[{"role": "user", "content": prompt}],
-        max_tokens=512,
-        temperature=0.2,
-        top_p=0.95,
-    )
-    return response.choices[0].message.content.strip()
+    groq_api_key = os.getenv("VITE_GROQ_API_KEY") or os.getenv("GROQ_API_KEY")
+    if not groq_api_key:
+        raise ValueError("Set VITE_GROQ_API_KEY (or GROQ_API_KEY) to use Groq API.")
+
+    url = "https://api.groq.com/openai/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {groq_api_key}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "model": "llama3-8b-8192",
+        "messages": [{"role": "user", "content": prompt}],
+        "temperature": 0.2,
+        "max_tokens": 512,
+        "top_p": 0.95
+    }
+
+    response = requests.post(url, headers=headers, json=payload)
+    response.raise_for_status()
+    return response.json()["choices"][0]["message"]["content"].strip()

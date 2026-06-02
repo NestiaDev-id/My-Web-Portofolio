@@ -11,7 +11,7 @@ CHROMA_PATH = os.getenv("CHROMA_PATH", "./chroma_db")
 EMBED_MODEL = os.getenv("EMBED_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
 
 # ── LLM served via HF Inference API ─────────────────────
-HF_MODEL = os.getenv("HF_MODEL", "HuggingFaceH4/zephyr-7b-beta")
+HF_MODEL = "Qwen/Qwen2.5-72B-Instruct" # Hardcode to prevent Spaces env var override
 
 # ── Text chunking defaults ───────────────────────────────
 DEFAULT_CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "1000"))

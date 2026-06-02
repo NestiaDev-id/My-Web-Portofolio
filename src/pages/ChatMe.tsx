@@ -1,37 +1,34 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { requestToAi } from "@/utils/groq";
+import { chatWithRag, uploadTask, chatWithVision } from "@/utils/rag";
+import data from "@emoji-mart/data";
+import Picker from "@emoji-mart/react";
 import {
-  Settings,
-  Cpu,
-  SlidersHorizontal,
-  MessageSquareCode,
-  DollarSign,
-  Sun,
-  Languages,
-  Plus,
+  Smile,
+  Paperclip,
+  Loader,
+  FileText,
+  ImageIcon,
+  X,
 } from "lucide-react";
 
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
-  DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Slider } from "@/components/ui/slider";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
+
+type Message = {
+  id: number;
+  sender: string;
+  text: string;
+  time: string;
+  avatar: string;
+  imageUrl?: string; // optional image to display in bubble
+};
 
 const ChatApp = () => {
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
       sender: "NestiaDev",
@@ -50,18 +47,48 @@ const ChatApp = () => {
   const [input, setInput] = useState("");
   const [time, setTime] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const [isTyping, setIsTyping] = useState(false);
+  const [isEmojiOpen, setIsEmojiOpen] = useState(false);
+  const [emojiTheme, setEmojiTheme] = useState<"light" | "dark">("light");
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const [isAttachOpen, setIsAttachOpen] = useState(false);
 
-  // AI parameters with default values
-  const [temperature, setTemperature] = useState(0.2);
-  const [topP, setTopP] = useState(0.8);
-  const [seed, setSeed] = useState(10);
-  // const [topk, setTopk] = useState(40);
-  const [maxTokens, setMaxTokens] = useState(750);
-  const [model, setModel] = useState("llama-3.3-70b-versatile");
-  const [systemPrompt, setSystemPrompt] = useState(
-    "You are a helpful assistant."
+  // Image preview state
+  const [pendingImage, setPendingImage] = useState<File | null>(null);
+  const [pendingImagePreview, setPendingImagePreview] = useState<string | null>(
+    null
   );
+
+  const SESSION_TIMEOUT_MS = 5 * 60 * 1000; // 5 menit
+
+  const refreshAndGetSessionId = () => {
+    if (typeof window === "undefined") return "default";
+    const storedId = window.localStorage.getItem("rag-session-id");
+    const lastActivity = window.localStorage.getItem("rag-last-activity");
+    const now = Date.now();
+
+    if (storedId && lastActivity) {
+      if (now - parseInt(lastActivity, 10) <= SESSION_TIMEOUT_MS) {
+        // Sesi masih valid, perbarui waktu aktivitas
+        window.localStorage.setItem("rag-last-activity", now.toString());
+        return storedId;
+      }
+    }
+
+    // Jika kedaluwarsa atau tidak ada, buat sesi baru
+    const freshId = window.crypto?.randomUUID?.() ?? `session-${now}`;
+    window.localStorage.setItem("rag-session-id", freshId);
+    window.localStorage.setItem("rag-last-activity", now.toString());
+    
+    // Karena ini sesi baru, opsional kita bisa mengosongkan layar chat lama
+    // tapi untuk sekarang kita biarkan history UI tetap ada.
+    return freshId;
+  };
+
+  const [, setSessionId] = useState(refreshAndGetSessionId);
 
   useEffect(() => {
     const updateClock = () => {
@@ -78,63 +105,241 @@ const ChatApp = () => {
   }, []);
 
   useEffect(() => {
-    // messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     messagesEndRef.current?.scrollIntoView({
       behavior: messages.length === 1 ? "auto" : "smooth",
     });
   }, [messages]);
 
-  const sendMessage = async () => {
-    if (!input.trim()) return;
+  useEffect(() => {
+    const root = document.documentElement;
+    const updateTheme = () => {
+      setEmojiTheme(root.classList.contains("dark") ? "dark" : "light");
+    };
+    updateTheme();
+    const observer = new MutationObserver(updateTheme);
+    observer.observe(root, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
 
-    const userMessage = {
+  const getNowTime = () =>
+    new Date().toLocaleTimeString("id-ID", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+  const handleEmojiSelect = (emoji: { native: string }) => {
+    setInput((prev) => `${prev}${emoji.native}`);
+    setIsEmojiOpen(false);
+    inputRef.current?.focus();
+  };
+
+  // ── File upload handler (documents) ────────────────────
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const validExtensions = [".txt", ".pdf", ".doc", ".docx"];
+    const fileName = file.name.toLowerCase();
+    const hasValidExt = validExtensions.some((ext) => fileName.endsWith(ext));
+
+    if (!hasValidExt) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: prev.length + 1,
+          sender: "NestiaDev",
+          text: `Format file tidak didukung. Hanya .txt, .pdf, .docx yang diperbolehkan.`,
+          time: getNowTime(),
+          avatar:
+            "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp",
+        },
+      ]);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: prev.length + 1,
+          sender: "NestiaDev",
+          text: `File terlalu besar. Maksimal 5MB.`,
+          time: getNowTime(),
+          avatar:
+            "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp",
+        },
+      ]);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      const activeSessionId = refreshAndGetSessionId();
+      setSessionId(activeSessionId);
+
+      const result = await uploadTask(file, activeSessionId);
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: prev.length + 1,
+          sender: "NestiaDev",
+          text: `✅ Dokumen "${file.name}" berhasil di-upload (${result.chunks_added} chunks ditambahkan).`,
+          time: getNowTime(),
+          avatar:
+            "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp",
+        },
+      ]);
+
+      const autoMessage = `Saya sudah upload dokumen ${file.name}. Bisakah kamu menganalisisnya?`;
+      setInput(autoMessage);
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Gagal upload dokumen.";
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: prev.length + 1,
+          sender: "NestiaDev",
+          text: `❌ Error: ${message}`,
+          time: getNowTime(),
+          avatar:
+            "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp",
+        },
+      ]);
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  // ── Image selection handler ────────────────────────────
+  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const validExtensions = [".jpg", ".jpeg", ".png", ".webp"];
+    const fileName = file.name.toLowerCase();
+    const hasValidExt = validExtensions.some((ext) => fileName.endsWith(ext));
+
+    if (!hasValidExt) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: prev.length + 1,
+          sender: "NestiaDev",
+          text: `Format gambar tidak didukung. Gunakan .jpg, .png, atau .webp.`,
+          time: getNowTime(),
+          avatar:
+            "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp",
+        },
+      ]);
+      if (imageInputRef.current) imageInputRef.current.value = "";
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: prev.length + 1,
+          sender: "NestiaDev",
+          text: `Gambar terlalu besar. Maksimal 10MB.`,
+          time: getNowTime(),
+          avatar:
+            "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp",
+        },
+      ]);
+      if (imageInputRef.current) imageInputRef.current.value = "";
+      return;
+    }
+
+    // Set preview
+    setPendingImage(file);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setPendingImagePreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    if (imageInputRef.current) imageInputRef.current.value = "";
+    inputRef.current?.focus();
+  };
+
+  const clearPendingImage = () => {
+    setPendingImage(null);
+    setPendingImagePreview(null);
+  };
+
+  // ── Send message (text + optional image) ───────────────
+  const sendMessage = async () => {
+    const hasText = input.trim().length > 0;
+    const hasImage = pendingImage !== null;
+
+    if (!hasText && !hasImage) return;
+
+    const userMessage: Message = {
       id: messages.length + 1,
       sender: "You",
-      text: input,
-      time: new Date().toLocaleTimeString("id-ID", {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
+      text: input || (hasImage ? `📷 ${pendingImage!.name}` : ""),
+      time: getNowTime(),
       avatar: "https://img.daisyui.com/images/profile/demo/3@94.webp",
+      imageUrl: pendingImagePreview || undefined,
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    const currentInput = input;
+    const currentImage = pendingImage;
     setInput("");
+    clearPendingImage();
     setIsTyping(true);
 
     try {
-      const aiResponse = await requestToAi(input, {
-        model: model,
-        temperature: temperature,
-        top_p: topP,
-        maxTokens: maxTokens,
-        seed: seed,
-      });
+      let aiText: string;
+      const activeSessionId = refreshAndGetSessionId();
+      setSessionId(activeSessionId);
 
-      const botMessage = {
+      if (currentImage) {
+        // Vision mode: send image to /chat-vision
+        const visionResponse = await chatWithVision(
+          currentImage,
+          activeSessionId,
+          currentInput
+        );
+        aiText = visionResponse.answer || "Maaf, saya tidak bisa menganalisis gambar ini.";
+      } else {
+        // Text mode: send to /chat
+        const aiResponse = await chatWithRag(currentInput, activeSessionId);
+        aiText = aiResponse.answer || "Maaf, aku tidak bisa menjawab.";
+      }
+
+      const botMessage: Message = {
         id: messages.length + 2,
         sender: "NestiaDev",
-        text: aiResponse || "Maaf, aku tidak bisa menjawab.",
-        time: new Date().toLocaleTimeString("id-ID", {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
+        text: aiText,
+        time: getNowTime(),
         avatar:
           "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp",
       };
       setMessages((prev) => [...prev, botMessage]);
     } catch (error) {
-      console.error("Failed to fetch AI response:", error);
+      const message =
+        error instanceof Error ? error.message : "Terjadi kesalahan.";
       setMessages((prev) => [
         ...prev,
         {
           id: messages.length + 2,
           sender: "NestiaDev",
-          text: "Terjadi kesalahan. Coba lagi nanti.",
-          time: new Date().toLocaleTimeString("id-ID", {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
+          text: message,
+          time: getNowTime(),
           avatar:
             "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp",
         },
@@ -154,183 +359,7 @@ const ChatApp = () => {
       </p>
 
       <div className="w-full sm:w-[90%] md:w-[80%] lg:w-[60%] xl:w-[50%] mt-6 bg-gray-50 dark:bg-gray-900 p-4 rounded-2xl shadow-xl flex flex-col h-[600px] border border-gray-200 dark:border-gray-800">
-        <div className="flex justify-end gap-2 mb-4">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                size="sm"
-                variant="outline"
-                className="gap-2 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-white"
-              >
-                <Languages className="w-4 h-4" />
-                Bahasa
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-200 dark:border-gray-700">
-              <DropdownMenuItem className="gap-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
-                <Sun className="w-4 h-4 text-red-400" />
-                Bahasa Indonesia
-              </DropdownMenuItem>
-              <DropdownMenuItem className="gap-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
-                <Sun className="w-4 h-4 text-blue-400" />
-                English
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
 
-          {/* Settings */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                size="sm"
-                variant="outline"
-                className="gap-2 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-white"
-              >
-                <Settings className="w-4 h-4" />
-                Settings
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white p-4 w-80 space-y-4 border-gray-200 dark:border-gray-700"
-            >
-              {/* Model Select */}
-              <div>
-                <label className="flex items-center gap-2 font-semibold mb-1 text-sm">
-                  <Cpu className="w-4 h-4" />
-                  Select Model
-                </label>
-                <Select value={model} onValueChange={setModel}>
-                  <SelectTrigger className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-200 dark:border-gray-600">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
-                    <SelectItem value="llama-3.3-70b-versatile">
-                      Llama 3.3 70B Versatile
-                    </SelectItem>
-                    <SelectItem value="llama-3.1-8b-instant">
-                      Llama 3.1 8B Instant
-                    </SelectItem>
-                    <SelectItem value="deepseek-r1-distill-llama-70b">
-                      DeepSeek R1 Distill Llama 70B
-                    </SelectItem>
-                    <SelectItem value="mixtral-8x7b-32768">
-                      Mixtral 8x7B 32k
-                    </SelectItem>
-                    <SelectItem value="gemma2-9b-it">Gemma 2 9B IT</SelectItem>
-                    <SelectItem value="openai/gpt-oss-120b">
-                      OpenAI GPT-OSS 120B
-                    </SelectItem>
-                    <SelectItem value="openai/gpt-oss-20b">
-                      OpenAI GPT-OSS 20B
-                    </SelectItem>
-                    <SelectItem value="whisper-large-v3">
-                      Whisper Large V3
-                    </SelectItem>
-                    <SelectItem value="whisper-large-v3-turbo">
-                      Whisper Large V3 Turbo
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* System Prompt */}
-              <div>
-                <label className="flex items-center gap-2 font-semibold mb-1 text-sm">
-                  <MessageSquareCode className="w-4 h-4" />
-                  System Prompt
-                </label>
-                <Textarea
-                  rows={2}
-                  value={systemPrompt}
-                  onChange={(e) => setSystemPrompt(e.target.value)}
-                  className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-200 dark:border-gray-600 resize-none"
-                />
-              </div>
-
-              {/* Parameters */}
-              <div>
-                <label className="flex items-center gap-2 font-semibold mb-1 text-sm">
-                  <SlidersHorizontal className="w-4 h-4" />
-                  Parameters
-                </label>
-
-                <div className="space-y-2">
-                  {/* Temperature */}
-                  <div>
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-gray-500 dark:text-gray-300">Temperature</span>
-                      <span className="text-gray-400">
-                        {temperature.toFixed(2)}
-                      </span>
-                    </div>
-                    <Slider
-                      min={0}
-                      max={1}
-                      step={0.01}
-                      value={[temperature]}
-                      onValueChange={([val]) => setTemperature(val)}
-                    />
-                  </div>
-
-                  {/* Top_p */}
-                  <div>
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-gray-500 dark:text-gray-300">Top_p</span>
-                      <span className="text-gray-400">{topP.toFixed(2)}</span>
-                    </div>
-                    <Slider
-                      min={0}
-                      max={1}
-                      step={0.01}
-                      value={[topP]}
-                      onValueChange={([val]) => setTopP(val)}
-                    />
-                  </div>
-
-                  {/* Seed */}
-                  <div>
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-gray-500 dark:text-gray-300">Seed</span>
-                      <span className="text-gray-400">{seed.toFixed(0)}</span>
-                    </div>
-                    <Slider
-                      min={0}
-                      max={100}
-                      step={1}
-                      value={[seed]}
-                      onValueChange={([val]) => setSeed(val)}
-                    />
-                  </div>
-
-                  {/* Max Tokens */}
-                  <div>
-                    <label className="text-xs text-gray-500 dark:text-gray-300">Max Tokens</label>
-                    <Input
-                      type="number"
-                      min={10}
-                      max={4096}
-                      value={maxTokens}
-                      onChange={(e) => setMaxTokens(Number(e.target.value))}
-                      className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white border-gray-200 dark:border-gray-600 mt-1"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Token Usage */}
-              <div>
-                <label className="flex items-center gap-2 font-semibold mb-1 text-sm">
-                  <DollarSign className="w-4 h-4" />
-                  Token Usage (Est.)
-                </label>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  This message used ~127 tokens. Estimated cost: $0.0001
-                </p>
-              </div>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
 
         <div className="flex-grow overflow-y-auto p-4 space-y-4 custom-scrollbar">
           {messages.map((msg) => (
@@ -350,7 +379,9 @@ const ChatApp = () => {
               />
               <div className="flex flex-col max-w ">
                 <div className="flex items-center space-x-2 text-sm mb-1">
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">{msg.sender}</span>
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">
+                    {msg.sender}
+                  </span>
                   <span className="text-[10px] text-gray-400">{msg.time}</span>
                 </div>
                 <div
@@ -360,6 +391,15 @@ const ChatApp = () => {
                       : "bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 rounded-tl-none border border-gray-200 dark:border-gray-700"
                   }`}
                 >
+                  {/* Display image if present */}
+                  {msg.imageUrl && (
+                    <img
+                      src={msg.imageUrl}
+                      alt="Uploaded"
+                      className="rounded-lg mb-2 max-w-full max-h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() => window.open(msg.imageUrl, "_blank")}
+                    />
+                  )}
                   {msg.text}
                 </div>
               </div>
@@ -380,7 +420,9 @@ const ChatApp = () => {
               />
               <div className="flex flex-col space-y-1 animate-pulse">
                 <div className="flex items-center space-x-2 text-sm">
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">NestiaDev</span>
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">
+                    NestiaDev
+                  </span>
                   <span className="text-xs text-gray-400">{time}</span>
                 </div>
                 <div className="bg-white dark:bg-gray-800 text-gray-800 dark:text-white px-4 py-2 size-8 flex items-center text-center rounded-2xl rounded-tl-none border border-gray-200 dark:border-gray-700 w-fit max-w-xs">
@@ -396,14 +438,132 @@ const ChatApp = () => {
           <div ref={messagesEndRef} />
         </div>
 
-        <div className="flex items-center bg-white dark:bg-gray-800 rounded-xl mt-2 border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden p-1">
-          <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-            <Plus className="size-5 text-gray-500 dark:text-gray-400" />
-          </button>
+        {/* ── Image preview bar ───────────────────────────── */}
+        {pendingImagePreview && (
+          <div className="flex items-center gap-2 mx-2 mb-2 p-2 bg-gray-100 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+            <img
+              src={pendingImagePreview}
+              alt="Preview"
+              className="w-16 h-16 rounded-lg object-cover"
+            />
+            <div className="flex-grow min-w-0">
+              <p className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">
+                {pendingImage?.name}
+              </p>
+              <p className="text-[10px] text-gray-400">
+                {pendingImage
+                  ? `${(pendingImage.size / 1024).toFixed(1)} KB`
+                  : ""}
+              </p>
+            </div>
+            <button
+              onClick={clearPendingImage}
+              className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            >
+              <X className="size-4 text-gray-500" />
+            </button>
+          </div>
+        )}
+
+        {/* ── Input bar ──────────────────────────────────── */}
+        <div className="flex items-center bg-white dark:bg-gray-800 rounded-xl mt-2 border border-gray-200 dark:border-gray-700 shadow-sm overflow-visible p-1 relative">
+          {/* Emoji button */}
+          <DropdownMenu open={isEmojiOpen} onOpenChange={setIsEmojiOpen}>
+            <DropdownMenuTrigger asChild>
+              <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                <Smile className="size-5 text-gray-500 dark:text-gray-400" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="start"
+              sideOffset={6}
+              className="border-none bg-transparent p-0 shadow-none"
+            >
+              <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
+                <Picker
+                  data={data}
+                  theme={emojiTheme}
+                  onEmojiSelect={handleEmojiSelect}
+                />
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Attach button with popup */}
+          <DropdownMenu open={isAttachOpen} onOpenChange={setIsAttachOpen}>
+            <DropdownMenuTrigger asChild>
+              <button
+                disabled={isUploading}
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Lampirkan file"
+              >
+                {isUploading ? (
+                  <Loader className="size-5 text-gray-500 dark:text-gray-400 animate-spin" />
+                ) : (
+                  <Paperclip className="size-5 text-gray-500 dark:text-gray-400" />
+                )}
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="start"
+              sideOffset={6}
+              className="p-1 min-w-[180px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg"
+            >
+              <button
+                onClick={() => {
+                  setIsAttachOpen(false);
+                  fileInputRef.current?.click();
+                }}
+                className="flex items-center gap-3 w-full px-3 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                <FileText className="size-4 text-blue-500" />
+                <span>Dokumen</span>
+                <span className="text-[10px] text-gray-400 ml-auto">
+                  PDF, TXT, DOCX
+                </span>
+              </button>
+              <button
+                onClick={() => {
+                  setIsAttachOpen(false);
+                  imageInputRef.current?.click();
+                }}
+                className="flex items-center gap-3 w-full px-3 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                <ImageIcon className="size-4 text-green-500" />
+                <span>Gambar / Foto</span>
+                <span className="text-[10px] text-gray-400 ml-auto">
+                  JPG, PNG, WEBP
+                </span>
+              </button>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Hidden file inputs */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            hidden
+            accept=".txt,.pdf,.doc,.docx"
+            onChange={handleFileUpload}
+            disabled={isUploading}
+          />
+          <input
+            ref={imageInputRef}
+            type="file"
+            hidden
+            accept=".jpg,.jpeg,.png,.webp"
+            onChange={handleImageSelect}
+          />
+
           <input
             type="text"
+            ref={inputRef}
             className="flex-grow p-2 bg-transparent outline-none text-sm text-gray-800 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500"
-            placeholder="Adakah yang ingin ditanyakan?"
+            placeholder={
+              pendingImage
+                ? "Tulis pertanyaan tentang gambar ini... (opsional)"
+                : "Adakah yang ingin ditanyakan?"
+            }
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && sendMessage()}

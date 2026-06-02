@@ -153,3 +153,15 @@
     @apply bg-border rounded-full hover:bg-muted-foreground/50 transition-colors;
   }
 }
+
+/* Custom Emoji Picker Theme */
+em-emoji-picker {
+  --font-family: inherit;
+}
+
+/* Menyamakan warna background Emoji Picker dengan bg-gray-800 (Tailwind) */
+.dark em-emoji-picker {
+  --rgb-background: 31, 41, 55;
+  --rgb-input: 55, 65, 81;
+  --rgb-color: 243, 244, 246;
+}

@@ -195,7 +195,8 @@ def get_history(session_id: str, limit: int = 50) -> list[dict]:
 
         r = _get_redis()
         key = _redis_key(session_id)
-        raw = r.lrange(key, 0, limit - 1)
+        # Ambil 'limit' pesan terakhir (paling baru)
+        raw = r.lrange(key, -limit, -1)
         if raw:
             return [json.loads(item) for item in raw]
     except Exception:
@@ -206,10 +207,12 @@ def get_history(session_id: str, limit: int = 50) -> list[dict]:
         db = _get_mongo_db()
         cursor = (
             db.messages.find({"session_id": session_id}, {"_id": 0})
-            .sort("created_at", 1)
+            .sort("created_at", -1) # Ambil yang paling baru dulu
             .limit(limit)
         )
-        return list(cursor)
+        # Karena diurutkan dari yang terbaru, kita harus membaliknya
+        # agar kronologis (lama -> baru) saat diberikan ke LLM
+        return list(cursor)[::-1]
     except PyMongoError:
         logger.exception("MongoDB read also failed")
         return []

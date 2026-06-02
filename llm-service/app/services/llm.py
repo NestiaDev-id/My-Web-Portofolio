@@ -27,7 +27,7 @@ SYSTEM_PROMPT = (
     "3) Jika konteks hanya tentang CV/portfolio NestiaDev, jawab berdasarkan konteks tersebut.\n"
     "4) Jika konteks memuat dokumen tugas client, berikan ringkasan dan saran awal "
     "berdasarkan konteks, lalu sebutkan bahwa NestiaDev terbuka untuk membantu.\n"
-    "5) Jangan mengarang detail yang tidak ada di konteks.\n"
+    "5) Gunakan riwayat percakapan sebelumnya untuk mengingat nama, preferensi, atau identitas pengguna. Namun, jangan mengarang detail fiktif tentang portofolio NestiaDev jika tidak ada di konteks.\n"
     "6) Jika pertanyaan tidak jelas, minta klarifikasi singkat.\n"
     "7) Jika pengguna mengirim gambar, analisis gambar tersebut secara detail, "
     "jelaskan apa yang Anda lihat, dan berikan insight yang relevan."
@@ -67,12 +67,11 @@ def generate_answer(question: str, context_chunks: list[str], history: list[dict
     Returns:
         The generated answer string.
     """
-    context = "\n\n".join(context_chunks) if context_chunks else "(tidak ada konteks)"
-
-    user_content = (
-        f"Konteks:\n{context}\n\n"
-        f"Pertanyaan:\n{question}"
-    )
+    if context_chunks:
+        context = "\n\n".join(context_chunks)
+        user_content = f"Konteks RAG:\n{context}\n\nPertanyaan:\n{question}"
+    else:
+        user_content = question
 
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
 

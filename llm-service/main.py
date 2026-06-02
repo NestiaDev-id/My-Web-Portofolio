@@ -177,9 +177,12 @@ def chat(request: ChatRequest):
     )
     documents = cv_documents + client_documents
 
-    # 2. Generate answer via LLM
+    # 2. Get Chat History
+    history = chat_history.get_history(request.session_id, limit=6)
+
+    # 3. Generate answer via LLM
     try:
-        answer = generate_answer(request.question, documents)
+        answer = generate_answer(request.question, documents, history=history)
     except ValueError as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 

@@ -56,12 +56,13 @@ def _groq_chat(payload: dict) -> str:
 
 # ── Text generation ──────────────────────────────────────
 
-def generate_answer(question: str, context_chunks: list[str]) -> str:
+def generate_answer(question: str, context_chunks: list[str], history: list[dict] | None = None) -> str:
     """Build a RAG prompt and get an answer from the LLM via Groq.
 
     Args:
         question: The user's question.
         context_chunks: Relevant document chunks retrieved from the vector store.
+        history: Optional list of previous chat messages.
 
     Returns:
         The generated answer string.
@@ -73,12 +74,24 @@ def generate_answer(question: str, context_chunks: list[str]) -> str:
         f"Pertanyaan:\n{question}"
     )
 
+    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+
+    if history:
+        for msg in history:
+            role = msg.get("role")
+            content = msg.get("content")
+            if role in ["user", "assistant"] and content:
+                # Hindari memasukkan pesan "Konteks:" panjang dari history
+                # jika itu berasal dari RAG user message.
+                if role == "user" and "Konteks:\n" in content and "Pertanyaan:\n" in content:
+                    content = content.split("Pertanyaan:\n")[-1]
+                messages.append({"role": role, "content": content})
+
+    messages.append({"role": "user", "content": user_content})
+
     payload = {
         "model": "llama-3.1-8b-instant",
-        "messages": [
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": user_content},
-        ],
+        "messages": messages,
         "temperature": 0.2,
         "max_tokens": 512,
         "top_p": 0.95,

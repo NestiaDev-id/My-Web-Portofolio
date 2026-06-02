@@ -88,7 +88,7 @@ const ChatApp = () => {
     return freshId;
   };
 
-  const [sessionId, setSessionId] = useState(refreshAndGetSessionId);
+  const [, setSessionId] = useState(refreshAndGetSessionId);
 
   useEffect(() => {
     const updateClock = () => {

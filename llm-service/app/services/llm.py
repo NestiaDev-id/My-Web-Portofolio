@@ -54,10 +54,10 @@ def generate_answer(question: str, context_chunks: list[str]) -> str:
     prompt = PROMPT.format(context=context, question=question)
 
     client = _get_hf_client()
-    answer = client.text_generation(
-        prompt,
-        max_new_tokens=512,
+    response = client.chat_completion(
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=512,
         temperature=0.2,
         top_p=0.95,
     )
-    return answer.strip()
+    return response.choices[0].message.content.strip()

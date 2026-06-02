@@ -4,8 +4,6 @@ import { chatWithRag, uploadTask } from "@/utils/rag";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 import {
-  Sun,
-  Languages,
   Smile,
   Paperclip,
   Loader,
@@ -15,9 +13,7 @@ import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
-  DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
 
 const ChatApp = () => {
   const [messages, setMessages] = useState([
@@ -254,34 +250,7 @@ const ChatApp = () => {
       </p>
 
       <div className="w-full sm:w-[90%] md:w-[80%] lg:w-[60%] xl:w-[50%] mt-6 bg-gray-50 dark:bg-gray-900 p-4 rounded-2xl shadow-xl flex flex-col h-[600px] border border-gray-200 dark:border-gray-800">
-        <div className="flex justify-end gap-2 mb-4">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                size="sm"
-                variant="outline"
-                className="gap-2 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-white"
-              >
-                <Languages className="w-4 h-4" />
-                Bahasa
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="end"
-              className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-200 dark:border-gray-700"
-            >
-              <DropdownMenuItem className="gap-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
-                <Sun className="w-4 h-4 text-red-400" />
-                Bahasa Indonesia
-              </DropdownMenuItem>
-              <DropdownMenuItem className="gap-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
-                <Sun className="w-4 h-4 text-blue-400" />
-                English
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
 
-        </div>
 
         <div className="flex-grow overflow-y-auto p-4 space-y-4 custom-scrollbar">
           {messages.map((msg) => (

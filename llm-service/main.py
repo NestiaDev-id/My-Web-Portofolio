@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Optional
 
-from fastapi import FastAPI, File, Form, HTTPException, Header, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Header, UploadFile, Response
 
 from app.models.schemas import (
     ChatRequest,
@@ -84,15 +84,15 @@ def root():
 
 
 @app.get("/healthcheck")
-def healthcheck():
-    """Endpoint for uptime monitors to keep the service awake and check databases."""
+@app.head("/healthcheck")
+def healthcheck(response: Response):
     db_status = chat_history.check_health()
+    
     return {
         "status": "ok",
         "service": "Hugging Face Space (Active)",
         "databases": db_status
     }
-
 
 @app.on_event("startup")
 def index_cv_on_startup():

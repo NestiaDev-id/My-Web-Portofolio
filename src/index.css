@@ -5,6 +5,16 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@theme {
+  --color-p5-red: #e60012;
+  --color-p5-red-deep: #a3000c;
+  --color-p5-black: #0b0b0d;
+  --color-p5-white: #f6f4ef;
+  --color-p5-ink: #111;
+  --font-p5-condensed: 'Barlow Condensed', 'Arial Narrow', Arial, sans-serif;
+  --font-p5-display: 'Archivo Black', 'Arial Black', Impact, sans-serif;
+}
+
 @theme inline {
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);

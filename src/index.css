@@ -175,3 +175,490 @@ em-emoji-picker {
   --rgb-input: 55, 65, 81;
   --rgb-color: 243, 244, 246;
 }
+
+/* ====================================================
+   PERSONA 5 BACKGROUND LAYERS & ANIMATIONS
+==================================================== */
+#p5-bg {
+  position: fixed;
+  inset: -6vmax;
+  z-index: 0;
+  pointer-events: none;
+}
+.p5-bg-layer {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+#p5-bg-stripes {
+  background: repeating-linear-gradient(
+    115deg,
+    var(--color-p5-red) 0 46px,
+    var(--color-p5-red-deep) 46px 52px,
+    var(--color-p5-red) 52px 120px,
+    #c4000f 120px 126px
+  );
+  animation: stripeDrift 22s linear infinite;
+}
+@keyframes stripeDrift {
+  from { background-position: 0 0; }
+  to { background-position: 520px 0; }
+}
+#p5-bg-halftone {
+  background-image: radial-gradient(circle, rgba(0,0,0,.35) 1.6px, transparent 1.7px);
+  background-size: 14px 14px;
+  mix-blend-mode: multiply;
+  animation: halftoneDrift 30s linear infinite;
+}
+@keyframes halftoneDrift {
+  from { background-position: 0 0; }
+  to { background-position: -140px 140px; }
+}
+#p5-bg-vignette {
+  background: radial-gradient(ellipse at 32% 40%, transparent 30%, rgba(0,0,0,.72) 100%);
+}
+.p5-bg-star {
+  position: absolute;
+  opacity: 0.16;
+  animation: spinStar 60s linear infinite;
+  transform-origin: center;
+}
+.p5-bg-star.s2 {
+  animation-duration: 90s;
+  animation-direction: reverse;
+  opacity: 0.1;
+}
+@keyframes spinStar {
+  to { transform: rotate(360deg); }
+}
+
+/* ====================================================
+   PERSONA 5 — SLASH (diagonal black cutout)
+==================================================== */
+#p5-slash {
+  position: fixed; z-index: 1; inset: 0; pointer-events: none;
+  background: var(--color-p5-black);
+  clip-path: polygon(58% 0, 100% 0, 100% 100%, 40% 100%, 52% 62%, 45% 60%, 60% 24%, 51% 22%);
+  transition: clip-path .8s cubic-bezier(.8,0,.15,1);
+}
+body.p5-sub-active #p5-slash {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 0 62%, 0 60%, 0 24%, 0 22%);
+}
+
+/* ====================================================
+   PERSONA 5 — HUD (Top & Bottom bars)
+==================================================== */
+.p5-hud-top {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: 18px 26px 0; letter-spacing: .14em; font-weight: 600;
+  position: relative; z-index: 3;
+}
+.p5-hud-tag {
+  background: var(--color-p5-black); color: var(--color-p5-white);
+  padding: 5px 14px; transform: rotate(-2deg);
+  font-size: 14px; text-transform: uppercase;
+  box-shadow: 4px 4px 0 rgba(0,0,0,.35);
+}
+.p5-hud-tag.alt {
+  background: var(--color-p5-white); color: var(--color-p5-black);
+  transform: rotate(1.5deg);
+}
+.p5-hud-bottom {
+  padding: 0 26px 16px; display: flex; gap: 22px; align-items: center;
+  font-size: 13px; letter-spacing: .18em; text-transform: uppercase; opacity: .95;
+  position: relative; z-index: 3;
+}
+.p5-hud-bottom .key {
+  display: inline-block; background: var(--color-p5-white); color: var(--color-p5-black);
+  padding: 2px 8px; margin-right: 6px; font-weight: 700; transform: skewX(-8deg);
+  border-radius: 2px;
+}
+
+/* ====================================================
+   PERSONA 5 — RANSOM LETTERS
+==================================================== */
+.p5-ransom { display: inline-block; white-space: nowrap; }
+.p5-ransom .ch {
+  display: inline-block; line-height: 1; padding: 0 .01em;
+  transition: transform .15s;
+}
+.p5-ransom .ch.box {
+  background: var(--color-p5-black); color: var(--color-p5-white);
+  padding: .02em .08em; margin: 0 .03em;
+}
+.p5-ransom .ch.boxw {
+  background: var(--color-p5-white); color: var(--color-p5-black);
+  padding: .02em .08em; margin: 0 .03em;
+}
+.p5-ransom .ch.red {
+  color: var(--color-p5-red); text-shadow: 1px 1px 0 var(--color-p5-black);
+}
+.p5-display {
+  font-family: var(--font-p5-display);
+}
+
+/* ====================================================
+   PERSONA 5 — MENU ITEMS (Home page nav)
+==================================================== */
+.p5-menu-item {
+  background: none; border: 0; cursor: pointer; color: var(--color-p5-white);
+  text-align: left; position: relative; padding: 2px 14px 2px 4px;
+  transform: translateX(-60px); opacity: 0;
+  animation: p5MenuIn .55s cubic-bezier(.2,1.2,.3,1) forwards;
+}
+.p5-menu-item:nth-child(1) { animation-delay: .15s; }
+.p5-menu-item:nth-child(2) { animation-delay: .25s; }
+.p5-menu-item:nth-child(3) { animation-delay: .35s; }
+.p5-menu-item:nth-child(4) { animation-delay: .45s; }
+.p5-menu-item:nth-child(5) { animation-delay: .55s; }
+@keyframes p5MenuIn { to { transform: translateX(0); opacity: 1; } }
+
+.p5-menu-item::before {
+  content: ""; position: absolute; left: -4%; top: 18%; height: 70%; width: 0;
+  background: var(--color-p5-black); transform: skewX(-16deg); z-index: -1;
+  transition: width .18s cubic-bezier(.7,0,.3,1);
+}
+.p5-menu-item.sel::before { width: 108%; }
+.p5-menu-item.sel { transform: translateX(14px) !important; }
+.p5-menu-item.sel .ch { color: var(--color-p5-white); }
+.p5-menu-item.sel .ch.box { background: var(--color-p5-red); color: var(--color-p5-white); }
+.p5-menu-item.sel .ch.boxw { background: var(--color-p5-white); color: var(--color-p5-black); }
+.p5-menu-item:focus-visible { outline: 3px dashed var(--color-p5-white); outline-offset: 4px; }
+
+.p5-menu-item:hover .ch, .p5-menu-item.sel .ch {
+  animation: p5Jitter .35s ease both;
+}
+.p5-menu-item:hover .ch:nth-child(odd) { animation-delay: .03s; }
+.p5-menu-item:hover .ch:nth-child(3n) { animation-delay: .06s; }
+@keyframes p5Jitter {
+  0%   { transform: var(--t) translateY(0); }
+  35%  { transform: var(--t) translateY(-6px) rotate(3deg); }
+  70%  { transform: var(--t) translateY(2px) rotate(-2deg); }
+  100% { transform: var(--t) translateY(0); }
+}
+
+.p5-cursor-mark {
+  position: absolute; right: -46px; top: 50%; transform: translateY(-50%) rotate(8deg);
+  font-size: clamp(18px, 2.4vw, 30px); opacity: 0; transition: opacity .12s;
+  color: var(--color-p5-white); text-shadow: 2px 2px 0 var(--color-p5-black);
+}
+.p5-menu-item.sel .p5-cursor-mark {
+  opacity: 1; animation: p5Pulse 0.9s ease-in-out infinite;
+}
+@keyframes p5Pulse {
+  0%, 100% { transform: translateY(-50%) rotate(8deg) scale(1); }
+  50% { transform: translateY(-50%) rotate(8deg) scale(1.18); }
+}
+
+/* ====================================================
+   PERSONA 5 — HOME SCREEN
+==================================================== */
+.p5-intro-eyebrow {
+  font-size: clamp(14px, 1.6vw, 20px); letter-spacing: .5em; text-transform: uppercase;
+  margin-bottom: 1.2vh; font-weight: 700; text-shadow: 2px 2px 0 var(--color-p5-black);
+}
+.p5-big-name { line-height: .92; margin-bottom: 2.5vh; cursor: pointer; width: max-content; }
+.p5-big-name .p5-ransom { font-size: clamp(44px, 8.5vw, 124px); display: block; }
+.p5-big-name:hover .ch { animation: p5Jitter .35s ease both; }
+.p5-big-name:hover .ch:nth-child(odd) { animation-delay: .03s; }
+.p5-big-name:hover .ch:nth-child(3n) { animation-delay: .06s; }
+.p5-big-name:active { transform: scale(.985); }
+.p5-tagline {
+  max-width: 520px; font-size: clamp(15px, 1.5vw, 20px); line-height: 1.45;
+  background: var(--color-p5-black); padding: 12px 18px; transform: rotate(-1deg);
+  box-shadow: 6px 6px 0 rgba(0,0,0,.3); color: var(--color-p5-white);
+}
+
+/* ====================================================
+   PERSONA 5 — SUB-SCREEN CHROME (headers for sub-pages)
+==================================================== */
+.p5-screen-head { margin: 1vh 0 3.5vh; position: relative; display: inline-block; }
+.p5-screen-head .p5-ransom { font-size: clamp(38px, 6vw, 84px); }
+.p5-screen-head::after {
+  content: ""; position: absolute; left: -6px; bottom: -10px; height: 10px; width: 105%;
+  background: var(--color-p5-red); transform: skewX(-24deg);
+}
+.p5-back-hint {
+  display: inline-block; margin-left: 22px; vertical-align: middle;
+  font-size: 13px; letter-spacing: .2em; text-transform: uppercase;
+  background: var(--color-p5-white); color: var(--color-p5-black);
+  padding: 4px 10px; transform: rotate(-2deg);
+  cursor: pointer; border: 0; font-weight: 700; font-family: inherit;
+}
+.p5-back-hint:hover { background: var(--color-p5-red); color: var(--color-p5-white); }
+
+/* ====================================================
+   PERSONA 5 — WIPE TRANSITION
+==================================================== */
+#p5-wipe { position: fixed; inset: -10%; z-index: 50; pointer-events: none; }
+#p5-wipe .pane {
+  position: absolute; inset: 0; transform: translateX(-130%) skewX(-14deg);
+}
+#p5-wipe .p3 { background: var(--color-p5-white); }
+#p5-wipe .p2 { background: var(--color-p5-black); }
+#p5-wipe .p1 { background: var(--color-p5-red); }
+#p5-wipe.go .pane { animation: p5WipeAcross .7s cubic-bezier(.75,0,.2,1) forwards; }
+#p5-wipe.go .p2 { animation-delay: .06s; }
+#p5-wipe.go .p1 { animation-delay: .12s; }
+@keyframes p5WipeAcross {
+  0%   { transform: translateX(-130%) skewX(-14deg); }
+  45%  { transform: translateX(0%) skewX(-14deg); }
+  55%  { transform: translateX(0%) skewX(-14deg); }
+  100% { transform: translateX(130%) skewX(-14deg); }
+}
+#p5-wipe .flash {
+  position: absolute; inset: 0; background: var(--color-p5-white); opacity: 0;
+}
+#p5-wipe.go .flash { animation: p5Flash .7s linear forwards; }
+@keyframes p5Flash {
+  0%, 44% { opacity: 0; } 48% { opacity: 1; } 56% { opacity: 0; } 100% { opacity: 0; }
+}
+
+/* ====================================================
+   PERSONA 5 — CUSTOM ANIMATED CURSOR
+==================================================== */
+@media (pointer: fine) {
+  body.p5-cursor-on, body.p5-cursor-on * { cursor: none !important; }
+}
+#p5-cursor {
+  position: fixed; left: 0; top: 0; width: 48px; height: 48px; z-index: 9999;
+  pointer-events: none; display: none;
+  background-repeat: no-repeat; background-position: 0 0;
+  background-image: url("/p5/cursors/normal.png");
+  margin: -3px 0 0 -4px;
+}
+#p5-cursor.link {
+  background-image: url("/p5/cursors/link.png");
+  margin: -6px 0 0 -6px;
+}
+
+/* ====================================================
+   PERSONA 5 — PROJECT CARDS
+==================================================== */
+.p5-card {
+  color: var(--color-p5-ink); position: relative;
+  padding: 20px 22px 18px; cursor: pointer; text-decoration: none; display: block;
+  transform: rotate(var(--tilt, 0deg)) translateY(24px); opacity: 0;
+  transition: transform .18s cubic-bezier(.7,0,.3,1), filter .18s;
+  filter: drop-shadow(7px 7px 0 rgba(0,0,0,.5));
+  animation: p5CardIn .5s cubic-bezier(.2,1.1,.3,1) forwards;
+  animation-delay: var(--d, 0ms);
+}
+.p5-card::before {
+  content: ""; position: absolute; inset: 0; background: var(--color-p5-white);
+  clip-path: polygon(0 6%, 3% 0, 100% 0, 100% 88%, 97% 100%, 0 100%);
+}
+.p5-card > * { position: relative; }
+@keyframes p5CardIn { to { transform: rotate(var(--tilt, 0deg)) translateY(0); opacity: 1; } }
+.p5-card:hover {
+  transform: rotate(0deg) scale(1.03) !important;
+  filter: drop-shadow(10px 10px 0 var(--color-p5-black));
+  z-index: 3;
+}
+.p5-card .lang {
+  position: absolute; top: -12px; right: 14px;
+  background: var(--color-p5-black); color: var(--color-p5-white);
+  font-weight: 700; font-size: 13px; letter-spacing: .14em; text-transform: uppercase;
+  padding: 4px 12px; transform: rotate(2deg);
+}
+.p5-card .lang::before {
+  content: ""; display: inline-block; width: 9px; height: 9px; border-radius: 50%;
+  background: var(--lc, var(--color-p5-red)); margin-right: 7px;
+}
+.p5-card h3 {
+  font-family: var(--font-p5-display);
+  font-size: 21px; line-height: 1.05; text-transform: uppercase;
+  margin-bottom: 10px; word-break: break-word;
+}
+.p5-card h3 em { font-style: normal; color: var(--color-p5-red); }
+.p5-card p { font-size: 15.5px; line-height: 1.4; min-height: 44px; color: #2c2c2c; }
+.p5-card .meta {
+  margin-top: 14px; display: flex; justify-content: space-between; align-items: center;
+  font-size: 13px; letter-spacing: .12em; text-transform: uppercase; font-weight: 700;
+}
+.p5-card .meta .go {
+  background: var(--color-p5-red); color: var(--color-p5-white);
+  padding: 4px 12px; transform: skewX(-10deg); transition: background .15s;
+}
+.p5-card:hover .meta .go { background: var(--color-p5-black); }
+
+/* Featured cards */
+.p5-card.feat { color: var(--color-p5-white); filter: drop-shadow(7px 7px 0 var(--color-p5-red-deep)); }
+.p5-card.feat::before { background: var(--color-p5-black); }
+.p5-card.feat:hover { filter: drop-shadow(10px 10px 0 var(--color-p5-red)); }
+.p5-card.feat p { color: #d8d5cf; }
+.p5-card.feat h3 { color: var(--color-p5-white); }
+.p5-card.feat .lang { background: var(--color-p5-red); }
+.p5-card.feat .meta .go { background: var(--color-p5-white); color: var(--color-p5-black); }
+.p5-card.feat:hover .meta .go { background: var(--color-p5-red); color: var(--color-p5-white); }
+
+/* Card thumbnails */
+.p5-card .thumb {
+  margin: -20px -22px 14px; height: 150px; overflow: hidden; position: relative;
+  clip-path: polygon(0 0, 100% 0, 100% 82%, 0 100%);
+  background: var(--color-p5-black);
+}
+.p5-card .thumb img {
+  width: 100%; height: 100%; object-fit: cover;
+  filter: grayscale(.9) contrast(1.15);
+  transition: filter .2s, transform .3s;
+}
+.p5-card:hover .thumb img { filter: grayscale(0) contrast(1.05); transform: scale(1.05); }
+.p5-card .thumb::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(115deg, transparent 78%, var(--color-p5-red) 78.5%);
+}
+
+/* Grid labels */
+.p5-grid-label {
+  font-family: var(--font-p5-display);
+  font-size: clamp(15px, 1.7vw, 20px); text-transform: uppercase; letter-spacing: .12em;
+  margin: 3.5vh 0 2vh; text-shadow: 2px 2px 0 var(--color-p5-black);
+  color: var(--color-p5-white);
+}
+.p5-grid-label .bar {
+  display: inline-block; width: 34px; height: 12px; background: var(--color-p5-white);
+  transform: skewX(-24deg); margin-right: 12px; vertical-align: baseline;
+}
+
+/* Live dot */
+.p5-live-dot {
+  display: inline-block; width: 9px; height: 9px; border-radius: 50%;
+  background: #3dff6e; margin-right: 7px; animation: p5LiveBlink 1.1s ease-in-out infinite;
+}
+@keyframes p5LiveBlink { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
+
+/* ====================================================
+   PERSONA 5 — SKILLS
+==================================================== */
+.p5-skill-group { margin-bottom: 5vh; max-width: 920px; }
+.p5-skill-group h3 {
+  display: inline-block; background: var(--color-p5-white); color: var(--color-p5-black);
+  font-family: var(--font-p5-display);
+  font-size: clamp(18px, 2.2vw, 26px); text-transform: uppercase;
+  padding: 6px 16px; transform: rotate(-1.5deg); margin-bottom: 2.4vh;
+  box-shadow: 5px 5px 0 var(--color-p5-black);
+}
+.p5-skill-row { display: flex; align-items: center; gap: 18px; margin-bottom: 12px; }
+.p5-skill-row .name {
+  width: 220px; flex-shrink: 0; font-size: 17px; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase;
+  text-shadow: 1px 1px 0 var(--color-p5-black);
+  color: var(--color-p5-white);
+}
+.p5-skill-bar {
+  flex: 1; height: 20px; background: rgba(0,0,0,.55); position: relative;
+  transform: skewX(-18deg); overflow: hidden; max-width: 520px;
+}
+.p5-skill-bar .fill {
+  position: absolute; inset: 0; width: 0; background: var(--color-p5-white);
+  background-image: repeating-linear-gradient(90deg, transparent 0 26px, rgba(230,0,18,.22) 26px 30px);
+  transition: width .9s cubic-bezier(.2,1,.3,1);
+}
+.p5-skill-row .lv {
+  font-family: var(--font-p5-display);
+  font-size: 15px; width: 70px; text-align: right;
+  text-shadow: 2px 2px 0 var(--color-p5-black);
+  color: var(--color-p5-white);
+}
+
+/* ====================================================
+   PERSONA 5 — PAPER (About / Contact)
+==================================================== */
+.p5-paper {
+  max-width: 760px; background: var(--color-p5-white); color: var(--color-p5-ink);
+  padding: 30px 34px; font-size: 18px; line-height: 1.55;
+  clip-path: polygon(0 4%, 2% 0, 100% 0, 100% 94%, 98% 100%, 0 100%);
+  transform: rotate(-.6deg); box-shadow: 10px 10px 0 rgba(0,0,0,.55);
+  margin-bottom: 4vh;
+}
+.p5-paper strong { color: var(--color-p5-red); }
+.p5-paper .stamp {
+  display: inline-block; background: var(--color-p5-black); color: var(--color-p5-white);
+  padding: 2px 8px; transform: rotate(-2deg); font-weight: 700;
+}
+.p5-paper a { color: var(--color-p5-red); font-weight: 700; }
+.p5-paper a:hover { background: var(--color-p5-red); color: var(--color-p5-white); text-decoration: none; }
+
+/* ====================================================
+   PERSONA 5 — CONTACT CHIPS
+==================================================== */
+.p5-contact-chip {
+  background: var(--color-p5-black); color: var(--color-p5-white); text-decoration: none;
+  font-family: var(--font-p5-display);
+  font-size: clamp(16px, 2vw, 22px); text-transform: uppercase;
+  padding: 14px 26px; transform: skewX(-8deg) rotate(-1deg);
+  transition: transform .15s, background .15s, color .15s;
+  box-shadow: 6px 6px 0 rgba(0,0,0,.4);
+}
+.p5-contact-chip span { display: inline-block; transform: skewX(8deg); }
+.p5-contact-chip:hover {
+  background: var(--color-p5-white); color: var(--color-p5-red);
+  transform: skewX(-8deg) rotate(0) scale(1.06);
+}
+
+/* ====================================================
+   PERSONA 5 — CV DOWNLOAD BUTTON
+==================================================== */
+.p5-cv-btn {
+  display: inline-block; text-decoration: none;
+  background: var(--color-p5-red); color: var(--color-p5-white);
+  font-family: var(--font-p5-display);
+  font-size: clamp(17px, 2.2vw, 24px); text-transform: uppercase; letter-spacing: .06em;
+  padding: 16px 30px; transform: skewX(-8deg) rotate(-1deg);
+  box-shadow: 7px 7px 0 var(--color-p5-black);
+  transition: transform .15s, background .15s, color .15s, box-shadow .15s;
+}
+.p5-cv-btn span { display: inline-block; transform: skewX(8deg); }
+.p5-cv-btn:hover {
+  background: var(--color-p5-white); color: var(--color-p5-red);
+  transform: skewX(-8deg) rotate(0) scale(1.05);
+  box-shadow: 10px 10px 0 var(--color-p5-black);
+}
+.p5-cv-btn:active { transform: skewX(-8deg) scale(.97); }
+
+/* ====================================================
+   PERSONA 5 — ABOUT PHOTO (polaroid style)
+==================================================== */
+.p5-about-photo {
+  float: right; width: min(240px, 38%); margin: 0 0 14px 22px;
+  background: var(--color-p5-white); padding: 10px 10px 34px;
+  transform: rotate(3deg);
+  box-shadow: 8px 8px 0 rgba(0,0,0,.35);
+  position: relative;
+}
+.p5-about-photo img { width: 100%; display: block; filter: contrast(1.05); }
+.p5-about-photo::before {
+  content: ""; position: absolute; top: -12px; left: 50%; transform: translateX(-50%) rotate(-4deg);
+  width: 90px; height: 26px; background: var(--color-p5-red); opacity: .9;
+  clip-path: polygon(4% 0, 96% 8%, 100% 92%, 0 100%);
+}
+.p5-about-photo figcaption {
+  text-align: center; margin-top: 8px; font-weight: 700; letter-spacing: .14em;
+  text-transform: uppercase; font-size: 12px; color: var(--color-p5-ink);
+}
+
+/* ====================================================
+   PERSONA 5 — P5 SCROLLBAR
+==================================================== */
+.p5-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-p5-red) transparent;
+}
+.p5-scroll::-webkit-scrollbar { width: 8px; }
+.p5-scroll::-webkit-scrollbar-thumb { background: var(--color-p5-red); }
+
+/* ====================================================
+   PERSONA 5 — RESPONSIVE
+==================================================== */
+@media (max-width: 700px) {
+  .p5-skill-row .name { width: 130px; font-size: 14px; }
+  .p5-hud-bottom { font-size: 11px; gap: 12px; flex-wrap: wrap; }
+  .p5-cursor-mark { right: -34px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .001s !important;
+    transition-duration: .001s !important;
+  }
+}

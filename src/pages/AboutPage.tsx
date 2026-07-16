@@ -218,7 +218,22 @@ const AboutPage: React.FC = () => {
               })}
             </div>
             
-           
+            {/* ─── Main Skills Tags ─── */}
+            <div className="flex flex-wrap justify-center gap-2 mt-6 max-w-3xl mx-auto">
+              {[
+                "Artificial Intelligence", "Machine Learning", "Computer Vision", 
+                "Forecasting", "Data Analysis", "Data Visualization", 
+                "Problem Solving", "Team Work & Collaboration", 
+                "Personal Growth", "Curious & Passionate"
+              ].map((skill, i) => (
+                <span 
+                  key={i} 
+                  className={`font-mono text-[10px] md:text-xs px-2 py-1 bg-white border border-black/80 text-black shadow-sm ${i % 2 === 0 ? 'rotate-1' : '-rotate-1'} hover:bg-black hover:text-white transition-colors cursor-crosshair`}
+                >
+                  #{skill.toUpperCase()}
+                </span>
+              ))}
+            </div>
           </div>
         </header>
 

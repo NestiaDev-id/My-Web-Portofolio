@@ -1,7 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import P5RansomText from "../components/P5RansomText";
-import { Paperclip, Pin, Calendar, Scissors, Sparkles } from "lucide-react";
+import { Paperclip, Pin, Calendar, Scissors, Sparkles, Flame, BadgeCheck, Terminal } from "lucide-react";
 import {
   FaPython, FaFigma, FaGitAlt, FaReact, FaNodeJs, FaDocker, FaLinux, FaJava,
 } from "react-icons/fa";
@@ -10,14 +9,15 @@ import {
   SiHuggingface, SiJavascript, SiPhp, SiDart, SiFlutter, SiGo, SiTailwindcss,
   SiBootstrap, SiExpress, SiLaravel, SiMongodb, SiMysql, SiFirebase,
   SiSupabase, SiPostman, SiPowers, SiGooglecloud, SiLangchain,
+  SiArchlinux,
 } from "react-icons/si";
 
 /* ─── Stable hash ─── */
-function hash(str: string): number {
-  let h = 9;
-  for (let i = 0; i < str.length; i++) h = Math.imul(h ^ str.charCodeAt(i), 387420489);
-  return (h ^ (h >>> 9)) >>> 0;
-}
+// function hash(str: string): number {
+//   let h = 9;
+//   for (let i = 0; i < str.length; i++) h = Math.imul(h ^ str.charCodeAt(i), 387420489);
+//   return (h ^ (h >>> 9)) >>> 0;
+// }
 
 /* ─── Ransom Letter (per-character) ─── */
 const FONTS = [
@@ -106,7 +106,7 @@ const techCategories = [
       { name: "Git", icon: <FaGitAlt />, color: "bg-orange-600 text-white" },
       { name: "Docker", icon: <FaDocker />, color: "bg-blue-500 text-white" },
       { name: "Postman", icon: <SiPostman />, color: "bg-orange-500 text-white" },
-      { name: "Linux", icon: <FaLinux />, color: "bg-gray-900 text-yellow-300" },
+      { name: "Arch Linux", icon: <SiArchlinux />, color: "bg-gray-900 text-yellow-300" },
       { name: "PowerShell", icon: <SiPowers />, color: "bg-blue-700 text-white" },
       { name: "GCP", icon: <SiGooglecloud />, color: "bg-blue-500 text-white" },
       { name: "TensorFlow", icon: <SiTensorflow />, color: "bg-orange-500 text-white" },
@@ -179,6 +179,36 @@ const AboutPage: React.FC = () => {
     if (!audioUnlocked.current || !sfxRef.current) return;
     try { sfxRef.current.currentTime = 0; sfxRef.current.play().catch(() => {}); } catch {}
   }, []);
+
+  const getLevelBadge = (skillName: string) => {
+    const experts = ["JavaScript", "React", "Tailwind", "Bootstrap", "Python", "Node.js", "Express", "MySQL", "Git", "Postman", "Figma", "MongoDB"];
+    const beginners = ["Go", "Docker", "PowerShell", "PHP"];
+    const level = experts.includes(skillName) ? 'expert' : beginners.includes(skillName) ? 'beginner' : 'medium';
+
+    switch (level) {
+      case 'expert':
+        return {
+          label: '★ EXPERT LEVEL',
+          desc: 'Menguasai konsep mendalam, performa optimal, & arsitektur bersih.',
+          icon: <Flame className="w-4 h-4 text-red-500 fill-red-500 animate-pulse" />,
+          stampColor: 'text-red-500 border-red-500 bg-red-50'
+        };
+      case 'medium':
+        return {
+          label: '✦ MIDWAY BUILDER',
+          desc: 'Pengalaman nyata di lapangan, mandiri dalam implementasi.',
+          icon: <BadgeCheck className="w-4 h-4 text-blue-500 fill-blue-500" />,
+          stampColor: 'text-blue-500 border-blue-500 bg-blue-50'
+        };
+      default:
+        return {
+          label: '▲ RUNTIME EXPLORER',
+          desc: 'Familiar & aktif bereksperimen dengan dokumentasi terbuka.',
+          icon: <Terminal className="w-4 h-4 text-orange-500" />,
+          stampColor: 'text-orange-500 border-orange-500 bg-orange-50'
+        };
+    }
+  };
 
   return (
     <section className="relative z-[2] min-h-screen bg-[#ece5d8] newspaper-grid text-black overflow-y-auto p5-scroll">
@@ -368,7 +398,7 @@ const AboutPage: React.FC = () => {
                   <h3 className="font-heavy-block text-sm bg-black text-white px-2 py-1.5 mt-2 inline-block mb-6 -rotate-2 tracking-tight">
                     {cat.category}
                   </h3>
-                  <div className="flex flex-wrap gap-2.5">
+                  <div className="flex flex-wrap gap-2.5 relative z-10">
                     {cat.skills.map((skill, si) => {
                       const tagTilts = ["rotate-2", "-rotate-2", "rotate-1", "-rotate-1", "rotate-3", "-rotate-3"];
                       return (
@@ -383,22 +413,36 @@ const AboutPage: React.FC = () => {
                       );
                     })}
                   </div>
+                  
+                  {/* Tape deco */}
+                  <div className="absolute -bottom-2 -right-4 w-16 h-8 bg-[#fed7aa] rotate-[35deg] opacity-70 border-t border-black border-dashed pointer-events-none z-0" />
                 </div>
               );
             })}
           </div>
 
           {/* Hover hint */}
-          <div className="mt-6 h-12">
+          <div className="mt-8 h-24 relative">
             {activeSkill ? (
-              <div className="bg-white border-2 border-black p-3 paper-shadow-sm rotate-[0.5deg] font-heavy-block text-sm text-black">
-                🔍 {activeSkill}
-              </div>
+              (() => {
+                const detail = getLevelBadge(activeSkill);
+                return (
+                  <div className="absolute w-full bg-[#f8fafc] border-2 border-black p-3 rounded-none paper-shadow-sm flex items-center gap-4 animate-fade-in rotate-[0.5deg] z-20">
+                    <div className={`p-2 border-2 border-black rounded-none flex items-center justify-center ${detail.stampColor} font-bungee text-[10px] sm:text-xs font-bold rotate-[-3deg] uppercase tracking-wider whitespace-nowrap`}>
+                      {detail.icon}
+                      <span className="ml-1.5">{detail.label}</span>
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-heavy-block text-xs uppercase tracking-tight text-black">{activeSkill}</h4>
+                      <p className="font-typewriter text-xs text-gray-700 mt-1 leading-snug">{detail.desc}</p>
+                    </div>
+                  </div>
+                );
+              })()
             ) : (
-              <div className="border-2 border-dashed border-gray-400 p-3 text-center -rotate-[0.5deg]">
-                <p className="font-typewriter text-xs text-gray-500">
-                  <Sparkles className="inline w-4 h-4 text-amber-500 mr-1" />
-                  Hover a skill tag to inspect
+              <div className="border-2 border-dashed border-gray-400 p-4 text-center select-none rotate-[-0.5deg]">
+                <p className="font-typewriter text-xs text-gray-500 flex items-center justify-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-amber-500" /> Hover atau klik tag keahlian untuk mendeteksi rekam jejak teknis saya secara mendalam!
                 </p>
               </div>
             )}

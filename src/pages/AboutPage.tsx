@@ -180,34 +180,48 @@ const AboutPage: React.FC = () => {
     try { sfxRef.current.currentTime = 0; sfxRef.current.play().catch(() => {}); } catch {}
   }, []);
 
-  const getLevelBadge = (skillName: string) => {
-    const experts = ["JavaScript", "React", "Tailwind", "Bootstrap", "Python", "Node.js", "Express", "MySQL", "Git", "Postman", "Figma", "MongoDB"];
-    const beginners = ["Go", "Docker", "PowerShell", "PHP"];
-    const level = experts.includes(skillName) ? 'expert' : beginners.includes(skillName) ? 'beginner' : 'medium';
-
-    switch (level) {
-      case 'expert':
-        return {
-          label: '★ EXPERT LEVEL',
-          desc: 'Menguasai konsep mendalam, performa optimal, & arsitektur bersih.',
-          icon: <Flame className="w-4 h-4 text-red-500 fill-red-500 animate-pulse" />,
-          stampColor: 'text-red-500 border-red-500 bg-red-50'
-        };
-      case 'medium':
-        return {
-          label: '✦ MIDWAY BUILDER',
-          desc: 'Pengalaman nyata di lapangan, mandiri dalam implementasi.',
-          icon: <BadgeCheck className="w-4 h-4 text-blue-500 fill-blue-500" />,
-          stampColor: 'text-blue-500 border-blue-500 bg-blue-50'
-        };
-      default:
-        return {
-          label: '▲ RUNTIME EXPLORER',
-          desc: 'Familiar & aktif bereksperimen dengan dokumentasi terbuka.',
-          icon: <Terminal className="w-4 h-4 text-orange-500" />,
-          stampColor: 'text-orange-500 border-orange-500 bg-orange-50'
-        };
-    }
+  const getSkillDesc = (skillName: string) => {
+    const descriptions: Record<string, string> = {
+      // Front-End
+      "JavaScript": "Bahasa inti untuk merakit interaktivitas dan logika asinkron di sisi klien.",
+      "TypeScript": "Menjaga keamanan tipe data (type-safety) untuk mencegah bug dalam skala besar.",
+      "React": "Fondasi utama saya untuk membangun antarmuka web reaktif & komponen modular.",
+      "Next.js": "Framework andalan untuk optimasi SEO, Server-Side Rendering (SSR), dan routing modern.",
+      "Flutter": "Digunakan untuk merakit aplikasi mobile (Android/iOS) dengan performa mendekati native.",
+      "Tailwind": "Utility-first CSS untuk styling UI cepat, konsisten, dan sangat responsif.",
+      "Bootstrap": "Framework UI klasik untuk prototyping dan sistem tata letak grid secara cepat.",
+      "Figma": "Alat desain UI/UX andalan untuk wireframing, mockup, dan perancangan prototipe visual.",
+      
+      // Back-End & DB
+      "Python": "Senjata utama untuk AI, Machine Learning, script otomatisasi data, & API backend.",
+      "Go": "Eksplorasi bahasa backend untuk membangun microservices dengan performa & konkurensi tinggi.",
+      "PHP": "Pengalaman fondasional dalam membangun arsitektur aplikasi web dinamis tradisional.",
+      "Dart": "Bahasa inti yang selalu dipasangkan dengan Flutter untuk pengembangan aplikasi mobile.",
+      "Java": "Mempelajari fundamental Object-Oriented Programming (OOP) dan pengembangan sistem enterprise.",
+      "Node.js": "Runtime untuk mengeksekusi JavaScript di sisi server dengan arsitektur non-blocking.",
+      "Express": "Framework ringan andalan untuk merancang dan membangun RESTful API di ekosistem Node.js.",
+      "FastAPI": "Digunakan untuk membangun backend Python berkinerja tinggi, sangat cocok untuk serving API AI.",
+      "Laravel": "Eksplorasi framework PHP modern dengan pola arsitektur Model-View-Controller (MVC).",
+      "MongoDB": "Database NoSQL utama untuk menyimpan data dokumen JSON berskala fleksibel.",
+      "PostgreSQL": "Database relasional pilihan utama untuk integritas data kompleks & query analitik tingkat lanjut.",
+      "MySQL": "Database SQL andalan untuk mengelola sistem transaksi data tradisional.",
+      "Firebase": "Platform BaaS (Backend as a Service) untuk autentikasi dan sinkronisasi database realtime.",
+      "Supabase": "Alternatif open-source Firebase berbasis PostgreSQL yang sering saya gunakan saat ini.",
+      
+      // Tools & AI
+      "Git": "Version control wajib untuk melacak setiap baris perubahan kode secara kolaboratif dan aman.",
+      "Docker": "Eksplorasi containerization agar aplikasi berjalan konsisten dan terisolasi di semua environment.",
+      "Postman": "Alat krusial untuk menguji, mendokumentasikan, & melakukan debugging endpoint API.",
+      "Linux": "Sistem operasi pilihan untuk lingkungan server, deployment, dan otomatisasi bash scripting.",
+      "PowerShell": "Utilitas scripting tambahan saat bekerja dan mengelola ekosistem berbasis Windows.",
+      "GCP": "Layanan cloud Google untuk hosting infrastruktur, storage, dan komputasi model skala besar.",
+      "TensorFlow": "Framework deep learning mutakhir untuk merakit dan melatih model jaringan saraf buatan.",
+      "PyTorch": "Framework ML yang dinamis untuk riset arsitektur, klasifikasi citra, dan pemrosesan tensor.",
+      "LangChain": "Alat wajib merakit pipeline orchestration dan memori konteks untuk aplikasi berbasis LLM/AI Generatif.",
+      "Hugging Face": "Gudang model open-source andalan untuk mencoba dan mendeploy model NLP & Vision mutakhir."
+    };
+    
+    return descriptions[skillName] || "Teknologi yang selalu saya siap eksplorasi dan adaptasi untuk memecahkan masalah dalam proyek.";
   };
 
   return (
@@ -425,16 +439,15 @@ const AboutPage: React.FC = () => {
           <div className="mt-8 h-24 relative">
             {activeSkill ? (
               (() => {
-                const detail = getLevelBadge(activeSkill);
+                const desc = getSkillDesc(activeSkill);
                 return (
-                  <div className="absolute w-full bg-[#f8fafc] border-2 border-black p-3 rounded-none paper-shadow-sm flex items-center gap-4 animate-fade-in rotate-[0.5deg] z-20">
-                    <div className={`p-2 border-2 border-black rounded-none flex items-center justify-center ${detail.stampColor} font-bungee text-[10px] sm:text-xs font-bold rotate-[-3deg] uppercase tracking-wider whitespace-nowrap`}>
-                      {detail.icon}
-                      <span className="ml-1.5">{detail.label}</span>
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-heavy-block text-xs uppercase tracking-tight text-black">{activeSkill}</h4>
-                      <p className="font-typewriter text-xs text-gray-700 mt-1 leading-snug">{detail.desc}</p>
+                  <div className="absolute w-full bg-[#f8fafc] border-2 border-black p-4 rounded-none paper-shadow-sm flex items-start gap-4 animate-fade-in rotate-[0.5deg] z-20">
+                    <div className="flex-1 relative">
+                      <Pin className="absolute -top-2 right-0 w-4 h-4 text-red-500 fill-red-500 rotate-12 drop-shadow-sm" />
+                      <h4 className="font-heavy-block text-sm uppercase tracking-tight text-black mb-1 border-b-2 border-black border-dashed pb-1 inline-block pr-6">
+                        {activeSkill}
+                      </h4>
+                      <p className="font-typewriter text-xs text-gray-700 leading-relaxed mt-1.5">{desc}</p>
                     </div>
                   </div>
                 );

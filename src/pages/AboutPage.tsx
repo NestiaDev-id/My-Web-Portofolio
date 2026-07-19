@@ -183,43 +183,43 @@ const AboutPage: React.FC = () => {
   const getSkillDesc = (skillName: string) => {
     const descriptions: Record<string, string> = {
       // Front-End
-      "JavaScript": "Bahasa inti untuk merakit interaktivitas dan logika asinkron di sisi klien.",
-      "TypeScript": "Menjaga keamanan tipe data (type-safety) untuk mencegah bug dalam skala besar.",
-      "React": "Fondasi utama saya untuk membangun antarmuka web reaktif & komponen modular.",
-      "Next.js": "Framework andalan untuk optimasi SEO, Server-Side Rendering (SSR), dan routing modern.",
-      "Flutter": "Digunakan untuk merakit aplikasi mobile (Android/iOS) dengan performa mendekati native.",
-      "Tailwind": "Utility-first CSS untuk styling UI cepat, konsisten, dan sangat responsif.",
-      "Bootstrap": "Framework UI klasik untuk prototyping dan sistem tata letak grid secara cepat.",
-      "Figma": "Alat desain UI/UX andalan untuk wireframing, mockup, dan perancangan prototipe visual.",
+      "JavaScript": "Telah diandalkan untuk memanipulasi DOM tingkat lanjut, integrasi API dinamis, dan merancang logika interaktif sisi klien.",
+      "TypeScript": "Diterapkan pada proyek berskala besar guna menjamin keamanan tipe (type-safety) dan meminimalisir bug kritis saat runtime.",
+      "React": "Menjadi fondasi utama saya dalam merancang arsitektur antarmuka modular, manajemen state global, dan UI yang highly-reactive.",
+      "Next.js": "Berhasil mendeploy portal web berkinerja tinggi dengan optimasi SEO maksimal memanfaatkan fitur Server-Side Rendering (SSR).",
+      "Flutter": "Telah digunakan untuk mengembangkan aplikasi mobile multi-platform (Android & iOS) dengan animasi mulus dan performa mendekati native.",
+      "Tailwind": "Diimplementasikan sebagai standar alur kerja untuk menyusun tata letak kustom dan sistem desain responsif dengan sangat cepat.",
+      "Bootstrap": "Dimanfaatkan pada fase prototyping cepat dan pengembangan sistem informasi web tradisional berbasis sistem grid standar.",
+      "Figma": "Terbiasa merancang alur UX, wireframe, mockup fidelitas tinggi, hingga transisi aset visual (handoff) untuk tim pengembang.",
       
       // Back-End & DB
-      "Python": "Senjata utama untuk AI, Machine Learning, script otomatisasi data, & API backend.",
-      "Go": "Eksplorasi bahasa backend untuk membangun microservices dengan performa & konkurensi tinggi.",
-      "PHP": "Pengalaman fondasional dalam membangun arsitektur aplikasi web dinamis tradisional.",
-      "Dart": "Bahasa inti yang selalu dipasangkan dengan Flutter untuk pengembangan aplikasi mobile.",
-      "Java": "Mempelajari fundamental Object-Oriented Programming (OOP) dan pengembangan sistem enterprise.",
-      "Node.js": "Runtime untuk mengeksekusi JavaScript di sisi server dengan arsitektur non-blocking.",
-      "Express": "Framework ringan andalan untuk merancang dan membangun RESTful API di ekosistem Node.js.",
-      "FastAPI": "Digunakan untuk membangun backend Python berkinerja tinggi, sangat cocok untuk serving API AI.",
-      "Laravel": "Eksplorasi framework PHP modern dengan pola arsitektur Model-View-Controller (MVC).",
-      "MongoDB": "Database NoSQL utama untuk menyimpan data dokumen JSON berskala fleksibel.",
-      "PostgreSQL": "Database relasional pilihan utama untuk integritas data kompleks & query analitik tingkat lanjut.",
-      "MySQL": "Database SQL andalan untuk mengelola sistem transaksi data tradisional.",
-      "Firebase": "Platform BaaS (Backend as a Service) untuk autentikasi dan sinkronisasi database realtime.",
-      "Supabase": "Alternatif open-source Firebase berbasis PostgreSQL yang sering saya gunakan saat ini.",
+      "Python": "Digunakan secara ekstensif untuk merancang model AI/ML, memproses data berjumlah besar, dan mendeploy layanan backend.",
+      "PHP": "Menjadi pijakan awal saya dalam memahami fundamental pemrograman sisi server dan arsitektur pengembangan web dinamis.",
+      "Dart": "Dikembangkan secara mendalam demi merajut logika state management yang kompleks di dalam ekosistem aplikasi Flutter.",
+      "Java": "Diaplikasikan dalam membedah konsep Object-Oriented Programming (OOP) tingkat lanjut dan pola arsitektur sistem enterprise.",
+      "Node.js": "Menjadi andalan utama saat merancang ekosistem backend asinkron yang efisien sepenuhnya dengan tumpukan JavaScript.",
+      "Express": "Diimplementasikan untuk merancang endpoint RESTful API yang ringan, cepat, dan mudah diintegrasikan dengan berbagai database.",
+      "FastAPI": "Digunakan khusus untuk merancang backend berkinerja ekstrim yang melayani inferensi model AI dengan latensi sangat rendah.",
+      "Laravel": "Terbiasa mengelola arsitektur web modern memanfaatkan sistem routing dinamis, perintah artisan, dan ORM Eloquent.",
+      "MongoDB": "Solusi NoSQL pilihan utama saat menangani skema data dokumen JSON yang sangat dinamis dan butuh skalabilitas tinggi.",
+      "PostgreSQL": "Diandalkan dalam proyek krusial yang menuntut integritas relasi tabel kompleks dan performa komputasi query yang berat.",
+      "MySQL": "Terbukti andal dan konsisten dalam mengelola aliran data transaksi pengguna pada sebagian besar pengembangan web tradisional.",
+      "Firebase": "Diintegrasikan sebagai solusi backend-as-a-service (BaaS) kilat untuk sistem autentikasi realtime dan manajemen berkas.",
+      "Supabase": "Pilihan terfavorit saya saat ini untuk kebutuhan backend-as-a-service berbekal kekuatan penuh dari ekosistem Postgres.",
       
       // Tools & AI
-      "Git": "Version control wajib untuk melacak setiap baris perubahan kode secara kolaboratif dan aman.",
-      "Docker": "Eksplorasi containerization agar aplikasi berjalan konsisten dan terisolasi di semua environment.",
-      "Postman": "Alat krusial untuk menguji, mendokumentasikan, & melakukan debugging endpoint API.",
-      "Linux": "Sistem operasi pilihan untuk lingkungan server, deployment, dan otomatisasi bash scripting.",
-      "PowerShell": "Utilitas scripting tambahan saat bekerja dan mengelola ekosistem berbasis Windows.",
-      "GCP": "Layanan cloud Google untuk hosting infrastruktur, storage, dan komputasi model skala besar.",
-      "TensorFlow": "Framework deep learning mutakhir untuk merakit dan melatih model jaringan saraf buatan.",
-      "PyTorch": "Framework ML yang dinamis untuk riset arsitektur, klasifikasi citra, dan pemrosesan tensor.",
-      "LangChain": "Alat wajib merakit pipeline orchestration dan memori konteks untuk aplikasi berbasis LLM/AI Generatif.",
-      "Hugging Face": "Gudang model open-source andalan untuk mencoba dan mendeploy model NLP & Vision mutakhir."
+      "Git": "Terintegrasi penuh dalam alur kerja harian untuk versioning kode, code review, dan kolaborasi tim yang terstruktur rapi.",
+      "Docker": "Membungkus arsitektur aplikasi ke dalam container terisolasi untuk menjamin konsistensi mutlak dari tahap lokal ke production.",
+      "Postman": "Utilitas esensial harian untuk memvalidasi respon endpoint, menyimulasikan berbagai skenario payload, dan mendokumentasikan API.",
+      "Arch Linux": "Sistem operasi harian (daily driver) kebanggaan yang melatih pemahaman mendalam saya terhadap manajemen core OS secara mandiri.",
+      "PowerShell": "Dimanfaatkan secara khusus untuk mengeksekusi skrip otomatisasi tugas administratif di lingkup server dan desktop Windows.",
+      "GCP": "Dieksplorasi secara teknis untuk mengelola arsitektur komputasi awan, virtual machine, dan kebutuhan hosting terdistribusi.",
+      "TensorFlow": "Diandalkan secara proaktif untuk merancang arsitektur jaringan saraf tiruan (ANN) dari fase eksperimen hingga evaluasi model.",
+      "PyTorch": "Framework pilihan utama dalam riset machine learning mutakhir, prapemrosesan tensor dinamis, dan implementasi computer vision.",
+      "LangChain": "Digunakan secara intensif untuk merancang agen orchestration yang menjembatani kecerdasan LLM dengan sumber data eksternal.",
+      "Hugging Face": "Dimanfaatkan untuk mengadopsi, bereksperimen, dan memoles (fine-tuning) model bahasa alami (NLP) open-source terkemuka."
     };
+
     
     return descriptions[skillName] || "Teknologi yang selalu saya siap eksplorasi dan adaptasi untuk memecahkan masalah dalam proyek.";
   };
@@ -309,7 +309,7 @@ const AboutPage: React.FC = () => {
                       </div>
                     </div>
                     <div className="text-center font-marker text-md text-black mt-3 -rotate-2">
-                      Yohanes D.
+                      Yohanes Christian Devano
                     </div>
                   </div>
                 </div>
@@ -332,6 +332,37 @@ const AboutPage: React.FC = () => {
               </div>
             </div>
 
+            {/* ─── Academic Thesis Card ─── */}
+            <div className="bg-yellow-50 border-4 border-black p-5 relative rotate-1 paper-shadow-lg notebook-lines mt-8 group cursor-crosshair transition-transform hover:scale-[1.02]">
+              <div className="absolute -top-3 left-8 bg-red-600 text-white px-2 py-0.5 font-mono text-[9px] font-bold -rotate-[4deg] uppercase border border-black shadow-[2px_2px_0px_#000]">
+                ACADEMIC THESIS
+              </div>
+              
+              <h3 className="font-bungee text-sm text-black mt-3 mb-2 uppercase flex items-center">
+                <Pin className="w-4 h-4 mr-2 text-blue-500 fill-blue-500 -rotate-12" /> TUGAS AKHIR (SKRIPSI)
+              </h3>
+              
+              <p className="font-heavy-block text-xs uppercase leading-relaxed text-black mb-2 px-1 bg-white inline-block border border-black/20">
+                "Peramalan dan Deteksi Dini Menggunakan Model Holt-Winters dan Pendekatan Algoritma Genetika"
+              </p>
+              
+              <p className="font-typewriter text-xs text-gray-800 leading-relaxed mb-4 pr-4">
+                Penyelesaian studi di Universitas Sanata Dharma. Riset berfokus pada optimasi parameter peramalan deret waktu (*time series forecasting*) secara otomatis menggunakan Algoritma Genetika untuk menghasilkan akurasi prediksi data yang maksimal.
+              </p>
+              
+              <div className="flex gap-2 items-center">
+                <div className="inline-block px-2 py-1 bg-black text-white text-[9px] font-mono font-bold border-2 border-dashed border-white -rotate-2">
+                  STATUS: COMPLETED ✅
+                </div>
+                <div className="inline-block px-2 py-1 bg-green-300 text-black text-[9px] font-heavy-block rotate-1 border border-black">
+                  GRADE: A
+                </div>
+              </div>
+
+              {/* Tape deco */}
+              <div className="absolute -bottom-3 -right-4 w-16 h-8 bg-sky-200 rotate-[-25deg] opacity-80 border-t border-black border-dashed pointer-events-none" />
+              <div className="absolute -top-3 -right-2 w-12 h-6 bg-rose-200 rotate-[45deg] opacity-80 border-b border-black border-dashed pointer-events-none" />
+            </div>
 
           </section>
 

@@ -299,9 +299,10 @@ const GameConsolePage: React.FC = () => {
                       <div className="flex-1 bg-stone-950 p-1.5 border-2 border-stone-800/80 flex items-center justify-center"
                         style={{ boxShadow: "inset 0 3px 5px rgba(0,0,0,0.9)", borderRadius: "8px", minHeight: 230 }}
                       >
-                        <div id="gb-screen" className="w-full overflow-hidden border border-stone-900 bg-[#9bbc0f] relative"
-                          style={{ aspectRatio: `${GAME_WIDTH}/${GAME_HEIGHT}`, borderRadius: "4px", maxHeight: 220 }}
-                        >
+                        <div className="w-full relative" style={{ aspectRatio: `${GAME_WIDTH}/${GAME_HEIGHT}` }}>
+                          <div id="gb-screen" className="absolute inset-0 overflow-hidden border border-stone-900 bg-[#9bbc0f] flex items-center justify-center"
+                            style={{ borderRadius: "4px" }}
+                          >
                           {gbPower === "off" && (
                             <div className="w-full h-full bg-[#1b2110] flex items-center justify-center" style={{ boxShadow: "inset 0 0 16px rgba(0,0,0,0.85)" }}>
                               <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-white/10 pointer-events-none" />
@@ -317,6 +318,7 @@ const GameConsolePage: React.FC = () => {
                               <p className="text-[6px] text-[#0f380f] font-mono mt-4 animate-pulse tracking-wider">LOADING PELLET TOWN...</p>
                             </div>
                           )}
+                          </div>
                         </div>
                       </div>
                     </div>

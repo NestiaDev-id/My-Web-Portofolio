@@ -5,7 +5,7 @@ import P5RansomText from "../components/P5RansomText";
 const MENU_ITEMS = [
   { label: "PROJECTS", path: "/projects" },
   { label: "SKILLS", path: "/about" },
-  { label: "ABOUT", path: "/about" },
+  { label: "Game", path: "/game" },
   { label: "CHAT ME", path: "/chat-me" },
 ];
 

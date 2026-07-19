@@ -1,3 +1,3 @@
-import GameUI from "@/game/GameUI";
+import GameConsolePage from "./GameConsolePage";
 
-export default GameUI;
+export default GameConsolePage;

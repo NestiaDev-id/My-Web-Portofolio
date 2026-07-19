@@ -30,3 +30,6 @@ llm-service/data
 __pycache__/
 *.py[cod]
 *$py.class
+
+persona5-style-portfolio-main/*
+yohanes-devano---ransom-portfolio/*

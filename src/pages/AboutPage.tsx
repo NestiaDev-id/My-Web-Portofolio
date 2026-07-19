@@ -343,20 +343,20 @@ const AboutPage: React.FC = () => {
               </h3>
               
               <p className="font-heavy-block text-xs uppercase leading-relaxed text-black mb-2 px-1 bg-white inline-block border border-black/20">
-                "Peramalan dan Deteksi Dini Menggunakan Model Holt-Winters dan Pendekatan Algoritma Genetika"
+                "Optimisasi Metode Holt-Winter Menggunakan Algoritma Genetika Untuk Prediksi Jumlah Penumpang Pesawat Di Bandara Soekarno-Hatta"
               </p>
               
               <p className="font-typewriter text-xs text-gray-800 leading-relaxed mb-4 pr-4">
-                Penyelesaian studi di Universitas Sanata Dharma. Riset berfokus pada optimasi parameter peramalan deret waktu (*time series forecasting*) secara otomatis menggunakan Algoritma Genetika untuk menghasilkan akurasi prediksi data yang maksimal.
+                Penyelesaian studi di Universitas Sanata Dharma. Riset berfokus pada optimasi parameter metode Holt-Winter menggunakan Algoritma Genetika untuk menghasilkan akurasi prediksi data yang maksimal.
               </p>
               
               <div className="flex gap-2 items-center">
                 <div className="inline-block px-2 py-1 bg-black text-white text-[9px] font-mono font-bold border-2 border-dashed border-white -rotate-2">
                   STATUS: COMPLETED ✅
                 </div>
-                <div className="inline-block px-2 py-1 bg-green-300 text-black text-[9px] font-heavy-block rotate-1 border border-black">
+                {/* <div className="inline-block px-2 py-1 bg-green-300 text-black text-[9px] font-heavy-block rotate-1 border border-black">
                   GRADE: A
-                </div>
+                </div> */}
               </div>
 
               {/* Tape deco */}

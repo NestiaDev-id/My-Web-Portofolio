@@ -75,7 +75,7 @@ export default function SwitchShell({ onBack }: Props) {
       </div>
 
       {/* Console Assembly */}
-      <div className="relative flex items-center justify-center select-none">
+      <div className="relative flex items-center justify-center select-none w-full max-w-[800px] mx-auto">
         {/* Top vent detail */}
         <div className="absolute top-[-12px] left-[15%] right-[15%] h-[12px] bg-slate-800 rounded-t-md flex justify-between px-6 border-t border-slate-700/60 opacity-95 pointer-events-none z-0">
           <div className="w-16 h-1 bg-slate-950 rounded-full mt-1 flex gap-0.5 px-1 justify-between">
@@ -117,24 +117,27 @@ export default function SwitchShell({ onBack }: Props) {
         </div>
 
         {/* ─── CENTER SCREEN ─── */}
-        <div className="flex-grow max-w-[460px] bg-slate-950 p-2.5 sm:p-3.5 relative flex flex-col justify-center items-center shadow-2xl"
+        <div className="flex-grow w-full min-w-[280px] sm:min-w-[400px] max-w-[500px] bg-slate-950 p-2 sm:p-3 relative flex flex-col justify-center items-center shadow-2xl z-10"
           style={{ boxShadow: "0 25px 50px -12px rgba(0,0,0,0.6), inset 0 1px 3px rgba(255,255,255,0.1)", borderRadius: "14px" }}
         >
-          <div className="w-full relative rounded-lg overflow-hidden border border-slate-900"
+          <div className="w-full relative rounded-lg overflow-hidden border border-slate-900 bg-black"
             style={{ aspectRatio: `${GAME_WIDTH}/${GAME_HEIGHT}` }}
           >
-            <div id="switch-screen" className="w-full h-full bg-[#1a1a2e] relative">
+            <div id="switch-screen" className="absolute inset-0 bg-[#1a1a2e]">
               {power === "off" && (
                 <div className="w-full h-full bg-black flex items-center justify-center">
-                  <p className="font-mono text-[10px] text-slate-600 animate-pulse">PRESS POWER TO START</p>
+                  <p className="font-mono text-[10px] text-slate-700">PRESS POWER TO WAKE</p>
                 </div>
               )}
               {power === "boot" && (
-                <div className="w-full h-full bg-black flex flex-col items-center justify-center">
-                  <div className="w-10 h-10 border-2 border-white/80 rounded-full flex items-center justify-center mb-3">
-                    <div className="w-6 h-6 border-t-2 border-white rounded-full animate-spin" />
+                <div className="w-full h-full bg-black flex flex-col items-center justify-center relative">
+                  <div className="flex items-center gap-1.5 animate-pulse">
+                    <div className="w-6 h-8 border-2 border-red-500 rounded-l-full bg-red-500" />
+                    <div className="w-6 h-8 border-2 border-red-500 rounded-r-full flex flex-col justify-between p-1">
+                      <div className="w-1.5 h-1.5 bg-black rounded-full self-center mt-0.5" />
+                    </div>
                   </div>
-                  <p className="font-mono text-[10px] text-white/60 tracking-widest">LOADING...</p>
+                  <span className="text-white mt-4 font-black tracking-widest text-sm">Nintendo Switch</span>
                 </div>
               )}
             </div>

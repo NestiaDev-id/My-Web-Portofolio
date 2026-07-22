@@ -1,8 +1,8 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Paperclip, Pin, Calendar, Scissors, Sparkles, Flame, BadgeCheck, Terminal } from "lucide-react";
+import { Paperclip, Pin, Calendar, Scissors, Sparkles } from "lucide-react";
 import {
-  FaPython, FaFigma, FaGitAlt, FaReact, FaNodeJs, FaDocker, FaLinux, FaJava,
+  FaPython, FaFigma, FaGitAlt, FaReact, FaNodeJs, FaDocker, FaJava,
 } from "react-icons/fa";
 import {
   SiFastapi, SiPytorch, SiTypescript, SiNextdotjs, SiPostgresql, SiTensorflow,

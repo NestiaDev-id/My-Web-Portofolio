@@ -23,6 +23,8 @@ const P5Cursor: React.FC = () => {
         cur.style.display = "block";
         visible = true;
       }
+      // Update transform instantly to reduce input lag
+      cur.style.transform = `translate(${x}px, ${y}px)`;
       const t = e.target as HTMLElement;
       const overLink = t.closest?.(
         "a,button,.p5-card,.p5-menu-item,.p5-back-hint,.p5-contact-chip,.p5-big-name"
@@ -41,7 +43,6 @@ const P5Cursor: React.FC = () => {
         last = ts;
         cur.style.backgroundPosition = -frame * 48 + "px 0";
       }
-      cur.style.transform = `translate(${x}px, ${y}px)`;
       requestAnimationFrame(tick);
     };
 

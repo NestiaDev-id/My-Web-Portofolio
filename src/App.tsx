@@ -8,6 +8,7 @@ import Game from "./pages/Game2";
 import P5Background from "./components/P5Background";
 import P5Cursor from "./components/P5Cursor";
 import P5HUD from "./components/P5HUD";
+import NotFound from "./pages/NotFound";
 
 function App() {
   return (
@@ -43,6 +44,8 @@ function App() {
                 </div>
               }
             />
+            {/* 404 Catch-all route */}
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </div>
       </div>

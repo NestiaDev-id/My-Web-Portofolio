@@ -1,4 +1,3 @@
-import React from 'react';
 
 interface RansomNoteProps {
   text: string;
@@ -7,7 +6,6 @@ interface RansomNoteProps {
 }
 
 const FONTS = ['font-p5-display', 'font-typewriter', 'font-heavy-block', 'font-marker', 'font-bungee'];
-const TILTS = ['-rotate-6', '-rotate-3', '-rotate-1', 'rotate-0', 'rotate-1', 'rotate-3', 'rotate-6'];
 const THEMES = [
   'bg-black text-white border-2 border-white',
   'bg-white text-black border-2 border-black',

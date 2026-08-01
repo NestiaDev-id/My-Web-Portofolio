@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import P5RansomText from "../components/P5RansomText";
+import Momoisay from "../components/momoisay";
 
 const MENU_ITEMS = [
   { label: "PROJECTS", path: "/projects" },
@@ -117,6 +118,11 @@ function HomePage() {
           </button>
         ))}
       </nav>
+
+      {/* Momoi Mascot / Vtuber ASCII Art on the right side */}
+      <div className="absolute right-[8vw] bottom-[5vh] hidden lg:block opacity-80 z-0 pointer-events-none origin-bottom-right hover:opacity-100 transition-opacity duration-300">
+        <Momoisay text={"Pan-paka-pan!\\nWelcome to Yohanes' Portfolio.\\nI'll be your guide!"} className="rotate-[4deg]" />
+      </div>
     </section>
   );
 }

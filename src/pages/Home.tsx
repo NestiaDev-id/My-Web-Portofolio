@@ -121,7 +121,7 @@ function HomePage() {
 
       {/* Momoi Mascot / Vtuber ASCII Art on the right side */}
       <div className="absolute right-[5vw] bottom-[10vh] opacity-100 z-[50] origin-bottom-right pointer-events-auto">
-        <Momoisay text={`Welcome to My Portfolio.\nI'll be your guide!`} className="rotate-[4deg] scale-150" />
+        <Momoisay className="rotate-[4deg] scale-150" />
       </div>
     </section>
   );

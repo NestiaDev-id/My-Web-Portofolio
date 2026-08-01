@@ -69,7 +69,7 @@ const ANIM_CONFIGS = {
 
 const randBetween = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
 
-const Momoisay: React.FC<MomoisayProps> = ({ text = "Hello Sensei! Let's play some games!", className = "", animated = true }) => {
+const Momoisay: React.FC<MomoisayProps> = ({ text = "", className = "", animated = true }) => {
   const bubble = useMemo(() => generateBubble(text), [text]);
 
   const [animState, setAnimState] = useState({

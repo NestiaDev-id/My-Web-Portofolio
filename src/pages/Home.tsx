@@ -85,7 +85,7 @@ function HomePage() {
       {/* Big Name */}
       <h1 className="p5-big-name" onClick={() => playSelect()}>
         <P5RansomText text="YOHANES" />
-        <P5RansomText text="DEVANO" />
+        <P5RansomText text="CHRISTIAN" />
       </h1>
 
       {/* Tagline */}

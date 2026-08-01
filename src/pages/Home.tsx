@@ -120,8 +120,8 @@ function HomePage() {
       </nav>
 
       {/* Momoi Mascot / Vtuber ASCII Art on the right side */}
-      <div className="absolute right-[8vw] bottom-[5vh] hidden lg:block opacity-80 z-0 pointer-events-none origin-bottom-right hover:opacity-100 transition-opacity duration-300">
-        <Momoisay text={"Pan-paka-pan!\\nWelcome to Yohanes' Portfolio.\\nI'll be your guide!"} className="rotate-[4deg]" />
+      <div className="absolute right-[5vw] bottom-[10vh] opacity-100 z-[50] origin-bottom-right pointer-events-auto">
+        <Momoisay text={`Welcome to My Portfolio.\nI'll be your guide!`} className="rotate-[4deg] scale-150" />
       </div>
     </section>
   );

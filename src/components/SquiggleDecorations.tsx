@@ -48,6 +48,24 @@ const SquiggleDecorations: React.FC = () => {
         <Asterisk className="absolute top-[50%] left-[30%] text-black w-14 h-14 opacity-20 rotate-45" />
         <Asterisk className="absolute top-[90%] right-[30%] text-red-600 w-24 h-24 opacity-20 rotate-90" />
         
+        {/* Emoji Stiker Tambahan (Gaya Noto Emoji Outline) */}
+        <style>
+          {`
+            @import url('https://fonts.googleapis.com/css2?family=Noto+Emoji:wght@300..700&display=swap');
+            .noto-emoji { font-family: 'Noto Emoji', sans-serif; font-weight: 500; }
+          `}
+        </style>
+        <div className="absolute top-[32%] left-[8%] text-6xl -rotate-12 select-none noto-emoji opacity-80" style={{ color: '#f35436' }}>🧙</div>
+        <div className="absolute top-[26%] left-[6%] text-3xl rotate-12 select-none noto-emoji opacity-80" style={{ color: '#3364e6' }}>🪄</div>
+        <div className="absolute top-[15%] left-[40%] text-5xl select-none noto-emoji opacity-70" style={{ color: '#fff1a7' }}>✨</div>
+        <div className="absolute top-[85%] left-[8%] text-5xl -rotate-6 select-none noto-emoji opacity-80" style={{ color: 'gold' }}>🍰</div>
+        <div className="absolute top-[88%] right-[8%] text-4xl rotate-12 select-none noto-emoji opacity-80" style={{ color: 'sienna' }}>🍮</div>
+        <div className="absolute top-[35%] right-[10%] text-2xl rotate-12 select-none noto-emoji opacity-70 flex flex-col gap-1" style={{ color: '#8576e4' }}>
+          <span>💛</span><span>💛</span><span>💛</span>
+        </div>
+        <div className="absolute top-[8%] right-[15%] text-5xl rotate-[15deg] select-none noto-emoji opacity-80" style={{ color: 'pink' }}>💝</div>
+        <div className="absolute bottom-[2%] left-[40%] text-3xl -rotate-6 select-none noto-emoji tracking-[-8px] opacity-80 font-bold" style={{ color: '#47af5c' }}>🌷🪻🌷🪻🌷</div>
+        
         {/* Efek Gelombang Coretan (Waves / Scribbles) */}
         <svg className="absolute top-[20%] left-[-5%] w-96 h-32 opacity-20 stroke-red-500 stroke-[3] fill-transparent -rotate-6" viewBox="0 0 100 100" preserveAspectRatio="none">
           <path d="M0,50 Q12.5,25 25,50 T50,50 T75,50 T100,50" />

@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Paperclip, Pin, Calendar, Scissors, Sparkles, Star, Zap, Ghost, Skull, Asterisk, Hexagon, Cat } from "lucide-react";
+import { Paperclip, Pin, Calendar, Scissors, Sparkles } from "lucide-react";
 import {
   FaPython, FaFigma, FaGitAlt, FaReact, FaNodeJs, FaDocker, FaJava,
 } from "react-icons/fa";

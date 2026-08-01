@@ -49,21 +49,23 @@ const generateBubble = (text: string) => {
   return `${top}\n${body}${bottom}\n   \\\n    \\\n`;
 };
 
+type MomoiVersion = 'v1' | 'v2' | 'v3';
+
 const ANIM_CONFIGS = {
   v1: {
     rep_frame: -1, rep_min: 0, rep_max: 0,
     rounds_min: 3, rounds_max: 5,
-    getNext: () => 'v3' as const
+    getNext: (): MomoiVersion => 'v3'
   },
   v2: {
     rep_frame: 1, rep_min: 5, rep_max: 13,
     rounds_min: 1, rounds_max: 3,
-    getNext: () => (Math.random() > 0.5 ? 'v1' : 'v3') as const
+    getNext: (): MomoiVersion => Math.random() > 0.5 ? 'v1' : 'v3'
   },
   v3: {
     rep_frame: -1, rep_min: 0, rep_max: 0,
     rounds_min: 3, rounds_max: 5,
-    getNext: () => 'v2' as const
+    getNext: (): MomoiVersion => 'v2'
   }
 };
 

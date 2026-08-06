@@ -13,6 +13,7 @@ import {
 } from "react-icons/si";
 
 import SquiggleDecorations from "../components/SquiggleDecorations";
+import MusicWidget from "../components/MusicWidget";
 
 /* ─── Stable hash ─── */
 // function hash(str: string): number {
@@ -401,6 +402,9 @@ const AboutPage: React.FC = () => {
             >
               <span>💬 Chat with My AI Assistant</span>
             </button>
+
+            {/* Music Widget / Currently Listening To */}
+            <MusicWidget />
           </section>
         </main>
 

@@ -8,7 +8,6 @@ import Game from "./pages/Game2";
 import P5Background from "./components/P5Background";
 import P5Cursor from "./components/P5Cursor";
 import P5HUD from "./components/P5HUD";
-import P5MobileNav from "./components/P5MobileNav";
 import NotFound from "./pages/NotFound";
 
 function App() {
@@ -22,9 +21,6 @@ function App() {
 
       {/* Custom animated cursor */}
       <P5Cursor />
-
-      {/* Mobile Hamburger Navigation */}
-      <P5MobileNav />
 
       {/* Main shell */}
       <div id="p5-shell" className="relative z-[2] flex flex-col min-h-screen">

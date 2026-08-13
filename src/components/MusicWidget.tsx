@@ -1,5 +1,5 @@
-import React, { useState, useRef } from "react";
-import { Disc, Play, Pause, Music } from "lucide-react";
+import React, { useState } from "react";
+import { Play, Pause, Music } from "lucide-react";
 
 const MusicWidget: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);

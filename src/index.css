@@ -659,7 +659,16 @@ body.p5-sub-active #p5-slash {
 @media (max-width: 700px) {
   .p5-skill-row .name { width: 130px; font-size: 14px; }
   .p5-hud-bottom { font-size: 11px; gap: 12px; flex-wrap: wrap; }
-  .p5-cursor-mark { right: -34px; }
+  .p5-hud-top { flex-direction: column; gap: 4px; }
+  .p5-cursor-mark { right: -34px; font-size: 16px; }
+
+  /* Home page: scale down big name and tagline for mobile */
+  .p5-big-name .p5-ransom { font-size: clamp(36px, 10vw, 60px); }
+  .p5-tagline { font-size: 13px; padding: 10px 14px; max-width: 90vw; }
+  .p5-intro-eyebrow { font-size: 11px; letter-spacing: .3em; }
+
+  /* Menu items: slightly larger touch targets on mobile */
+  .p5-menu-item { padding: 6px 14px 6px 4px; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

@@ -119,8 +119,8 @@ function HomePage() {
         ))}
       </nav>
 
-      {/* Momoi Mascot / Vtuber ASCII Art on the right side */}
-      <div className="absolute right-[5vw] bottom-[10vh] opacity-100 z-[50] origin-bottom-right pointer-events-auto">
+      {/* Momoi Mascot / Vtuber ASCII Art on the right side (Desktop only) */}
+      <div className="absolute right-[5vw] bottom-[10vh] opacity-100 z-[50] origin-bottom-right pointer-events-auto hidden lg:block">
         <Momoisay className="rotate-[4deg] scale-150" />
       </div>
     </section>

@@ -138,9 +138,23 @@ const experiences = [
       "Agile Development", "Scrum Methodology", "Kanban Methodology", "Agile Methodology"
     ],
   },
+    {
+    img: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
+    role: "Independent Software Developer & Researcher",
+    company: "Self-Employed",
+    period: "2022 – Present",
+    desc: [
+      "Focused on continuous learning and skill development through hands-on creation of diverse personal projects.",
+      "Acted as a solo researcher and developer, exploring new technologies, frameworks, and AI advancements to build practical applications.",
+    ],
+    tags: [
+      "Self-Taught", "Research", "Full-Stack Development", "Problem Solving",
+      "Software Engineering", "Continuous Learning", "Solo Development", "Innovation"
+    ],
+  },
   {
     img: "https://www.logo.wine/a/logo/Microsoft_Store/Microsoft_Store-Logo.wine.svg",
-    role: "AI Scholarship Student",
+    role: "AI Scholarship By Dicoding",
     company: "Elevate Program by Dicoding",
     period: "Jan 2025 – Present",
     desc: [

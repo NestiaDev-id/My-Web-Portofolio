@@ -1,117 +1,183 @@
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { Github, Globe } from "lucide-react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
-import ScrollToTop from "../components/ScrollToTop";
-
+import P5RansomText from "../components/P5RansomText";
 import { projects } from "../data/projects";
+
+// Map categories to colors for the language dot
+const categoryColors: Record<string, string> = {
+  "All": "#e60012",
+  "Website Development": "#f1e05a",
+  "Data Science": "#3572A5",
+  "Mobile Development": "#3178c6",
+};
+
+// Deterministic hash for card tilt
+function hash(str: string): number {
+  let h = 9;
+  for (let i = 0; i < str.length; i++) {
+    h = Math.imul(h ^ str.charCodeAt(i), 387420489);
+  }
+  return (h ^ (h >>> 9)) >>> 0;
+}
+
+// Split title: first word renders red
+function splitTitle(title: string) {
+  const first = title.split(" ")[0];
+  const rest = title.slice(first.length);
+  return { first, rest };
+}
+
+const CATEGORIES = ["All", "Website Development", "Data Science", "Mobile Development"];
 
 export default function ProjectPage() {
   const [filter, setFilter] = useState("All");
   const navigate = useNavigate();
+  const sfxRef = useRef<HTMLAudioElement | null>(null);
+  const audioUnlocked = useRef(false);
+
+  useEffect(() => {
+    const unlock = () => { audioUnlocked.current = true; };
+    window.addEventListener("pointerdown", unlock, { once: true, capture: true });
+    return () => window.removeEventListener("pointerdown", unlock);
+  }, []);
+
+  const playSelect = useCallback(() => {
+    if (!audioUnlocked.current || !sfxRef.current) return;
+    try {
+      sfxRef.current.currentTime = 0;
+      sfxRef.current.play().catch(() => {});
+    } catch {}
+  }, []);
 
   const filteredProjects =
     filter === "All" ? projects : projects.filter((p) => p.category === filter);
 
   return (
-    <div className="container mx-auto mt-16 p-6 min-h-screen">
-      <h2 className="text-4xl font-bold text-center mb-12 text-gray-900 dark:text-white transition-colors duration-300">
-        Proyek
-      </h2>
+    <section className="relative z-[2] min-h-screen px-[4vw] py-[2vh] p5-scroll overflow-y-auto">
+      <audio ref={sfxRef} src="/p5/sfx/select.mp3" preload="auto" />
 
-      {/* Filter Buttons */}
-      <div className="flex flex-wrap justify-center gap-4 mb-8">
-        {[
-          "All",
-          "Website Development",
-          "Data Science",
-          "Mobile Development",
-        ].map((category) => (
+      {/* Screen Header */}
+      <div className="flex items-center gap-4 mb-2">
+        <div className="p5-screen-head">
+          <P5RansomText text="PROJECTS" />
+        </div>
+        <button
+          className="p5-back-hint"
+          onClick={() => {
+            playSelect();
+            navigate("/");
+          }}
+        >
+          ESC · Back
+        </button>
+      </div>
+
+      {/* Filter Chips — styled as contact chips */}
+      <div className="flex flex-wrap gap-4 mb-[4vh]">
+        {CATEGORIES.map((cat) => (
           <button
-            key={category}
-            onClick={() => setFilter(category)}
-            className={`px-4 py-2 text-sm sm:text-base rounded-lg font-semibold transition-all duration-300 ${
-              filter === category
-                ? "bg-blue-600 text-white shadow-lg scale-105"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+            key={cat}
+            className={`p5-contact-chip transition-all ${
+              filter === cat
+                ? "!bg-p5-red !text-p5-white scale-105"
+                : ""
             }`}
+            onClick={() => {
+              setFilter(cat);
+              playSelect();
+            }}
           >
-            {category}
+            <span>{cat}</span>
           </button>
         ))}
       </div>
 
-      {/* Project Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {filteredProjects.map((project, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
-            className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-lg"
-            onClick={() =>
-              navigate(`/projects/${project.slug}`, {
-                state: { github: project.github, demo: project.demo },
-              })
-            }
-          >
-            <img
-              src={project.image}
-              alt={project.title}
-              className="w-full h-48 object-cover rounded-md mb-4"
-            />
-            <h3
-              className="text-xl font-bold mb-2 cursor-pointer text-gray-900 dark:text-white hover:text-blue-400"
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(`/projects/${project.slug}`, {
-                  state: { github: project.github, demo: project.demo },
-                });
-              }}
-            >
-              {project.title}
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
-              {project.description}
-            </p>
-            <span
-              className={`px-3 py-1 text-sm font-semibold rounded-lg ${
-                project.status === "Production"
-                  ? "bg-green-500 text-black"
-                  : project.status === "Completed"
-                  ? "bg-blue-500 text-black"
-                  : "bg-yellow-500 text-black"
-              }`}
-            >
-              {project.status}
-            </span>
-            <div className="flex gap-4 mt-4">
-              <a
-                href={project.github}
-                className="flex items-center gap-2 bg-gray-200 dark:bg-gray-800 px-4 py-2 rounded-lg text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-700 transition"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <Github size={18} />
-                Github
-              </a>
-              <a
-                href={project.demo}
-                className="flex items-center gap-2 bg-blue-600 px-4 py-2 rounded-lg text-white hover:bg-blue-500 transition"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <Globe size={18} />
-                Demo
-              </a>
-            </div>
-          </motion.div>
-        ))}
+      {/* Grid Label */}
+      <div className="p5-grid-label">
+        <span className="bar"></span>
+        {filter === "All" ? "All Projects" : filter}
+        <span className="ml-3 text-sm opacity-70">
+          ({filteredProjects.length} {filteredProjects.length === 1 ? "project" : "projects"})
+        </span>
       </div>
 
-      {/* Scroll To Top */}
-      <ScrollToTop />
-    </div>
+      {/* Project Cards Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 pb-[10vh]">
+        {filteredProjects.map((project, i) => {
+          const tilt = ((hash(project.slug) % 5) - 2) * 0.8;
+          const { first, rest } = splitTitle(project.title);
+          const langColor = categoryColors[project.category] || "#e60012";
+
+          return (
+            <a
+              key={project.slug}
+              className={`p5-card ${project.status === "Production" ? "feat" : ""}`}
+              style={{
+                "--tilt": `${tilt}deg`,
+                "--d": `${i * 70}ms`,
+                "--lc": langColor,
+              } as React.CSSProperties}
+              href={project.demo && project.demo !== "#" ? project.demo : project.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => {
+                // If clicking on internal links, navigate internally
+                if (project.slug) {
+                  e.preventDefault();
+                  playSelect();
+                  navigate(`/projects/${project.slug}`, {
+                    state: { github: project.github, demo: project.demo },
+                  });
+                }
+              }}
+            >
+              {/* Thumbnail */}
+              <div className="thumb">
+                <img
+                  src={project.image}
+                  alt={project.title}
+                  loading="lazy"
+                  onError={(e) => {
+                    (e.target as HTMLElement).closest(".thumb")?.remove();
+                  }}
+                />
+              </div>
+
+              {/* Language tag */}
+              <span className="lang">{project.category}</span>
+
+              {/* Title with first word in red */}
+              <h3>
+                {project.status === "Production" && (
+                  <span className="p5-live-dot" />
+                )}
+                <em>{first}</em>{rest}
+              </h3>
+
+              {/* Description */}
+              <p>{project.description}</p>
+
+              {/* Meta footer */}
+              <div className="meta">
+                <span>
+                  {project.status === "Production"
+                    ? "LIVE NOW"
+                    : project.status === "Completed"
+                    ? "COMPLETED"
+                    : project.status === "Ongoing"
+                    ? "ONGOING"
+                    : "IN DEV"}
+                </span>
+                <span className="go">
+                  {project.demo && project.demo !== "#"
+                    ? "View Demo →"
+                    : "View on GitHub →"}
+                </span>
+              </div>
+            </a>
+          );
+        })}
+      </div>
+    </section>
   );
 }

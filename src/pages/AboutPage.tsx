@@ -1,481 +1,592 @@
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { Paperclip, Pin, Calendar, Scissors, Sparkles } from "lucide-react";
 import {
-  VerticalTimeline,
-  VerticalTimelineElement,
-} from "react-vertical-timeline-component";
-import "react-vertical-timeline-component/style.min.css";
-// import {
-//   Brain,
-//   Code2,
-//   ServerCog,
-//   Users,
-//   Lightbulb,
-//   BarChart4,
-// } from "lucide-react";
-import {
-  FaPython,
-  FaFigma,
-  FaGitAlt,
-  FaReact,
-  FaNodeJs,
-  FaDocker,
-  FaLinux,
-  FaJava,
+  FaPython, FaFigma, FaGitAlt, FaReact, FaNodeJs, FaDocker, FaJava,
 } from "react-icons/fa";
 import {
-  SiFastapi,
-  SiPytorch,
-  SiTypescript,
-  SiNextdotjs,
-  SiPostgresql,
-  SiTensorflow,
-  SiHuggingface,
-  SiJavascript,
-  SiPhp,
-  SiDart,
-  SiFlutter,
-  SiGo,
-  SiTailwindcss,
-  SiBootstrap,
-  SiExpress,
-  SiLaravel,
-  SiMongodb,
-  SiMysql,
-  SiFirebase,
-  SiSupabase,
-  SiPostman,
-  SiPowers,
-  SiGooglecloud,
-  SiLangchain,
+  SiFastapi, SiPytorch, SiTypescript, SiNextdotjs, SiPostgresql, SiTensorflow,
+  SiHuggingface, SiJavascript, SiPhp, SiDart, SiFlutter, SiGo, SiTailwindcss,
+  SiBootstrap, SiExpress, SiLaravel, SiMongodb, SiMysql, SiFirebase,
+  SiSupabase, SiPostman, SiPowers, SiGooglecloud, SiLangchain,
+  SiArchlinux,
 } from "react-icons/si";
 
-import { Badge } from "@/components/ui/badge";
-import Marquee from "react-fast-marquee";
-import { useTheme } from "@/providers/ThemeProvider";
+import SquiggleDecorations from "../components/SquiggleDecorations";
+import MusicWidget from "../components/MusicWidget";
 
-// Tipe untuk data pengguna
-interface UserData {
-  name: string;
-  university: string;
-  aboutme: string;
-  skills: string[];
-}
-
-// Tipe untuk pengalaman kerja
-interface ExperienceData {
-  img: string;
-  role: string;
-  company: string;
-  date: string;
-  desc: string;
-  skills: string[];
-}
-
-// Tipe untuk teknologi
-// interface TechStack {
-//   name: string;
-//   icon: React.ReactNode;
-//   color: string;
+/* ─── Stable hash ─── */
+// function hash(str: string): number {
+//   let h = 9;
+//   for (let i = 0; i < str.length; i++) h = Math.imul(h ^ str.charCodeAt(i), 387420489);
+//   return (h ^ (h >>> 9)) >>> 0;
 // }
 
-const techStack = [
-  // Bahasa Pemrograman
-  { name: "JavaScript", icon: <SiJavascript />, color: "text-yellow-400" },
-  { name: "TypeScript", icon: <SiTypescript />, color: "text-blue-400" },
-  { name: "Python", icon: <FaPython />, color: "text-yellow-400" },
-  { name: "Go", icon: <SiGo />, color: "text-teal-400" },
-  { name: "PHP", icon: <SiPhp />, color: "text-indigo-400" },
-  { name: "Dart", icon: <SiDart />, color: "text-blue-500" },
-  { name: "Java", icon: <FaJava />, color: "text-red-500" },
+/* ─── Ransom Letter (per-character) ─── */
+const FONTS = [
+  "font-typewriter font-bold", "font-marker", "font-pixel tracking-widest",
+  "font-heavy-block uppercase", "font-bungee uppercase", "font-p5-display",
+];
+const STYLES = [
+  "bg-black text-white border-2 border-black",
+  "bg-white text-black border-2 border-black border-dashed",
+  "bg-yellow-400 text-black border-2 border-black",
+  "bg-[#ef4444] text-white border-2 border-black",
+  "bg-[#ec4899] text-white border-2 border-black",
+  "bg-[#06b6d4] text-black border-2 border-black",
+  "bg-[#10b981] text-black border-2 border-black",
+  "bg-[#a855f7] text-white border-2 border-black",
+];
+const TILTS = ["rotate-1", "-rotate-2", "rotate-3", "-rotate-3", "rotate-6", "-rotate-6", "-rotate-1", "rotate-2"];
 
-  // Pengembangan Frontend
-  { name: "React", icon: <FaReact />, color: "text-blue-400" },
-  { name: "Next.js", icon: <SiNextdotjs />, color: "text-gray-300" },
-  { name: "Flutter", icon: <SiFlutter />, color: "text-blue-400" },
-  { name: "Tailwind CSS", icon: <SiTailwindcss />, color: "text-teal-400" },
-  { name: "Bootstrap", icon: <SiBootstrap />, color: "text-purple-400" },
-  { name: "Figma", icon: <FaFigma />, color: "text-purple-400" },
+const RansomChar: React.FC<{ char: string; idx: number; seed: string; size?: string }> = ({
+  char, idx, seed, size = "text-2xl md:text-4xl",
+}) => {
+  if (char === " ") return <span className="w-3 md:w-5 inline-block" />;
+  const code = (char.charCodeAt(0) || 0) + idx + seed.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+  return (
+    <span
+      className={`inline-flex items-center justify-center p-1 leading-none select-none transition-transform hover:scale-125 cursor-pointer shadow-md ${FONTS[code % FONTS.length]} ${STYLES[(code + 2) % STYLES.length]} ${TILTS[(code + 5) % TILTS.length]} ${size}`}
+      style={{ minWidth: "1.2em", minHeight: "1.2em" }}
+    >
+      {char}
+    </span>
+  );
+};
 
-  // Pengembangan Backend
-  { name: "Node.js", icon: <FaNodeJs />, color: "text-green-500" },
-  { name: "Express.js", icon: <SiExpress />, color: "text-gray-300" },
-  { name: "FastAPI", icon: <SiFastapi />, color: "text-teal-400" },
-  { name: "Laravel", icon: <SiLaravel />, color: "text-red-500" },
+const RansomPhrase: React.FC<{ text: string; seed?: string; size?: string; className?: string }> = ({
+  text, seed = "default", size, className = "",
+}) => (
+  <div className={`flex flex-wrap items-center justify-center gap-y-2 md:gap-y-4 ${className}`}>
+    {text.split(" ").map((word, wi) => (
+      <div key={wi} className="flex items-center">
+        {word.split("").map((c, ci) => (
+          <RansomChar key={ci} char={c} idx={wi * 10 + ci} seed={seed} size={size} />
+        ))}
+        {wi < text.split(" ").length - 1 && <span className="w-3 md:w-5 inline-block" />}
+      </div>
+    ))}
+  </div>
+);
 
-  // Basis Data
-  { name: "MongoDB", icon: <SiMongodb />, color: "text-green-500" },
-  { name: "PostgreSQL", icon: <SiPostgresql />, color: "text-blue-500" },
-  { name: "MySQL", icon: <SiMysql />, color: "text-blue-400" },
-  { name: "Firebase", icon: <SiFirebase />, color: "text-yellow-400" },
-  { name: "Supabase", icon: <SiSupabase />, color: "text-green-400" },
-
-  // Alat dan DevOps
-  { name: "Git", icon: <FaGitAlt />, color: "text-orange-500" },
-  { name: "Docker", icon: <FaDocker />, color: "text-blue-400" },
-  { name: "Postman", icon: <SiPostman />, color: "text-orange-400" },
-  { name: "Linux", icon: <FaLinux />, color: "text-gray-500" },
-  { name: "PowerShell", icon: <SiPowers />, color: "text-blue-500" },
-  { name: "Google Cloud", icon: <SiGooglecloud />, color: "text-blue-400" },
-
-  // Pembelajaran Mesin dan Analisis Data
-  { name: "TensorFlow", icon: <SiTensorflow />, color: "text-orange-400" },
-  { name: "PyTorch", icon: <SiPytorch />, color: "text-red-500" },
-  { name: "LangChain", icon: <SiLangchain />, color: "text-purple-500" },
-  { name: "Hugging Face", icon: <SiHuggingface />, color: "text-yellow-500" },
+/* ─── Tech Stack Data ─── */
+const techCategories = [
+  {
+    category: "FRONT-END",
+    skills: [
+      { name: "JavaScript", icon: <SiJavascript />, color: "bg-yellow-400 text-black" },
+      { name: "TypeScript", icon: <SiTypescript />, color: "bg-blue-600 text-white" },
+      { name: "React", icon: <FaReact />, color: "bg-cyan-500 text-black" },
+      { name: "Next.js", icon: <SiNextdotjs />, color: "bg-black text-white" },
+      { name: "Flutter", icon: <SiFlutter />, color: "bg-blue-500 text-white" },
+      { name: "Tailwind", icon: <SiTailwindcss />, color: "bg-sky-500 text-black" },
+      { name: "Bootstrap", icon: <SiBootstrap />, color: "bg-purple-600 text-white" },
+      { name: "Figma", icon: <FaFigma />, color: "bg-pink-500 text-white" },
+    ],
+  },
+  {
+    category: "BACK-END & DB",
+    skills: [
+      { name: "Python", icon: <FaPython />, color: "bg-blue-700 text-white" },
+      { name: "Go", icon: <SiGo />, color: "bg-teal-500 text-black" },
+      { name: "PHP", icon: <SiPhp />, color: "bg-indigo-500 text-white" },
+      { name: "Dart", icon: <SiDart />, color: "bg-cyan-600 text-white" },
+      { name: "Java", icon: <FaJava />, color: "bg-red-600 text-white" },
+      { name: "Node.js", icon: <FaNodeJs />, color: "bg-green-600 text-black" },
+      { name: "Express", icon: <SiExpress />, color: "bg-gray-800 text-white" },
+      { name: "FastAPI", icon: <SiFastapi />, color: "bg-teal-600 text-white" },
+      { name: "Laravel", icon: <SiLaravel />, color: "bg-red-500 text-white" },
+      { name: "MongoDB", icon: <SiMongodb />, color: "bg-green-500 text-black" },
+      { name: "PostgreSQL", icon: <SiPostgresql />, color: "bg-blue-500 text-white" },
+      { name: "MySQL", icon: <SiMysql />, color: "bg-blue-400 text-white" },
+      { name: "Firebase", icon: <SiFirebase />, color: "bg-amber-400 text-black" },
+      { name: "Supabase", icon: <SiSupabase />, color: "bg-emerald-500 text-black" },
+    ],
+  },
+  {
+    category: "TOOLS & AI",
+    skills: [
+      { name: "Git", icon: <FaGitAlt />, color: "bg-orange-600 text-white" },
+      { name: "Docker", icon: <FaDocker />, color: "bg-blue-500 text-white" },
+      { name: "Postman", icon: <SiPostman />, color: "bg-orange-500 text-white" },
+      { name: "Arch Linux", icon: <SiArchlinux />, color: "bg-gray-900 text-yellow-300" },
+      { name: "PowerShell", icon: <SiPowers />, color: "bg-blue-700 text-white" },
+      { name: "GCP", icon: <SiGooglecloud />, color: "bg-blue-500 text-white" },
+      { name: "TensorFlow", icon: <SiTensorflow />, color: "bg-orange-500 text-white" },
+      { name: "PyTorch", icon: <SiPytorch />, color: "bg-red-600 text-white" },
+      { name: "LangChain", icon: <SiLangchain />, color: "bg-emerald-800 text-white" },
+      { name: "Hugging Face", icon: <SiHuggingface />, color: "bg-yellow-400 text-black" },
+    ],
+  },
 ];
 
-const experiences: ExperienceData[] = [
+/* ─── Experience Data ─── */
+const experiences = [
   {
     img: "https://www.usd.ac.id/logo/usd.png",
-    role: "Computer Science Undergraduate",
+    role: "Computer Science Graduate",
     company: "Sanata Dharma University",
-    date: "Aug 2021 – Dec 2024",
-    desc: "Pursuing a Bachelor's degree in Computer Science with a focus on software engineering and data-driven technologies. Actively involved in academic projects and research, including web application development, machine learning experiments, and system design. Engaged in collaborative team work and presentations to solve real-world problems with code.",
-    skills: [
-      "JavaScript",
-      "Java",
-      "Python",
-      "SQL",
-      "Git",
-      "Kotlin",
-      "Team Work",
-      "Critical Thinking",
-      "Problem Solving",
-      "Leadership",
-      "Communication",
-      "Time Management",
-      "Project Management",
-      "Collaboration",
-      "Agile Development",
-      "Scrum Methodology",
-      "Kanban Methodology",
-      "Agile Methodology",
+    period: "Aug 2021 – Dec 2024",
+    desc: [
+      "Pursuing a Bachelor's degree in Computer Science with a focus on software engineering and data-driven technologies.",
+      "Actively involved in academic projects and research, including web application development, machine learning experiments, and system design.",
+    ],
+    tags: [
+      "JavaScript", "Java", "Python", "SQL", "Git", "Kotlin", 
+      "Team Work", "Critical Thinking", "Problem Solving", "Leadership", 
+      "Communication", "Time Management", "Project Management", "Collaboration", 
+      "Agile Development", "Scrum Methodology", "Kanban Methodology", "Agile Methodology"
+    ],
+  },
+    {
+    img: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
+    role: "Independent Software Developer & Researcher",
+    company: "Self-Employed",
+    period: "2022 – Present",
+    desc: [
+      "Focused on continuous learning and skill development through hands-on creation of diverse personal projects.",
+      "Acted as a solo researcher and developer, exploring new technologies, frameworks, and AI advancements to build practical applications.",
+    ],
+    tags: [
+      "Self-Taught", "Research", "Full-Stack Development", "Problem Solving",
+      "Software Engineering", "Continuous Learning", "Solo Development", "Innovation"
     ],
   },
   {
     img: "https://www.logo.wine/a/logo/Microsoft_Store/Microsoft_Store-Logo.wine.svg",
-    role: "Artificial Intelligence Scholarship Student",
+    role: "AI Scholarship By Dicoding",
     company: "Elevate Program by Dicoding",
-    date: "Jan 2025 – Present",
-    desc: "Awarded the Artificial Intelligence Scholarship through the Elevate Program by Dicoding, a comprehensive initiative by Microsoft that equips participants with the skills to design and deploy AI solutions using Azure AI services. This program covers everything from natural language processing and computer vision to building generative AI applications, empowering students to tackle real-world challenges with cutting-edge AI technologies.",
-    skills: [
-      "Natural Language Processing (NLP)",
-      "Azure OpenAI",
-      "Microsoft Azure",
-      "GitHub",
-      "Computer Vision",
-      "OpenCV",
-      "Git",
-      "Document Processing with Form Recognizer",
-      "Azure AI Vision Solutions",
-      "Semantic Kernel",
-      "Azure DevOps",
-      "AI Security",
-      "Cloud-Native App Development with Azure",
-      "AI and Data Science Solutions",
-      "Azure Container Apps",
-      "Generative AI Applications",
+    period: "Jan 2025 – Present",
+    desc: [
+      "Awarded the Artificial Intelligence Scholarship through the Elevate Program by Dicoding (Microsoft).",
+      "Building AI solutions using Azure AI services covering NLP, computer vision, and generative AI applications.",
+    ],
+    tags: [
+      "Natural Language Processing (NLP)", "Azure OpenAI", "Microsoft Azure", "GitHub", 
+      "Computer Vision", "OpenCV", "Git", "Document Processing with Form Recognizer", 
+      "Azure AI Vision Solutions", "Semantic Kernel", "Azure DevOps", "AI Security", 
+      "Cloud-Native App Development with Azure", "AI and Data Science Solutions", 
+      "Azure Container Apps", "Generative AI Applications"
     ],
   },
 ];
 
-const ExperienceCard: React.FC<{ experience: ExperienceData; isDark: boolean }> = ({
-  experience,
-  isDark,
-}) => {
-  return (
-    <VerticalTimelineElement
-      icon={
-        <img
-          className="w-full h-full rounded-full object-cover"
-          src={experience.img}
-          alt={experience.company}
-        />
-      }
-      contentStyle={{
-        background: isDark ? "#1d1836" : "#f3f4f6",
-        color: isDark ? "#fff" : "#111827",
-        borderRadius: "8px",
-        border: isDark
-          ? "1px solid rgba(255, 255, 255, 0.125)"
-          : "1px solid rgba(0, 0, 0, 0.1)",
-        boxShadow: isDark
-          ? "0 3px 0 rgba(0,0,0,0.2)"
-          : "0 3px 0 rgba(0,0,0,0.1)",
-      }}
-      contentArrowStyle={{
-        borderRight: isDark ? "7px solid #1d1836" : "7px solid #f3f4f6",
-      }}
-      date={experience.date}
-      dateClassName={isDark ? "text-white/80" : "text-gray-700 font-bold"}
-    >
-      <div className="flex gap-3">
-        <img
-          src={experience.img}
-          alt={experience.company}
-          className="h-12 w-12 rounded-lg sm:h-10 sm:w-10 object-cover"
-        />
-        <div className="flex flex-col leading-tight space-y-1">
-          <span
-            className={`text-lg font-bold sm:text-base ${
-              isDark ? "text-white" : "text-gray-900"
-            }`}
-          >
-            {experience.role}
-          </span>
-          <span
-            className={`text-sm font-medium sm:text-sm ${
-              isDark ? "text-gray-400" : "text-gray-600"
-            }`}
-          >
-            {experience.company}
-          </span>
-        </div>
-      </div>
+const bioText = [
+  "Hi, I'm Christian, a passionate software engineer with a strong background in full-stack development, artificial intelligence, and data analytics. I specialize in building intelligent, scalable, and high-performance applications.",
+  "My interest in AI began during university, where I worked on time series forecasting using Holt-Winters optimized by Genetic Algorithms. Later, I explored YOLO, CNNs, and LSTM models for real-time detection. Curiosity drives me — I'm always eager to learn and contribute to open-source.",
+];
 
-      <p
-        className={`!mt-4 !font-normal text-sm sm:text-xs ${
-          isDark ? "text-gray-300" : "text-gray-700"
-        }`}
-      >
-        {experience.desc}
-      </p>
 
-      {experience.skills && experience.skills.length > 0 && (
-        <div className="mt-4">
-          <h4
-            className={`text-sm font-semibold mb-2 ${
-              isDark ? "text-gray-400" : "text-gray-600"
-            }`}
-          >
-            Skills
-          </h4>
-          <div className="flex flex-wrap gap-2">
-            {experience.skills.map((skill, index) => (
-              <span
-                key={index}
-                className={`text-xs font-medium px-3 py-1 rounded-full transition ${
-                  isDark
-                    ? "bg-gray-800 text-gray-300 hover:bg-gray-700"
-                    : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-100"
-                }`}
-              >
-                {skill}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-    </VerticalTimelineElement>
-  );
-};
-
+/* ====================================================================
+   ABOUT PAGE
+==================================================================== */
 const AboutPage: React.FC = () => {
-  const [isExpanded, setIsExpanded] = useState(false);
   const navigate = useNavigate();
-  const [, setUserData] = useState<UserData | null>(null);
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
+  const sfxRef = useRef<HTMLAudioElement | null>(null);
+  const audioUnlocked = useRef(false);
+  const [activeSkill, setActiveSkill] = useState<string | null>(null);
+  const [focusedExp, setFocusedExp] = useState<number | null>(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch(
-          `https://backend-unknown-portofolio.vercel.app/api/data/user?type=public&userId=6805ed20adf3bf91069c1a28`
-        );
-        const result: UserData = await response.json();
-        setUserData(result);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-    fetchData();
+    const unlock = () => { audioUnlocked.current = true; };
+    window.addEventListener("pointerdown", unlock, { once: true, capture: true });
+    return () => window.removeEventListener("pointerdown", unlock);
   }, []);
 
+  const playSound = useCallback(() => {
+    if (!audioUnlocked.current || !sfxRef.current) return;
+    try { sfxRef.current.currentTime = 0; sfxRef.current.play().catch(() => {}); } catch {}
+  }, []);
+
+  const getSkillDesc = (skillName: string) => {
+    const descriptions: Record<string, string> = {
+      // Front-End
+      "JavaScript": "Telah diandalkan untuk memanipulasi DOM tingkat lanjut, integrasi API dinamis, dan merancang logika interaktif sisi klien.",
+      "TypeScript": "Diterapkan pada proyek berskala besar guna menjamin keamanan tipe (type-safety) dan meminimalisir bug kritis saat runtime.",
+      "React": "Menjadi fondasi utama saya dalam merancang arsitektur antarmuka modular, manajemen state global, dan UI yang highly-reactive.",
+      "Next.js": "Berhasil mendeploy portal web berkinerja tinggi dengan optimasi SEO maksimal memanfaatkan fitur Server-Side Rendering (SSR).",
+      "Flutter": "Telah digunakan untuk mengembangkan aplikasi mobile multi-platform (Android & iOS) dengan animasi mulus dan performa mendekati native.",
+      "Tailwind": "Diimplementasikan sebagai standar alur kerja untuk menyusun tata letak kustom dan sistem desain responsif dengan sangat cepat.",
+      "Bootstrap": "Dimanfaatkan pada fase prototyping cepat dan pengembangan sistem informasi web tradisional berbasis sistem grid standar.",
+      "Figma": "Terbiasa merancang alur UX, wireframe, mockup fidelitas tinggi, hingga transisi aset visual (handoff) untuk tim pengembang.",
+      
+      // Back-End & DB
+      "Python": "Digunakan secara ekstensif untuk merancang model AI/ML, memproses data berjumlah besar, dan mendeploy layanan backend.",
+      "PHP": "Menjadi pijakan awal saya dalam memahami fundamental pemrograman sisi server dan arsitektur pengembangan web dinamis.",
+      "Dart": "Dikembangkan secara mendalam demi merajut logika state management yang kompleks di dalam ekosistem aplikasi Flutter.",
+      "Java": "Diaplikasikan dalam membedah konsep Object-Oriented Programming (OOP) tingkat lanjut dan pola arsitektur sistem enterprise.",
+      "Node.js": "Menjadi andalan utama saat merancang ekosistem backend asinkron yang efisien sepenuhnya dengan tumpukan JavaScript.",
+      "Express": "Diimplementasikan untuk merancang endpoint RESTful API yang ringan, cepat, dan mudah diintegrasikan dengan berbagai database.",
+      "FastAPI": "Digunakan khusus untuk merancang backend berkinerja ekstrim yang melayani inferensi model AI dengan latensi sangat rendah.",
+      "Laravel": "Terbiasa mengelola arsitektur web modern memanfaatkan sistem routing dinamis, perintah artisan, dan ORM Eloquent.",
+      "MongoDB": "Solusi NoSQL pilihan utama saat menangani skema data dokumen JSON yang sangat dinamis dan butuh skalabilitas tinggi.",
+      "PostgreSQL": "Diandalkan dalam proyek krusial yang menuntut integritas relasi tabel kompleks dan performa komputasi query yang berat.",
+      "MySQL": "Terbukti andal dan konsisten dalam mengelola aliran data transaksi pengguna pada sebagian besar pengembangan web tradisional.",
+      "Firebase": "Diintegrasikan sebagai solusi backend-as-a-service (BaaS) kilat untuk sistem autentikasi realtime dan manajemen berkas.",
+      "Supabase": "Pilihan terfavorit saya saat ini untuk kebutuhan backend-as-a-service berbekal kekuatan penuh dari ekosistem Postgres.",
+      
+      // Tools & AI
+      "Git": "Terintegrasi penuh dalam alur kerja harian untuk versioning kode, code review, dan kolaborasi tim yang terstruktur rapi.",
+      "Docker": "Membungkus arsitektur aplikasi ke dalam container terisolasi untuk menjamin konsistensi mutlak dari tahap lokal ke production.",
+      "Postman": "Utilitas esensial harian untuk memvalidasi respon endpoint, menyimulasikan berbagai skenario payload, dan mendokumentasikan API.",
+      "Arch Linux": "Sistem operasi harian (daily driver) kebanggaan yang melatih pemahaman mendalam saya terhadap manajemen core OS secara mandiri.",
+      "PowerShell": "Dimanfaatkan secara khusus untuk mengeksekusi skrip otomatisasi tugas administratif di lingkup server dan desktop Windows.",
+      "GCP": "Dieksplorasi secara teknis untuk mengelola arsitektur komputasi awan, virtual machine, dan kebutuhan hosting terdistribusi.",
+      "TensorFlow": "Diandalkan secara proaktif untuk merancang arsitektur jaringan saraf tiruan (ANN) dari fase eksperimen hingga evaluasi model.",
+      "PyTorch": "Framework pilihan utama dalam riset machine learning mutakhir, prapemrosesan tensor dinamis, dan implementasi computer vision.",
+      "LangChain": "Digunakan secara intensif untuk merancang agen orchestration yang menjembatani kecerdasan LLM dengan sumber data eksternal.",
+      "Hugging Face": "Dimanfaatkan untuk mengadopsi, bereksperimen, dan memoles (fine-tuning) model bahasa alami (NLP) open-source terkemuka."
+    };
+
+    
+    return descriptions[skillName] || "Teknologi yang selalu saya siap eksplorasi dan adaptasi untuk memecahkan masalah dalam proyek.";
+  };
+
   return (
-    <div className="container mx-auto mt-20 p-4 text-gray-200">
-      {/* Profile Section */}
-      <section className="container flex flex-col text-black xl:flex-row items-center xl:items-start gap-6 text-center xl:text-left">
-        {/* Profile Image & Details */}
-        <section className="flex flex-col items-center text-center gap-4 bg-white dark:bg-gray-900 rounded-lg p-6 shadow-lg transition-all">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            whileHover={{ rotateY: 360 }}
-            transition={{ duration: 0.8 }}
-            className="w-32 h-32 rounded-full overflow-hidden border-4 border-gray-700 dark:border-gray-300"
-            style={{ perspective: 1000 }}
-          >
-            <motion.img
-              src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
-              alt="Profile Picture"
-              className="w-full h-full object-cover"
-              style={{ backfaceVisibility: "hidden" }}
-            />
-          </motion.div>
+    <section className="relative z-[2] min-h-screen bg-[#ece5d8] newspaper-grid text-black overflow-y-auto p5-scroll">
+      <SquiggleDecorations />
+      
+      <audio ref={sfxRef} src="/p5/sfx/select.mp3" preload="auto" />
 
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            Yohanes Christian Devano
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300">
-            Mahasiswa Sanata Dharma
-          </p>
+      {/* Top black bar */}
+      <div className="w-full h-4 bg-black relative z-10" />
 
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            transition={{ duration: 0.3 }}
-            className="mt-2 px-4 py-2 bg-gray-800 dark:bg-gray-700 border border-gray-600 dark:border-gray-500 rounded-lg text-gray-300 dark:text-gray-200 hover:bg-gray-700 dark:hover:bg-gray-600"
-            onClick={() => navigate("/chat-me")}
-          >
-            Chat with My AI Assistant
-          </motion.button>
-        </section>
+      <div className="max-w-6xl mx-auto px-4 md:px-6 pt-8 pb-20 relative z-10">
 
-        {/* About Me Section */}
-        <section className="mt-8 xl:mt-0 xl:ml-12 text-center text-black xl:text-left container">
-          <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
-            About Me
-          </h3>
-          <section className="mt-2 mb-4 relative">
-            <motion.div
-              initial={false}
-              animate={{ height: isExpanded ? "auto" : "100px" }}
-              transition={{ duration: 0.5 }}
-              className="overflow-hidden relative"
-            >
-              <p className="text-justify text-gray-900 dark:text-gray-200">
-                Hi, I’m Christian, a passionate software engineer with a strong
-                background in full-stack development, artificial intelligence,
-                and data analytics. I specialize in building intelligent,
-                scalable, and high-performance applications. I’ve worked with
-                various technologies including Python, JavaScript, TypeScript,
-                Golang, Next.js, FastAPI, and Flutter. My backend expertise
-                spans RESTful APIs, microservices, and database optimization. I
-                also have experience in modern frontend development using React,
-                Tailwind CSS, and Figma for prototyping. Throughout my academic
-                and professional journey, I’ve consistently pursued innovation.
-                My interest in AI began during university, where I worked on
-                time series forecasting using Holt-Winters optimized by Genetic
-                Algorithms. Later, I explored YOLO, CNNs, and LSTM models,
-                combining them into intelligent pipelines for real-time
-                detection and prediction tasks. These experiences taught me how
-                to turn raw data into actionable insights. I’m also proficient
-                in data visualization tools like Tableau and adept at
-                communicating technical insights in a simple and effective
-                manner. My goal is to solve complex problems with clean,
-                efficient code while ensuring a seamless user experience. I
-                enjoy collaborating with diverse teams and thrive in
-                environments that encourage learning and experimentation. I
-                believe that teamwork, empathy, and communication are just as
-                important as technical skills. Curiosity drives me. I’m always
-                eager to learn new frameworks, study emerging technologies, and
-                contribute to open-source projects. Currently, I’m focused on
-                integrating AI with software products to create intelligent,
-                automated solutions for real-world problems. I believe that
-                technology should serve people not the other way around. I’m
-                available for collaboration, freelance projects, or full-time
-                opportunities where I can bring value through my unique blend of
-                AI, software engineering, and strategic thinking.
+        {/* ─── Header + Back ─── */}
+        <div className="flex items-center gap-4 mb-4">
+          <button className="p5-back-hint" onClick={() => { playSound(); navigate("/"); }}>
+            ESC · Back
+          </button>
+        </div>
+
+        {/* ─── Hero Title ─── */}
+        <header className="relative flex flex-col items-center mb-16 text-center">
+          <div className="absolute inset-0 bg-[#d7c4a3] border-4 border-black cardboard-texture transform rotate-1 scale-105 -z-10 paper-shadow-lg" />
+          <div className="p-6 md:p-8 w-full">
+            <div className="font-mono text-xs font-black bg-black text-yellow-300 px-3 py-1 inline-block mb-4 -rotate-1">
+              PORTFOLIO KLIPING DIGITAL RESMI
+            </div>
+            <div className="flex justify-center mb-6">
+              <RansomPhrase text="YOHANES CHRISTIAN DEVANO" seed="hero-title" size="text-2xl sm:text-4xl md:text-5xl" />
+            </div>
+            <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
+              {["CREATIVE DEVELOPER", "FULL-STACK DEVELOPMENT", "ML RESEARCH ENGINEER"].map((t, i) => {
+                const colors = ["bg-p5-red text-white", "bg-black text-white", "bg-cyan-500 text-black"];
+                const tilts = ["rotate-1", "-rotate-1", "rotate-2"];
+                return (
+                  <span key={i} className={`font-heavy-block text-xs md:text-sm px-3 py-1 border-2 border-black ${colors[i]} ${tilts[i]} paper-shadow-sm uppercase`}>
+                    {t}
+                  </span>
+                );
+              })}
+            </div>
+            
+            {/* ─── Main Skills Tags ─── */}
+            <div className="flex flex-wrap justify-center gap-2 mt-6 max-w-3xl mx-auto">
+              {[
+                "Artificial Intelligence", "Machine Learning", "Computer Vision", 
+                "Forecasting", "Data Analysis", "Data Visualization", 
+                "Problem Solving", "Team Work & Collaboration", 
+                "Personal Growth", "Curious & Passionate"
+              ].map((skill, i) => (
+                <span 
+                  key={i} 
+                  className={`font-mono text-[10px] md:text-xs px-2 py-1 bg-white border border-black/80 text-black shadow-sm ${i % 2 === 0 ? 'rotate-1' : '-rotate-1'} hover:bg-black hover:text-white transition-colors cursor-crosshair`}
+                >
+                  #{skill.toUpperCase()}
+                </span>
+              ))}
+            </div>
+          </div>
+        </header>
+
+        {/* ─── Profile Card + Bio (Bento Grid) ─── */}
+        <main className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-16">
+
+          {/* LEFT: Profile + Bio */}
+          <section className="col-span-1 lg:col-span-7 space-y-10">
+            <div className="bg-white border-4 border-black p-6 md:p-8 relative -rotate-1 paper-shadow-lg dot-grid-bg">
+              {/* Paper clip */}
+              <div className="absolute -top-6 left-1/2 -translate-x-1/2 z-20 rotate-12">
+                <Paperclip className="w-10 h-10 text-gray-800 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]" />
+              </div>
+              {/* Tape */}
+              <div className="absolute -top-3 right-6 w-24 h-6 bg-yellow-200 opacity-90 border-x border-dashed border-yellow-500 rotate-[8deg]" />
+
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center mt-4">
+                {/* Polaroid */}
+                <div className="md:col-span-5 flex flex-col items-center">
+                  <div className="bg-stone-50 p-3 pb-6 border-2 border-black -rotate-3 paper-shadow-sm w-full max-w-[200px]">
+                    <div className="relative w-full aspect-square border border-black overflow-hidden bg-zinc-200">
+                      <img
+                        src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
+                        alt="Profile"
+                        className="w-full h-full object-cover contrast-[1.3] brightness-95 grayscale hover:grayscale-0 transition-all duration-500"
+                      />
+                      <div className="absolute top-2 -left-6 w-20 h-5 bg-pink-500 text-white text-[7px] font-mono font-black -rotate-[40deg] flex items-center justify-center border-y border-black">
+                        DEV-ID: 90
+                      </div>
+                    </div>
+                    <div className="text-center font-marker text-md text-black mt-3 -rotate-2">
+                      Yohanes Christian Devano
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bio text */}
+                <div className="md:col-span-7 space-y-4">
+                  <h3 className="font-bungee text-sm bg-yellow-300 px-2.5 py-1 inline-block border-2 border-black rotate-[1.5deg]">
+                    📝 BIOGRAFI SINGKAT
+                  </h3>
+                  <div className="font-typewriter text-xs md:text-sm text-gray-800 space-y-3 leading-relaxed">
+                    {bioText.map((p, i) => <p key={i}>{p}</p>)}
+                  </div>
+                </div>
+              </div>
+
+              {/* Cut line */}
+              <div className="border-t-2 border-dashed border-black mt-6 pt-4 flex justify-between items-center text-[10px] font-mono text-gray-500">
+                <span><Scissors className="inline w-3 h-3 mr-1" />GUNTING DI SINI UNTUK KARTU NAMA</span>
+                <span>YOHANES_DEV_2026</span>
+              </div>
+            </div>
+
+            {/* ─── Academic Thesis Card ─── */}
+            <div className="bg-yellow-50 border-4 border-black p-5 relative rotate-1 paper-shadow-lg notebook-lines mt-8 group cursor-crosshair transition-transform hover:scale-[1.02]">
+              <div className="absolute -top-3 left-8 bg-red-600 text-white px-2 py-0.5 font-mono text-[9px] font-bold -rotate-[4deg] uppercase border border-black shadow-[2px_2px_0px_#000]">
+                ACADEMIC THESIS
+              </div>
+              
+              <h3 className="font-bungee text-sm text-black mt-3 mb-2 uppercase flex items-center">
+                <Pin className="w-4 h-4 mr-2 text-blue-500 fill-blue-500 -rotate-12" /> TUGAS AKHIR (SKRIPSI)
+              </h3>
+              
+              <p className="font-heavy-block text-xs uppercase leading-relaxed text-black mb-2 px-1 bg-white inline-block border border-black/20">
+                "Optimisasi Metode Holt-Winter Menggunakan Algoritma Genetika Untuk Prediksi Jumlah Penumpang Pesawat Di Bandara Soekarno-Hatta"
               </p>
-            </motion.div>
+              
+              <p className="font-typewriter text-xs text-gray-800 leading-relaxed mb-4 pr-4">
+                Penyelesaian studi di Universitas Sanata Dharma. Riset berfokus pada optimasi parameter metode Holt-Winter menggunakan Algoritma Genetika untuk menghasilkan akurasi prediksi data yang maksimal.
+              </p>
+              
+              <div className="flex gap-2 items-center">
+                <div className="inline-block px-2 py-1 bg-black text-white text-[9px] font-mono font-bold border-2 border-dashed border-white -rotate-2">
+                  STATUS: COMPLETED ✅
+                </div>
+                {/* <div className="inline-block px-2 py-1 bg-green-300 text-black text-[9px] font-heavy-block rotate-1 border border-black">
+                  GRADE: A
+                </div> */}
+              </div>
 
-            <button
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="mt-3 text-blue-600 hover:underline focus:outline-none dark:text-blue-300 dark:hover:text-blue-500"
-            >
-              {isExpanded ? "Show Less" : "Show More"}
-            </button>
+              {/* Tape deco */}
+              <div className="absolute -bottom-3 -right-4 w-16 h-8 bg-sky-200 rotate-[-25deg] opacity-80 border-t border-black border-dashed pointer-events-none" />
+              <div className="absolute -top-3 -right-2 w-12 h-6 bg-rose-200 rotate-[45deg] opacity-80 border-b border-black border-dashed pointer-events-none" />
+            </div>
+
           </section>
 
-          <h3 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">
-            My Skills
-          </h3>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="flex gap-2 flex-wrap justify-center xl:justify-start"
-          >
-            {[
-              "Artificial Intelligence",
-              "Machine Learning",
-              "Computer Vision",
-              "Forecasting",
-              "Data Analysis",
-              "Data Visualization",
-              "Problem Solving",
-              "Team Work & Collaboration",
-              "Personal Growth",
-              "Curious & Passionate",
-            ].map((skill) => (
-              <motion.div key={skill} whileHover={{ scale: 1.1 }}>
-                <Badge
-                  variant="outline"
-                  className="text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-400 dark:border-gray-600"
-                >
-                  {skill}
-                </Badge>
-              </motion.div>
-            ))}
-          </motion.div>
-        </section>
-      </section>
-
-      {/* Tech Stack Section */}
-      <section className="container mx-auto mt-8 px-4">
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-6">Tech Stack</h2>
-
-        <div className="flex flex-col gap-4">
-          {[0, 1, 2].map((rowIndex) => (
-            <Marquee
-              key={rowIndex}
-              pauseOnHover
-              speed={50 + rowIndex * 10} // Baris bawah lebih cepat
-              gradient={false}
-              direction={rowIndex % 2 === 0 ? "left" : "right"} // Pola arah: kiri, kanan, kiri
-            >
-              <div className="flex gap-6 mr-6">
-                {techStack.map((tech, index) => (
-                  <div
-                    key={`${rowIndex}-${index}`}
-                    className="flex flex-col items-center bg-gray-100 dark:bg-gray-800 p-4 rounded-lg shadow-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition duration-300 min-w-[120px]"
+          {/* RIGHT: Social Links */}
+          <section className="col-span-1 lg:col-span-5 space-y-10">
+            <div className="bg-orange-400 border-4 border-black p-6 relative rotate-2 paper-shadow-lg">
+              <div className="absolute top-2 left-6 bg-black text-orange-400 px-2 py-0.5 font-mono text-[9px] font-bold -rotate-3 uppercase">
+                CONNECT
+              </div>
+              <h3 className="font-bungee text-sm text-black mt-4 mb-6 uppercase">📬 HUBUNGI / JARINGAN</h3>
+              <div className="flex flex-col gap-4">
+                {[
+                  { label: "KIRIM EMAIL", url: "mailto:yohanesdevano90@gmail.com", color: "bg-rose-500 text-white", tilt: "-rotate-2" },
+                  { label: "GITHUB REPO", url: "https://github.com/NestiaDev-id", color: "bg-emerald-500 text-black", tilt: "rotate-3" },
+                  { label: "LINKEDIN", url: "https://www.linkedin.com/in/yohanes-christian-devano/", color: "bg-blue-500 text-white", tilt: "-rotate-1" },
+                  { label: "WHATSAPP", url: "https://api.whatsapp.com/send/?phone=6281325720265", color: "bg-green-500 text-black", tilt: "rotate-2" },
+                ].map((s, i) => (
+                  <a key={i} href={s.url} target="_blank" rel="noreferrer"
+                    className={`block p-4 border-2 border-black font-heavy-block text-xs uppercase tracking-wider text-center paper-shadow-sm transition-all hover:-translate-y-1 hover:rotate-0 hover:scale-105 ${s.color} ${s.tilt}`}
                   >
-                    <div className={`text-4xl ${tech.color}`}>{tech.icon}</div>
-                    <p className="text-gray-700 dark:text-gray-300 mt-2 text-sm text-center">
-                      {tech.name}
-                    </p>
-                  </div>
+                    {s.label} ↗
+                  </a>
                 ))}
               </div>
-            </Marquee>
-          ))}
-        </div>
-      </section>
+            </div>
 
-      {/* Experience Section */}
-      <div id="Experience" className="flex flex-col items-center mt-12 z-10 pb-20">
-        <div className="max-w-5xl w-full flex flex-col items-center gap-4">
-          <h2 className="text-4xl font-semibold text-center text-gray-900 dark:text-gray-100 sm:text-2xl">
-            Experience
-          </h2>
-          <p className="text-lg text-center text-gray-600 dark:text-gray-400 mb-10 sm:text-sm">
-            My work experience as a software engineer and working on different
-            companies and projects.
-          </p>
-          <VerticalTimeline lineColor={isDark ? "#fff" : "#e5e7eb"}>
-            {experiences.map((experience, index) => (
-              <ExperienceCard
-                key={`experience-${index}`}
-                experience={experience}
-                isDark={isDark}
+            {/* CTA: Chat with AI */}
+            <button
+              className="p5-cv-btn w-full sm:w-auto"
+              onClick={() => { playSound(); navigate("/chat-me"); }}
+            >
+              <span>💬 Chat with My AI Assistant</span>
+            </button>
+
+            {/* Music Widget / Currently Listening To */}
+            <MusicWidget />
+          </section>
+        </main>
+
+        {/* ─── GitHub Contributions Full Width ─── */}
+        <section className="mb-16">
+          <div className="bg-white border-4 border-black p-4 md:p-6 relative rotate-1 paper-shadow-lg notebook-lines">
+            {/* Tape */}
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-32 h-7 bg-rose-300 opacity-90 border-x border-dashed border-rose-500 rotate-[-2deg]" />
+            
+            <div className="flex justify-between items-end mb-4">
+              <h3 className="font-bungee text-sm bg-black text-white px-2.5 py-1.5 inline-block border-2 border-black rotate-[-1deg] paper-shadow-sm">
+                📈 CODE CONTRIBUTIONS
+              </h3>
+              <span className="font-typewriter text-xs text-gray-500 hidden sm:block">@NestiaDev-id</span>
+            </div>
+            
+            <div className="border-2 border-black bg-zinc-50 p-2 md:p-4 overflow-hidden flex justify-center -rotate-[0.5deg] paper-shadow-sm">
+              <img 
+                src="https://ghchart.rshah.org/NestiaDev-id" 
+                alt="Yohanes Devano GitHub Contributions" 
+                className="w-full max-w-full cursor-crosshair"
               />
-            ))}
-          </VerticalTimeline>
-        </div>
+            </div>
+            
+            <div className="text-right mt-3 font-mono text-[9px] text-gray-400 font-bold tracking-widest uppercase">
+              [ LIVE DATA // GITHUB.COM ]
+            </div>
+          </div>
+        </section>
+
+        {/* ─── Tech Stack Grid ─── */}
+        <section className="mb-16">
+          <div className="bg-black text-white p-3 -rotate-1 inline-block mb-8 paper-shadow-sm font-bungee text-lg uppercase border-2 border-dashed border-white">
+            <Scissors className="inline w-5 h-5 mr-2" />TECH SKILL STACK
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+            {techCategories.map((cat, ci) => {
+              const boxTilts = ["rotate-1", "-rotate-1", "rotate-[-2deg]"];
+              return (
+                <div key={ci} className={`bg-white border-4 border-black p-5 ${boxTilts[ci]} paper-shadow-lg relative overflow-hidden dot-grid-bg`}>
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 w-32 h-6 bg-yellow-100 opacity-85 -rotate-2 border border-black border-dashed flex items-center justify-center text-[8px] font-mono font-bold tracking-widest text-gray-700">
+                    VERIFIED SOURCE
+                  </div>
+                  <h3 className="font-heavy-block text-sm bg-black text-white px-2 py-1.5 mt-2 inline-block mb-6 -rotate-2 tracking-tight">
+                    {cat.category}
+                  </h3>
+                  <div className="flex flex-wrap gap-2.5 relative z-10">
+                    {cat.skills.map((skill, si) => {
+                      const tagTilts = ["rotate-2", "-rotate-2", "rotate-1", "-rotate-1", "rotate-3", "-rotate-3"];
+                      return (
+                        <button key={si}
+                          onMouseEnter={() => { setActiveSkill(skill.name); playSound(); }}
+                          onMouseLeave={() => setActiveSkill(null)}
+                          className={`px-3 py-2 font-typewriter text-sm font-bold border-2 border-black paper-shadow-sm transition-all hover:-translate-y-1 hover:scale-105 cursor-help ${skill.color} ${tagTilts[(si + ci) % tagTilts.length]}`}
+                        >
+                          <span className="mr-1.5 text-lg align-middle">{skill.icon}</span>
+                          {skill.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  
+                  {/* Tape deco */}
+                  <div className="absolute -bottom-2 -right-4 w-16 h-8 bg-[#fed7aa] rotate-[35deg] opacity-70 border-t border-black border-dashed pointer-events-none z-0" />
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Hover hint */}
+          <div className="mt-8 h-24 relative">
+            {activeSkill ? (
+              (() => {
+                const desc = getSkillDesc(activeSkill);
+                return (
+                  <div className="absolute w-full bg-[#f8fafc] border-2 border-black p-4 rounded-none paper-shadow-sm flex items-start gap-4 animate-fade-in rotate-[0.5deg] z-20">
+                    <div className="flex-1 relative">
+                      <Pin className="absolute -top-2 right-0 w-4 h-4 text-red-500 fill-red-500 rotate-12 drop-shadow-sm" />
+                      <h4 className="font-heavy-block text-sm uppercase tracking-tight text-black mb-1 border-b-2 border-black border-dashed pb-1 inline-block pr-6">
+                        {activeSkill}
+                      </h4>
+                      <p className="font-typewriter text-xs text-gray-700 leading-relaxed mt-1.5">{desc}</p>
+                    </div>
+                  </div>
+                );
+              })()
+            ) : (
+              <div className="border-2 border-dashed border-gray-400 p-4 text-center select-none rotate-[-0.5deg]">
+                <p className="font-typewriter text-xs text-gray-500 flex items-center justify-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-amber-500" /> Hover atau klik tag keahlian untuk mendeteksi rekam jejak teknis saya secara mendalam!
+                </p>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* ─── Experience Timeline ─── */}
+        <section className="mb-16">
+          <div className="relative mb-12 inline-block">
+            <div className="absolute inset-0 bg-rose-300 opacity-50 -rotate-[4deg] scale-110" />
+            <h2 className="relative font-bungee text-lg text-black px-4 py-2 bg-white border-2 border-black -rotate-2 paper-shadow-sm uppercase inline-block">
+              📂 ARSIP PENGALAMAN & TIMELINE
+            </h2>
+          </div>
+
+          <div className="relative flex flex-col gap-10">
+            {experiences.map((exp, i) => {
+              const isFocused = focusedExp === i;
+              const rotation = isFocused ? "rotate-0 scale-[1.02] z-30" : i === 0 ? "rotate-1 hover:-rotate-1 hover:scale-[1.01]" : "-rotate-1 hover:rotate-1 hover:scale-[1.01]";
+              return (
+                <div key={i}
+                  onClick={() => { setFocusedExp(i === focusedExp ? null : i); playSound(); }}
+                  className={`bg-amber-50 text-black border-4 border-black p-6 md:p-8 relative cursor-pointer transition-all duration-300 ${rotation} ${isFocused ? "paper-shadow-lg" : "paper-shadow"} select-none notebook-lines`}
+                >
+                  <div className="absolute -top-5 right-10 z-20 rotate-12 text-gray-700 hover:scale-110 transition-transform">
+                    <Paperclip className="w-8 h-8 drop-shadow-[2px_2px_0px_rgba(0,0,0,1)]" />
+                  </div>
+                  {i === 1 && (
+                    <div className="absolute -top-3 left-6 z-20 -rotate-12 text-red-600">
+                      <Pin className="w-6 h-6 drop-shadow-[1px_1px_0px_rgba(0,0,0,1)] fill-red-600" />
+                    </div>
+                  )}
+                  {isFocused && (
+                    <div className="absolute top-[-10px] left-[30%] w-36 h-7 bg-yellow-100 opacity-90 border-x border-dashed border-yellow-400 -rotate-1 flex items-center justify-center font-mono text-[9px] font-bold tracking-widest text-amber-800 z-30">
+                      📁 PINNED
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+                    <div className="flex items-center gap-2 bg-rose-500 text-white font-bungee text-xs px-3 py-1.5 border-2 border-black -rotate-1 paper-shadow-sm uppercase">
+                      <Calendar className="w-3.5 h-3.5" />{exp.period}
+                    </div>
+                    <span className="font-mono text-xs font-bold text-gray-500">DOC-ID: 00{i + 1}_KRAFT</span>
+                  </div>
+
+                  <div className="mb-4">
+                    <div className="inline-block bg-black text-purple-400 px-3 py-1 font-heavy-block text-xs uppercase rotate-1 mb-2">
+                      {exp.company}
+                    </div>
+                    <h4 className="font-marker text-xl md:text-2xl text-black leading-tight">{exp.role}</h4>
+                  </div>
+
+                  <div className="space-y-3 mt-6 font-typewriter text-xs md:text-sm text-gray-800 border-l-4 border-dashed border-purple-300 pl-4">
+                    {exp.desc.map((b, bi) => <p key={bi}>👉 {b}</p>)}
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 mt-8 pt-4 border-t border-dashed border-gray-300">
+                    {exp.tags.map((tag, ti) => (
+                      <span key={ti} className="font-pixel text-xs bg-white text-black border border-black px-2 py-0.5 rotate-1 font-bold shadow-sm">
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+
+                  {!isFocused && (
+                    <div className="absolute bottom-2 right-2 font-mono text-[8px] text-gray-400 animate-pulse uppercase">
+                      [ Klik Untuk Pin ]
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
       </div>
-    </div>
+    </section>
   );
 };
 

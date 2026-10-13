@@ -126,7 +126,7 @@ const experiences = [
     img: "https://www.usd.ac.id/logo/usd.png",
     role: "Computer Science Graduate",
     company: "Sanata Dharma University",
-    period: "Aug 2021 – Dec 2024",
+    period: "Aug 2021 – May 2025",
     desc: [
       "Pursuing a Bachelor's degree in Computer Science with a focus on software engineering and data-driven technologies.",
       "Actively involved in academic projects and research, including web application development, machine learning experiments, and system design.",
@@ -168,6 +168,17 @@ const experiences = [
       "Cloud-Native App Development with Azure", "AI and Data Science Solutions", 
       "Azure Container Apps", "Generative AI Applications"
     ],
+  },
+  {
+    img: "https://id.wikipedia.org/wiki/Berkas:Logo_of_Ministry_of_Education_and_Culture_of_Republic_of_Indonesia.svg",
+    role: "KIP Kuliah Scholarship Awardee 2021",
+    company: "Kementerian Pendidikan, Kebudayaan, Riset, dan Teknologi Republik Indonesia",
+    period: "2021 – 2025", //
+    desc: [
+      "Awarded a full higher education scholarship based on academic potential and selection criteria.",
+      "Maintained the required academic performance and GPA standards throughout the undergraduate program."
+    ],
+    tags: ["Scholarship", "Academic Excellence", "Government Funded"]
   },
 ];
 

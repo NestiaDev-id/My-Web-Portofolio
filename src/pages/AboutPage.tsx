@@ -156,7 +156,7 @@ const experiences = [
     img: "https://www.logo.wine/a/logo/Microsoft_Store/Microsoft_Store-Logo.wine.svg",
     role: "AI Scholarship By Dicoding",
     company: "Elevate Program by Dicoding",
-    period: "Jan 2025 – Present",
+    period: "Jan 2026 – March 2026",
     desc: [
       "Awarded the Artificial Intelligence Scholarship through the Elevate Program by Dicoding (Microsoft).",
       "Building AI solutions using Azure AI services covering NLP, computer vision, and generative AI applications.",
@@ -171,9 +171,9 @@ const experiences = [
   },
   {
     img: "https://id.wikipedia.org/wiki/Berkas:Logo_of_Ministry_of_Education_and_Culture_of_Republic_of_Indonesia.svg",
-    role: "KIP Kuliah Scholarship Awardee 2021",
-    company: "Kementerian Pendidikan, Kebudayaan, Riset, dan Teknologi Republik Indonesia",
-    period: "2021 – 2025", //
+    role: "KIP Kuliah Scholarship Awardee",
+    company: "Ministry of Education, Culture, Research, and Technology of the Republic of Indonesia",
+    period: "2021 – 2025",
     desc: [
       "Awarded a full higher education scholarship based on academic potential and selection criteria.",
       "Maintained the required academic performance and GPA standards throughout the undergraduate program."

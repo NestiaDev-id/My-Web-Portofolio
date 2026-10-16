@@ -22,7 +22,10 @@ function HomePage() {
     const unlock = () => {
       audioUnlocked.current = true;
     };
-    window.addEventListener("pointerdown", unlock, { once: true, capture: true });
+    window.addEventListener("pointerdown", unlock, {
+      once: true,
+      capture: true,
+    });
     window.addEventListener("keydown", unlock, { once: true, capture: true });
     return () => {
       window.removeEventListener("pointerdown", unlock);
@@ -44,7 +47,7 @@ function HomePage() {
       playSelect();
       navigate(path);
     },
-    [navigate, playSelect]
+    [navigate, playSelect],
   );
 
   // Keyboard navigation
@@ -111,9 +114,9 @@ function HomePage() {
 
         {/* Tagline Asli Persona 5 (Hanya untuk Desktop) */}
         <p className="p5-tagline hidden md:block">
-          Fullstack Developer, Software Engineer, and AI Enthusiast from Indonesia.
-          I build intuitive web experiences, from browser-based interactive applications
-          to scalable cloud-deployed AI services.
+          Fullstack Developer, Software Engineer, and AI Enthusiast from
+          Indonesia. I build intuitive web experiences, from browser-based
+          interactive applications to scalable cloud-deployed AI services.
         </p>
       </div>
 
@@ -124,16 +127,17 @@ function HomePage() {
         </div>
       </div> */}
 
-      <div className="md:hidden relative z-20 w-[120%] -ml-[10%] h-10 bg-[#fcd116] border-y-[4px] border-black flex items-center transform -rotate-2 my-2 shadow-2xl overflow-hidden pointer-events-none select-none
-        bg-[linear-gradient(135deg,#000_25%,transparent_25%,transparent_50%,#000_50%,#000_75%,transparent_75%,transparent)] bg-[length:20px_20px]">
-        
+      <div
+        className="md:hidden relative z-20 w-[120%] -ml-[10%] h-10 bg-[#fcd116] border-y-[4px] border-black flex items-center transform -rotate-2 my-2 shadow-2xl overflow-hidden pointer-events-none select-none
+        bg-[linear-gradient(135deg,#000_25%,transparent_25%,transparent_50%,#000_50%,#000_75%,transparent_75%,transparent)] bg-[length:20px_20px]"
+      >
         <div className="animate-marquee flex gap-8 items-center bg-black/95 py-1 px-4 text-[#fcd116] font-black text-xs tracking-[0.2em] uppercase whitespace-nowrap">
           <span>[ ALERT ] I USE ARCH BTW</span>
           <span className="text-white">★</span>
           <span>FULLSTACK & MACHINE LEARNING RESEARCHER</span>
           <span className="text-white">★</span>
           <span className="text-[#e60012]">I HATE CRAB(ಥ﹏ಥ)</span>
-          
+
           {/* Duplicate untuk seamless looping */}
           <span className="text-white">//</span>
           <span>[ ALERT ] I USE ARCH BTW</span>
@@ -144,8 +148,9 @@ function HomePage() {
         </div>
       </div>
 
-      {/* Menu section */}
+      {/* Menu section - P5 Ransom Text dengan Tumpukan Trapesium */}
       <div className="relative z-10 w-full md:bg-transparent -mx-[5vw] px-[5vw] pt-6 pb-20 md:mx-0 md:px-0 md:pt-0 md:pb-0 flex-1 md:flex-initial flex flex-col justify-start">
+        {/* Background Hitam Pekat dengan overlay gradient halus */}
         <div
           className="md:hidden absolute inset-0 -top-5 bg-[#0b0b0d] -z-10"
           style={{
@@ -155,28 +160,70 @@ function HomePage() {
             left: "-15%",
             height: "calc(100% + 60px)",
           }}
-        />
+        >
+          {/* Efek kilau biru tipis di latar belakang dari template keduamu */}
+          <div className="absolute inset-0 bg-gradient-to-tr from-cyan-950/20 via-transparent to-transparent opacity-60" />
+        </div>
+
         <nav
           className="p5-home-nav md:mt-[4vh] flex flex-col items-start gap-[0.6vh]"
           aria-label="Sections"
         >
-          {MENU_ITEMS.map((item, i) => (
-            <button
-              key={item.label}
-              className={`p5-menu-item ${item.label === "CHAT ME" ? "hidden md:block" : ""} ${i === selectedIndex ? "sel" : ""}`}
-              onMouseEnter={() => {
-                setSelectedIndex(i);
-                playSelect();
-              }}
-              onClick={() => goTo(item.path)}
-            >
-              <P5RansomText
-                text={item.label}
-                className="text-[clamp(26px,4.2vw,56px)]"
-              />
-              <span className="p5-cursor-mark">◀</span>
-            </button>
-          ))}
+          {MENU_ITEMS.map((item, i) => {
+            const isSelected = i === selectedIndex;
+
+            return (
+              <button
+                key={item.label}
+                className={`p5-menu-item relative flex items-center transition-transform duration-150 origin-left cursor-pointer min-h-[60px] md:min-h-[70px]
+                  ${item.label === "CHAT ME" ? "hidden md:block" : ""}
+                  ${isSelected ? "scale-105 z-20 sel" : "z-10"}
+                `}
+                onMouseEnter={() => {
+                  setSelectedIndex(i);
+                  playSelect();
+                }}
+                onClick={() => goTo(item.path)}
+              >
+                {/* LAPISAN BALOK 1: Lapisan Belakang (Aksen Pink/Magenta) */}
+                {isSelected && (
+                  <div
+                    className="absolute top-0 left-[-15px] w-[115%] h-full bg-yellow-400 transition-all duration-200"
+                    style={{
+                      clipPath: "polygon(5% 0%, 100% 0%, 92% 100%, 0% 100%)",
+                      transform:
+                        "skewX(-15deg) translateY(4px) translateX(6px)",
+                    }}
+                  />
+                )}
+
+                {/* LAPISAN BALOK 2: Lapisan Depan (Putih Bersih Solid) */}
+                {isSelected && (
+                  <div
+                    className="absolute top-0 left-[-15px] w-[115%] h-full bg-[#111] transition-all duration-200 shadow-[4px_4px_10px_rgba(0,0,0,0.5)]"
+                    style={{
+                      clipPath: "polygon(5% 0%, 100% 0%, 92% 100%, 0% 100%)",
+                      transform: "skewX(-15deg)",
+                    }}
+                  />
+                )}
+
+                {/* KONTEN TEKS: P5RansomText dipadukan di lapisan terdepan */}
+                <div className="relative z-30 px-2 md:px-4 flex items-center w-full">
+                  <P5RansomText
+                    text={item.label}
+                    className="text-[clamp(26px,4.2vw,56px)] drop-shadow-md"
+                  />
+                  {/* Kursor penanda muncul jika dipilih */}
+                  <span
+                    className={`p5-cursor-mark ml-2 text-xl md:text-2xl transition-opacity duration-200 ${isSelected ? "opacity-100" : "opacity-0"}`}
+                  >
+                    ◀
+                  </span>
+                </div>
+              </button>
+            );
+          })}
         </nav>
       </div>
 

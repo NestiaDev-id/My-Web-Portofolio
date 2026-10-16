@@ -118,9 +118,29 @@ function HomePage() {
       </div>
 
       {/* Ticker tape - mobile only */}
-      <div className="md:hidden relative z-20 w-[120%] -ml-[10%] h-10 bg-[#fcd116] border-y-[4px] border-black flex items-center transform -rotate-2 my-2 shadow-2xl overflow-hidden pointer-events-none select-none">
+      {/* <div className="md:hidden relative z-20 w-[120%] -ml-[10%] h-10 bg-[#fcd116] border-y-[4px] border-black flex items-center transform -rotate-2 my-2 shadow-2xl overflow-hidden pointer-events-none select-none">
         <div className="animate-marquee font-black text-black text-sm tracking-[0.3em] uppercase">
           [ SYSTEM ALERT ] // UNAUTHORIZED ACCESS // [ PORTFOLIO ] // [ SYSTEM ALERT ] // UNAUTHORIZED ACCESS // [ PORTFOLIO ] // [ SYSTEM ALERT ] // UNAUTHORIZED ACCESS // [ PORTFOLIO ] //
+        </div>
+      </div> */}
+
+      <div className="md:hidden relative z-20 w-[120%] -ml-[10%] h-10 bg-[#fcd116] border-y-[4px] border-black flex items-center transform -rotate-2 my-2 shadow-2xl overflow-hidden pointer-events-none select-none
+        bg-[linear-gradient(135deg,#000_25%,transparent_25%,transparent_50%,#000_50%,#000_75%,transparent_75%,transparent)] bg-[length:20px_20px]">
+        
+        <div className="animate-marquee flex gap-8 items-center bg-black/95 py-1 px-4 text-[#fcd116] font-black text-xs tracking-[0.2em] uppercase whitespace-nowrap">
+          <span>[ ALERT ] I USE ARCH BTW</span>
+          <span className="text-white">★</span>
+          <span>FULLSTACK & MACHINE LEARNING RESEARCHER</span>
+          <span className="text-white">★</span>
+          <span className="text-[#e60012]">I HATE CRAB(ಥ﹏ಥ)</span>
+          
+          {/* Duplicate untuk seamless looping */}
+          <span className="text-white">//</span>
+          <span>[ ALERT ] I USE ARCH BTW</span>
+          <span className="text-white">★</span>
+          <span>FULLSTACK & MACHINE LEARNING RESEARCHER</span>
+          <span className="text-white">★</span>
+          <span className="text-[#e60012]">I HATE CRAB(ಥ﹏ಥ)</span>
         </div>
       </div>
 

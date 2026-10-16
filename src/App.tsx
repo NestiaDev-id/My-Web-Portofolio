@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Route, Routes, useLocation } from "react-router-dom";
 import HomePage from "./pages/Home";
 import AboutPage from "./pages/AboutPage";
 import ChatMe from "./pages/ChatMe";
@@ -9,8 +9,15 @@ import P5Background from "./components/P5Background";
 import P5Cursor from "./components/P5Cursor";
 import P5HUD from "./components/P5HUD";
 import NotFound from "./pages/NotFound";
+import TestingPage from "./pages/Testing";
 
 function App() {
+  const location = useLocation();
+
+  if (location.pathname === "/testing") {
+    return <TestingPage />;
+  }
+
   return (
     <div className="relative min-h-screen font-p5-condensed text-p5-white overflow-hidden">
       {/* Fixed background layers */}

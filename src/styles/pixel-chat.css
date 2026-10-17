@@ -1,10 +1,9 @@
 @import './pomodoro-base.css';
 
 .font-pixel-freddy {
-  font-family: "Five Fonts at Freddy's", 'VT323', monospace;
+  font-family: "Five Fonts at Freddy's", 'VT323', "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", monospace;
   -webkit-font-smoothing: none;
   font-smooth: never;
-  image-rendering: pixelated;
 }
 
 .pixel-chat-frame {
@@ -22,7 +21,7 @@
   }
 }
 
-/* Subtle retro gingham / checkered pattern for chat background */
+/* Gingham checkered retro pattern */
 .pixel-chat-canvas {
   background-color: #fff4f7;
   background-image: 
@@ -34,7 +33,7 @@
   background-position: 0 0, 0 12px, 12px -12px, -12px 0px;
 }
 
-/* Retro scrollbar */
+/* Retro scrollbars */
 .pixel-scrollbar::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -54,12 +53,20 @@
   background: #c96580;
 }
 
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* Retro pixel button utility */
 .pixel-btn {
   border: 2px solid #4a2034;
   box-shadow: 2px 2px 0px #4a2034;
   transition: all 0.08s ease;
-  image-rendering: pixelated;
 }
 
 .pixel-btn:hover {
@@ -78,12 +85,12 @@
   box-shadow: 2px 2px 0px #4a2034 !important;
 }
 
-/* Pixel speech bubble */
+/* Speech bubbles */
 .pixel-bubble-ai {
   background-color: #ffffff;
-  color: #4a2034;
+  color: #381b28;
   border: 2px solid #4a2034;
-  box-shadow: 3px 3px 0px #4a2034;
+  box-shadow: 2px 2px 0px #4a2034;
   border-radius: 6px;
 }
 
@@ -91,6 +98,31 @@
   background-color: #f47fa2;
   color: #ffffff;
   border: 2px solid #4a2034;
-  box-shadow: 3px 3px 0px #4a2034;
+  box-shadow: 2px 2px 0px #4a2034;
   border-radius: 6px;
+}
+
+.pixel-bubble-text {
+  font-family: "Five Fonts at Freddy's", 'VT323', "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", monospace;
+  letter-spacing: 0.02em;
+  line-height: 1.35;
+}
+
+/* Emoji Mart custom theme matching the pastel retro OS */
+.pixel-chat-frame em-emoji-picker,
+.pixel-emoji-popup em-emoji-picker,
+.dark .pixel-chat-frame em-emoji-picker,
+em-emoji-picker {
+  --rgb-background: 254, 221, 222 !important; /* Pastel pink #feddde */
+  --rgb-input: 255, 255, 255 !important;
+  --rgb-accent: 244, 127, 162 !important; /* Berry pink #f47fa2 */
+  --rgb-color: 74, 32, 52 !important; /* Dark berry #4a2034 */
+  --color-border: #4a2034 !important;
+  --border-radius: 8px !important;
+  width: min(340px, 92vw) !important;
+  height: 380px !important;
+  border: 2px solid #4a2034 !important;
+  box-shadow: 4px 4px 0px #4a2034 !important;
+  background-color: #feddde !important;
+  color: #4a2034 !important;
 }

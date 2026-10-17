@@ -16,6 +16,7 @@ import {
   Maximize2,
   Minimize2,
   Send,
+  MessageSquare,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -33,11 +34,14 @@ type Message = {
   imageUrl?: string;
 };
 
+const BOT_AVATAR = "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp";
+const USER_AVATAR = "https://img.daisyui.com/images/profile/demo/3@94.webp";
+
 const SUGGESTIONS = [
-  "Siapa NestiaDev? 👋",
-  "Tech stack apa saja yang dikuasai? 💻",
-  "Ceritakan pengalaman proyek terbaikmu! 🚀",
-  "Bagaimana cara menghubungi Nestia? 📬",
+  { label: "Siapa NestiaDev?", emoji: "👋", text: "Siapa NestiaDev?" },
+  { label: "Tech stack apa saja yang dikuasai?", emoji: "💻", text: "Tech stack apa saja yang dikuasai?" },
+  { label: "Ceritakan proyek terbaikmu!", emoji: "🚀", text: "Ceritakan pengalaman proyek terbaikmu!" },
+  { label: "Cara menghubungi Nestia?", emoji: "📬", text: "Bagaimana cara menghubungi Nestia?" },
 ];
 
 const ChatApp = () => {
@@ -53,7 +57,7 @@ const ChatApp = () => {
         hour12: false,
         timeZone: "Asia/Jakarta",
       }),
-      avatar: "/pomodoro/light-mode/timer/cat-awake.png",
+      avatar: BOT_AVATAR,
     },
   ]);
 
@@ -107,7 +111,7 @@ const ChatApp = () => {
         sender: "NestiaDev",
         text: "Sesi percakapan baru telah dimulai! Ada yang bisa kubantu?",
         time: getNowTime(),
-        avatar: "/pomodoro/light-mode/timer/cat-awake.png",
+        avatar: BOT_AVATAR,
       },
     ]);
     clearPendingImage();
@@ -163,7 +167,7 @@ const ChatApp = () => {
           sender: "NestiaDev",
           text: `Format file tidak didukung. Hanya .txt, .pdf, .docx yang diperbolehkan.`,
           time: getNowTime(),
-          avatar: "/pomodoro/light-mode/timer/cat-awake.png",
+          avatar: BOT_AVATAR,
         },
       ]);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -178,7 +182,7 @@ const ChatApp = () => {
           sender: "NestiaDev",
           text: `File terlalu besar. Maksimal 5MB.`,
           time: getNowTime(),
-          avatar: "/pomodoro/light-mode/timer/cat-awake.png",
+          avatar: BOT_AVATAR,
         },
       ]);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -200,7 +204,7 @@ const ChatApp = () => {
           sender: "NestiaDev",
           text: `✅ Dokumen "${file.name}" berhasil di-upload (${result.chunks_added} chunks ditambahkan).`,
           time: getNowTime(),
-          avatar: "/pomodoro/light-mode/timer/cat-awake.png",
+          avatar: BOT_AVATAR,
         },
       ]);
 
@@ -219,7 +223,7 @@ const ChatApp = () => {
           sender: "NestiaDev",
           text: `❌ Error: ${message}`,
           time: getNowTime(),
-          avatar: "/pomodoro/light-mode/timer/cat-awake.png",
+          avatar: BOT_AVATAR,
         },
       ]);
     } finally {
@@ -245,7 +249,7 @@ const ChatApp = () => {
           sender: "NestiaDev",
           text: `Format gambar tidak didukung. Gunakan .jpg, .png, atau .webp.`,
           time: getNowTime(),
-          avatar: "/pomodoro/light-mode/timer/cat-awake.png",
+          avatar: BOT_AVATAR,
         },
       ]);
       if (imageInputRef.current) imageInputRef.current.value = "";
@@ -260,7 +264,7 @@ const ChatApp = () => {
           sender: "NestiaDev",
           text: `Gambar terlalu besar. Maksimal 10MB.`,
           time: getNowTime(),
-          avatar: "/pomodoro/light-mode/timer/cat-awake.png",
+          avatar: BOT_AVATAR,
         },
       ]);
       if (imageInputRef.current) imageInputRef.current.value = "";
@@ -296,7 +300,7 @@ const ChatApp = () => {
       sender: "You",
       text: messageText || (hasImage ? `📷 ${pendingImage!.name}` : ""),
       time: getNowTime(),
-      avatar: "/pomodoro/light-mode/main/timer.png",
+      avatar: USER_AVATAR,
       imageUrl: pendingImagePreview || undefined,
     };
 
@@ -329,7 +333,7 @@ const ChatApp = () => {
         sender: "NestiaDev",
         text: aiText,
         time: getNowTime(),
-        avatar: "/pomodoro/light-mode/timer/cat-awake.png",
+        avatar: BOT_AVATAR,
       };
       setMessages((prev) => [...prev, botMessage]);
     } catch (error) {
@@ -342,7 +346,7 @@ const ChatApp = () => {
           sender: "NestiaDev",
           text: message,
           time: getNowTime(),
-          avatar: "/pomodoro/light-mode/timer/cat-awake.png",
+          avatar: BOT_AVATAR,
         },
       ]);
     } finally {
@@ -351,7 +355,7 @@ const ChatApp = () => {
   };
 
   return (
-    <section className="relative w-full min-h-[calc(100vh-70px)] pt-16 pb-16 px-2 sm:px-4 md:px-6 flex items-center justify-center font-pixel-freddy">
+    <section className="relative w-full min-h-[calc(100vh-70px)] pt-14 pb-14 px-2 sm:px-4 md:px-6 flex items-center justify-center">
       {/* ── Main Responsive Pixel Window ── */}
       <div
         className={`pixel-chat-frame w-full flex flex-col transition-all duration-200 overflow-hidden ${
@@ -361,21 +365,16 @@ const ChatApp = () => {
         }`}
       >
         {/* ── Retro Window Titlebar ── */}
-        <div className="bg-[#f8a5c2] border-b-2 sm:border-b-4 border-[#4a2034] px-2.5 sm:px-4 py-1.5 sm:py-2 flex items-center justify-between select-none shrink-0">
-          {/* Left: Pixel Cat Icon + Window Title */}
-          <div className="flex items-center gap-2">
-            <img
-              src="/pomodoro/light-mode/timer/cat-awake.png"
-              alt="Pixel Cat"
-              className="w-5 h-5 sm:w-6 sm:h-6 object-contain image-rendering-pixelated"
-            />
+        <div className="bg-[#f8a5c2] border-b-2 sm:border-b-4 border-[#4a2034] px-2.5 sm:px-4 py-1.5 sm:py-2 flex items-center justify-between select-none shrink-0 font-pixel-freddy">
+          {/* Left: Pixel Bot Icon + Window Title */}
+          <div className="flex items-center gap-2 mt-2">
             <span className="text-[#4a2034] text-xs sm:text-base font-bold tracking-wider">
-              PIXEL CHAT // NESTIA BOT
+              Chat with My Assistant
             </span>
-            <span className="hidden sm:inline-flex items-center gap-1 ml-2 px-1.5 py-0.5 bg-[#ffffff] border border-[#4a2034] text-[10px] text-[#4a2034] rounded">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              ONLINE
-            </span>
+            {/* <span className="hidden sm:inline-flex items-center gap-1 sm:gap-1.5 ml-0 sm:ml-1 md:ml-2 px-1.5 py-0.5 bg-[#ffffff] border border-[#4a2034] text-[11px] text-[#4a2034] rounded">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <p className="text-[6px] sm:text-[10px] font-bold mt-2 tracking-wider">ONLINE</p>
+            </span> */}
           </div>
 
           {/* Right: Window Controls [-] [□] [X] */}
@@ -384,16 +383,16 @@ const ChatApp = () => {
             <button
               onClick={handleResetSession}
               title="Reset Percakapan"
-              className="pixel-btn bg-[#feddde] hover:bg-[#ffc2cf] p-1 sm:p-1.5 rounded flex items-center justify-center text-[#4a2034]"
+              className="pixel-btn bg-[#feddde] hover:bg-[#ffc2cf] p-1.5 rounded flex items-center justify-center text-[#4a2034]"
             >
               <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
 
-            {/* Minimize / Window Controls */}
+            {/* Maximize / Window Controls */}
             <button
               onClick={() => setIsFullScreen((prev) => !prev)}
               title={isFullScreen ? "Kecilkan Window" : "Perbesar Window"}
-              className="pixel-btn bg-[#feddde] hover:bg-[#ffc2cf] p-1 sm:p-1.5 rounded flex items-center justify-center text-[#4a2034]"
+              className="pixel-btn bg-[#feddde] hover:bg-[#ffc2cf] p-1.5 rounded flex items-center justify-center text-[#4a2034]"
             >
               {isFullScreen ? (
                 <Minimize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -406,7 +405,7 @@ const ChatApp = () => {
             <button
               onClick={() => navigate("/")}
               title="Tutup / Kembali ke Beranda"
-              className="pixel-btn bg-[#f47fa2] hover:bg-[#e0668b] p-1 sm:p-1.5 rounded flex items-center justify-center text-white"
+              className="pixel-btn bg-[#f47fa2] hover:bg-[#e0668b] p-1.5 rounded flex items-center justify-center text-white"
             >
               <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
@@ -416,7 +415,7 @@ const ChatApp = () => {
         {/* ── Window Inner Layout: Sidebar (Desktop) + Chat Content ── */}
         <div className="flex-1 flex min-h-0 overflow-hidden bg-[#ffdbe3]">
           {/* Desktop Left Retro Sidebar */}
-          <div className="hidden md:flex flex-col justify-between w-40 lg:w-44 bg-[#feddde] border-r-2 sm:border-r-4 border-[#4a2034] p-3 select-none shrink-0">
+          <div className="hidden md:flex flex-col justify-between w-40 lg:w-44 bg-[#feddde] border-r-2 sm:border-r-4 border-[#4a2034] p-3 select-none shrink-0 font-pixel-freddy">
             <div className="space-y-3">
               <div className="text-[11px] text-[#893760] font-bold tracking-wider uppercase mb-1">
                 SYSTEM MENU
@@ -424,12 +423,8 @@ const ChatApp = () => {
 
               {/* Active Chat Tab */}
               <div className="pixel-btn bg-[#f8a5c2] text-[#4a2034] p-2 rounded flex items-center gap-2 cursor-pointer font-bold text-sm">
-                <img
-                  src="/pomodoro/light-mode/main/timer.png"
-                  alt="Chat icon"
-                  className="w-4 h-4 object-contain"
-                />
-                <span>AI CHAT</span>
+                <MessageSquare className="w-4 h-4" />
+                <span className="mt-2 text-[12px] ">AI CHAT</span>
               </div>
 
               {/* Reset Session Tab */}
@@ -437,36 +432,35 @@ const ChatApp = () => {
                 onClick={handleResetSession}
                 className="pixel-btn bg-[#ffffff] hover:bg-[#fff0f4] text-[#893760] w-full p-2 rounded flex items-center gap-2 text-xs font-semibold text-left"
               >
-                <img
-                  src="/pomodoro/light-mode/main/reset.png"
-                  alt="Reset icon"
-                  className="w-4 h-4 object-contain"
-                />
-                <span>NEW CHAT</span>
+                <RotateCcw className="w-4 h-4" />
+                <span className="mt-2 text-[12px] ">NEW CHAT</span>
               </button>
 
               {/* Status Box */}
-              <div className="border-2 border-[#4a2034] bg-[#ffffff] p-2 rounded text-[10px] text-[#893760] space-y-1">
+              <div className="border-2 border-[#4a2034] bg-[#ffffff] p-2.5 rounded text-[11px] text-[#893760] space-y-1 shadow-[2px_2px_0px_#4a2034]">
                 <div className="flex justify-between font-bold">
                   <span>TIME</span>
                   <span>{time || "12:00"}</span>
                 </div>
-                <div className="flex justify-between">
+                <div className="flex justify-between font-bold">
                   <span>SESSION</span>
-                  <span className="text-emerald-600 font-bold">ACTIVE</span>
+                  <span className="text-emerald-600">ACTIVE</span>
                 </div>
               </div>
             </div>
 
-            {/* Bottom Sleeping Cat Widget */}
-            <div className="border-2 border-[#4a2034] bg-[#ffeef2] p-2 rounded flex flex-col items-center text-center">
+            {/* Bottom Profile Widget */}
+            <div className="border-2 border-[#4a2034] bg-[#ffeef2] p-2.5 rounded flex flex-col items-center text-center shadow-[2px_2px_0px_#4a2034]">
               <img
-                src="/pomodoro/light-mode/timer/cat-sleeping.png"
-                alt="Sleeping Cat"
-                className="w-12 h-10 object-contain image-rendering-pixelated mb-1"
+                src={BOT_AVATAR}
+                alt="Nestia Bot"
+                className="w-11 h-11 rounded-full object-cover border-2 border-[#4a2034] mb-1.5 shadow-sm"
               />
-              <span className="text-[10px] text-[#893760] font-bold">
-                Nestia Bot v1.0
+              <span className="text-[11px] text-[#893760] font-bold">
+                Nestia Bot v1.1
+              </span>
+              <span className="text-[9px] text-emerald-600 font-bold uppercase tracking-wide">
+                Ready to Help
               </span>
             </div>
           </div>
@@ -474,17 +468,18 @@ const ChatApp = () => {
           {/* Main Chat Canvas & Messages Area */}
           <div className="flex-1 flex flex-col min-w-0 bg-[#fff5f7]">
             {/* Quick Suggestion Chips (Desktop & Mobile) */}
-            <div className="bg-[#ffe8ef] border-b-2 border-[#4a2034] px-3 py-1.5 overflow-x-auto whitespace-nowrap pixel-scrollbar flex items-center gap-2 shrink-0">
-              <span className="text-[11px] text-[#893760] font-bold flex items-center gap-1 shrink-0">
-                <Sparkles className="w-3 h-3 text-[#f47fa2]" /> TANYA CEPAT:
+            <div className="bg-[#ffe8ef] border-b-2 border-[#4a2034] px-3 py-2 overflow-x-auto no-scrollbar flex items-center gap-2 shrink-0">
+              <span className="font-pixel-freddy text-xs text-[#893760] font-bold flex items-center gap-1 shrink-0">
+                <Sparkles className="w-3.5 h-3.5 text-[#f47fa2]" /> TANYA CEPAT:
               </span>
               {SUGGESTIONS.map((item, idx) => (
                 <button
                   key={idx}
-                  onClick={() => sendMessage(item)}
-                  className="pixel-btn bg-[#ffffff] hover:bg-[#fca5b9] text-[#4a2034] text-[11px] px-2.5 py-0.5 rounded-full shrink-0 transition-colors"
+                  onClick={() => sendMessage(item.text)}
+                  className="pixel-btn bg-white hover:bg-[#feddde] text-[#4a2034] text-xs px-2.5 py-1 rounded-full shrink-0 inline-flex items-center gap-1.5 transition-colors font-pixel-freddy tracking-wide"
                 >
-                  {item}
+                  <span className="leading-tight translate-y-[0.5px]">{item.label}</span>
+                  <span className="text-xs sm:text-sm leading-none inline-block -translate-y-[3px]">{item.emoji}</span>
                 </button>
               ))}
             </div>
@@ -501,11 +496,11 @@ const ChatApp = () => {
                     msg.sender === "You" ? "flex-row-reverse" : "flex-row"
                   }`}
                 >
-                  {/* Avatar */}
+                  {/* Face Avatar */}
                   <img
                     src={msg.avatar}
                     alt={msg.sender}
-                    className="w-7 h-7 sm:w-8 sm:h-8 object-contain rounded border-2 border-[#4a2034] bg-[#feddde] shrink-0 image-rendering-pixelated"
+                    className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover border-2 border-[#4a2034] shadow-[1.5px_1.5px_0px_#4a2034] shrink-0 bg-white"
                   />
 
                   {/* Bubble Content */}
@@ -515,14 +510,14 @@ const ChatApp = () => {
                     }`}
                   >
                     {/* Sender & Timestamp */}
-                    <div className="flex items-center gap-1.5 mb-1 px-1 text-[11px] font-bold text-[#893760]">
+                    <div className="font-pixel-freddy flex items-center gap-1.5 mb-1 px-1 text-[11px] font-bold text-[#893760]">
                       <span>{msg.sender}</span>
-                      <span className="text-[10px] opacity-70">[{msg.time}]</span>
+                      <span className="text-[10px] opacity-75">[{msg.time}]</span>
                     </div>
 
                     {/* Bubble */}
                     <div
-                      className={`p-2.5 sm:p-3 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap break-words ${
+                      className={`p-2 sm:p-2.5 px-3 text-xs sm:text-[13px] pixel-bubble-text leading-snug whitespace-pre-wrap break-words select-text ${
                         msg.sender === "You"
                           ? "pixel-bubble-user"
                           : "pixel-bubble-ai"
@@ -530,16 +525,16 @@ const ChatApp = () => {
                     >
                       {/* Attached image preview if user sent an image */}
                       {msg.imageUrl && (
-                        <div className="mb-2 overflow-hidden border border-[#4a2034] rounded">
+                        <div className="mb-2 overflow-hidden border-2 border-[#4a2034] rounded-lg shadow-sm">
                           <img
                             src={msg.imageUrl}
                             alt="Uploaded"
-                            className="max-h-48 w-full object-cover cursor-pointer hover:opacity-95"
+                            className="max-h-52 w-full object-cover cursor-pointer hover:opacity-95"
                             onClick={() => window.open(msg.imageUrl, "_blank")}
                           />
                         </div>
                       )}
-                      {msg.text}
+                      <span>{msg.text}</span>
                     </div>
                   </div>
                 </motion.div>
@@ -550,18 +545,18 @@ const ChatApp = () => {
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="flex items-start gap-2 sm:gap-3"
+                  className="flex items-start gap-2.5 sm:gap-3.5"
                 >
                   <img
-                    src="/pomodoro/light-mode/timer/cat-awake.png"
+                    src={BOT_AVATAR}
                     alt="Bot thinking"
-                    className="w-7 h-7 sm:w-8 sm:h-8 object-contain rounded border-2 border-[#4a2034] bg-[#feddde] shrink-0 image-rendering-pixelated"
+                    className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover border-2 border-[#4a2034] shadow-[1.5px_1.5px_0px_#4a2034] shrink-0 bg-white"
                   />
                   <div className="flex flex-col items-start">
-                    <div className="text-[11px] font-bold text-[#893760] mb-1 px-1">
-                      NestiaDev [AI] sedikitt berpikir...
+                    <div className="font-pixel-freddy text-xs font-bold text-[#893760] mb-1 px-1">
+                      NestiaDev [AI] sedang berpikir...
                     </div>
-                    <div className="pixel-bubble-ai px-3 py-2 flex items-center gap-1.5">
+                    <div className="pixel-bubble-ai px-4 py-2.5 flex items-center gap-1.5">
                       <span className="w-2 h-2 rounded-full bg-[#f47fa2] animate-bounce [animation-delay:0s]"></span>
                       <span className="w-2 h-2 rounded-full bg-[#f47fa2] animate-bounce [animation-delay:0.15s]"></span>
                       <span className="w-2 h-2 rounded-full bg-[#f47fa2] animate-bounce [animation-delay:0.3s]"></span>
@@ -602,7 +597,7 @@ const ChatApp = () => {
             )}
 
             {/* ── Retro Input Toolbar Dock ── */}
-            <div className="bg-[#ffdbe3] border-t-2 sm:border-t-4 border-[#4a2034] p-2 sm:p-2.5 flex items-center gap-1.5 sm:gap-2 shrink-0">
+            <div className="bg-[#ffdbe3] border-t-2 sm:border-t-4 border-[#4a2034] p-2 sm:p-2.5 flex items-center gap-1.5 sm:gap-2 shrink-0 font-pixel-freddy">
               {/* Emoji Picker Dropdown */}
               <DropdownMenu open={isEmojiOpen} onOpenChange={setIsEmojiOpen}>
                 <DropdownMenuTrigger asChild>
@@ -618,10 +613,14 @@ const ChatApp = () => {
                   sideOffset={6}
                   className="border-none bg-transparent p-0 shadow-none z-50"
                 >
-                  <div className="overflow-hidden rounded-lg border-2 border-[#4a2034] shadow-[4px_4px_0px_#4a2034] bg-white">
+                  <div className="pixel-emoji-popup overflow-hidden rounded-lg border-2 border-[#4a2034] shadow-[4px_4px_0px_#4a2034] bg-[#feddde]">
                     <Picker
                       data={data}
                       theme="light"
+                      previewPosition="none"
+                      skinTonePosition="none"
+                      emojiSize={24}
+                      emojiButtonSize={34}
                       onEmojiSelect={handleEmojiSelect}
                     />
                   </div>
@@ -695,11 +694,11 @@ const ChatApp = () => {
               />
 
               {/* Text Input Field */}
-              <div className="flex-1 flex items-center bg-white border-2 border-[#4a2034] rounded px-2.5 py-1 sm:py-1.5 shadow-[inset_1px_1px_0px_rgba(74,32,52,0.1)]">
+              <div className="flex-1 flex items-center bg-white border-2 border-[#4a2034] rounded px-2.5 py-1 shadow-[inset_1px_1px_0px_rgba(74,32,52,0.1)] h-8 sm:h-9">
                 <input
                   ref={inputRef}
                   type="text"
-                  className="w-full bg-transparent outline-none text-xs sm:text-sm text-[#4a2034] placeholder:text-[#c4899f] font-sans"
+                  className="w-full bg-transparent outline-none text-xs sm:text-sm text-[#4a2034] placeholder:text-[#c4899f] font-sans placeholder:font-pixel-freddy placeholder:text-xs"
                   placeholder={
                     pendingImage
                       ? "Tanyakan sesuatu tentang gambar ini..."

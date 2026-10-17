@@ -1,0 +1,29 @@
+@font-face {
+  font-family: "Five Fonts at Freddy's";
+  src: url("/pomodoro/font/FiveFontsatFreddy's-Regular.ttf") format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+.testing-page *,
+.testing-page *::before,
+.testing-page *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-weight: normal;
+}
+
+.testing-page {
+  overflow: hidden;
+  user-select: none;
+  font-family: "Five Fonts at Freddy's", 'Courier New', monospace;
+  -webkit-font-smoothing: none;
+  font-smooth: never;
+  image-rendering: pixelated;
+}
+
+.testing-page ul {
+  list-style: none;
+}

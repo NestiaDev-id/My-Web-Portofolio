@@ -1,3 +1,4 @@
+import asyncio
 from pathlib import Path
 from typing import Optional
 
@@ -86,6 +87,8 @@ def root():
 @app.get("/healthcheck")
 @app.head("/healthcheck")
 def healthcheck(response: Response):
+    _ = sum([i * i for i in range(10_000)])
+
     db_status = chat_history.check_health()
     
     return {
@@ -93,6 +96,16 @@ def healthcheck(response: Response):
         "service": "Hugging Face Space (Active)",
         "databases": db_status
     }
+
+@app.on_event("startup")
+async def start_keep_alive_task():
+    async def background_keep_alive():
+        while True:
+            # Sleep for 14 minutes
+            await asyncio.sleep(14 * 60)
+            _ = sum([i * i for i in range(10_000)])
+            
+    asyncio.create_task(background_keep_alive())
 
 @app.on_event("startup")
 def index_cv_on_startup():

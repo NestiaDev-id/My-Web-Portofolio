@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { chatWithRag, uploadTask, chatWithVision } from "@/utils/rag";
 import data from "@emoji-mart/data";
@@ -10,13 +11,18 @@ import {
   FileText,
   ImageIcon,
   X,
+  RotateCcw,
+  Sparkles,
+  Maximize2,
+  Minimize2,
+  Send,
 } from "lucide-react";
-
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
 } from "@/components/ui/dropdown-menu";
+import "@/styles/pixel-chat.css";
 
 type Message = {
   id: number;
@@ -24,23 +30,30 @@ type Message = {
   text: string;
   time: string;
   avatar: string;
-  imageUrl?: string; // optional image to display in bubble
+  imageUrl?: string;
 };
 
+const SUGGESTIONS = [
+  "Siapa NestiaDev? 👋",
+  "Tech stack apa saja yang dikuasai? 💻",
+  "Ceritakan pengalaman proyek terbaikmu! 🚀",
+  "Bagaimana cara menghubungi Nestia? 📬",
+];
+
 const ChatApp = () => {
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
       sender: "NestiaDev",
-      text: "Tanyakan padaku sesuatu!",
+      text: "Halo! Aku AI Assistant NestiaDev. Tanyakan apa saja tentang profil, tech stack, portofolio, atau kirim gambar/dokumen untuk dianalisis!",
       time: new Date().toLocaleTimeString("id-ID", {
         hour: "2-digit",
         minute: "2-digit",
         hour12: false,
         timeZone: "Asia/Jakarta",
       }),
-      avatar:
-        "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp",
+      avatar: "/pomodoro/light-mode/timer/cat-awake.png",
     },
   ]);
 
@@ -50,17 +63,15 @@ const ChatApp = () => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isTyping, setIsTyping] = useState(false);
   const [isEmojiOpen, setIsEmojiOpen] = useState(false);
-  const [emojiTheme, setEmojiTheme] = useState<"light" | "dark">("light");
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [isAttachOpen, setIsAttachOpen] = useState(false);
+  const [isFullScreen, setIsFullScreen] = useState(false);
 
   // Image preview state
   const [pendingImage, setPendingImage] = useState<File | null>(null);
-  const [pendingImagePreview, setPendingImagePreview] = useState<string | null>(
-    null
-  );
+  const [pendingImagePreview, setPendingImagePreview] = useState<string | null>(null);
 
   const SESSION_TIMEOUT_MS = 5 * 60 * 1000; // 5 menit
 
@@ -72,23 +83,36 @@ const ChatApp = () => {
 
     if (storedId && lastActivity) {
       if (now - parseInt(lastActivity, 10) <= SESSION_TIMEOUT_MS) {
-        // Sesi masih valid, perbarui waktu aktivitas
         window.localStorage.setItem("rag-last-activity", now.toString());
         return storedId;
       }
     }
 
-    // Jika kedaluwarsa atau tidak ada, buat sesi baru
     const freshId = window.crypto?.randomUUID?.() ?? `session-${now}`;
     window.localStorage.setItem("rag-session-id", freshId);
     window.localStorage.setItem("rag-last-activity", now.toString());
-    
-    // Karena ini sesi baru, opsional kita bisa mengosongkan layar chat lama
-    // tapi untuk sekarang kita biarkan history UI tetap ada.
     return freshId;
   };
 
   const [, setSessionId] = useState(refreshAndGetSessionId);
+
+  const handleResetSession = () => {
+    const freshId = window.crypto?.randomUUID?.() ?? `session-${Date.now()}`;
+    window.localStorage.setItem("rag-session-id", freshId);
+    window.localStorage.setItem("rag-last-activity", Date.now().toString());
+    setSessionId(freshId);
+    setMessages([
+      {
+        id: 1,
+        sender: "NestiaDev",
+        text: "Sesi percakapan baru telah dimulai! Ada yang bisa kubantu?",
+        time: getNowTime(),
+        avatar: "/pomodoro/light-mode/timer/cat-awake.png",
+      },
+    ]);
+    clearPendingImage();
+    setInput("");
+  };
 
   useEffect(() => {
     const updateClock = () => {
@@ -108,18 +132,7 @@ const ChatApp = () => {
     messagesEndRef.current?.scrollIntoView({
       behavior: messages.length === 1 ? "auto" : "smooth",
     });
-  }, [messages]);
-
-  useEffect(() => {
-    const root = document.documentElement;
-    const updateTheme = () => {
-      setEmojiTheme(root.classList.contains("dark") ? "dark" : "light");
-    };
-    updateTheme();
-    const observer = new MutationObserver(updateTheme);
-    observer.observe(root, { attributes: true, attributeFilter: ["class"] });
-    return () => observer.disconnect();
-  }, []);
+  }, [messages, isTyping]);
 
   const getNowTime = () =>
     new Date().toLocaleTimeString("id-ID", {
@@ -134,9 +147,7 @@ const ChatApp = () => {
   };
 
   // ── File upload handler (documents) ────────────────────
-  const handleFileUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -152,8 +163,7 @@ const ChatApp = () => {
           sender: "NestiaDev",
           text: `Format file tidak didukung. Hanya .txt, .pdf, .docx yang diperbolehkan.`,
           time: getNowTime(),
-          avatar:
-            "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp",
+          avatar: "/pomodoro/light-mode/timer/cat-awake.png",
         },
       ]);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -168,8 +178,7 @@ const ChatApp = () => {
           sender: "NestiaDev",
           text: `File terlalu besar. Maksimal 5MB.`,
           time: getNowTime(),
-          avatar:
-            "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp",
+          avatar: "/pomodoro/light-mode/timer/cat-awake.png",
         },
       ]);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -191,8 +200,7 @@ const ChatApp = () => {
           sender: "NestiaDev",
           text: `✅ Dokumen "${file.name}" berhasil di-upload (${result.chunks_added} chunks ditambahkan).`,
           time: getNowTime(),
-          avatar:
-            "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp",
+          avatar: "/pomodoro/light-mode/timer/cat-awake.png",
         },
       ]);
 
@@ -211,8 +219,7 @@ const ChatApp = () => {
           sender: "NestiaDev",
           text: `❌ Error: ${message}`,
           time: getNowTime(),
-          avatar:
-            "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp",
+          avatar: "/pomodoro/light-mode/timer/cat-awake.png",
         },
       ]);
     } finally {
@@ -238,8 +245,7 @@ const ChatApp = () => {
           sender: "NestiaDev",
           text: `Format gambar tidak didukung. Gunakan .jpg, .png, atau .webp.`,
           time: getNowTime(),
-          avatar:
-            "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp",
+          avatar: "/pomodoro/light-mode/timer/cat-awake.png",
         },
       ]);
       if (imageInputRef.current) imageInputRef.current.value = "";
@@ -254,15 +260,13 @@ const ChatApp = () => {
           sender: "NestiaDev",
           text: `Gambar terlalu besar. Maksimal 10MB.`,
           time: getNowTime(),
-          avatar:
-            "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp",
+          avatar: "/pomodoro/light-mode/timer/cat-awake.png",
         },
       ]);
       if (imageInputRef.current) imageInputRef.current.value = "";
       return;
     }
 
-    // Set preview
     setPendingImage(file);
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -280,8 +284,9 @@ const ChatApp = () => {
   };
 
   // ── Send message (text + optional image) ───────────────
-  const sendMessage = async () => {
-    const hasText = input.trim().length > 0;
+  const sendMessage = async (textToSend?: string) => {
+    const messageText = (textToSend ?? input).trim();
+    const hasText = messageText.length > 0;
     const hasImage = pendingImage !== null;
 
     if (!hasText && !hasImage) return;
@@ -289,14 +294,14 @@ const ChatApp = () => {
     const userMessage: Message = {
       id: messages.length + 1,
       sender: "You",
-      text: input || (hasImage ? `📷 ${pendingImage!.name}` : ""),
+      text: messageText || (hasImage ? `📷 ${pendingImage!.name}` : ""),
       time: getNowTime(),
-      avatar: "https://img.daisyui.com/images/profile/demo/3@94.webp",
+      avatar: "/pomodoro/light-mode/main/timer.png",
       imageUrl: pendingImagePreview || undefined,
     };
 
     setMessages((prev) => [...prev, userMessage]);
-    const currentInput = input;
+    const currentInput = messageText;
     const currentImage = pendingImage;
     setInput("");
     clearPendingImage();
@@ -308,7 +313,6 @@ const ChatApp = () => {
       setSessionId(activeSessionId);
 
       if (currentImage) {
-        // Vision mode: send image to /chat-vision
         const visionResponse = await chatWithVision(
           currentImage,
           activeSessionId,
@@ -316,9 +320,8 @@ const ChatApp = () => {
         );
         aiText = visionResponse.answer || "Maaf, saya tidak bisa menganalisis gambar ini.";
       } else {
-        // Text mode: send to /chat
         const aiResponse = await chatWithRag(currentInput, activeSessionId);
-        aiText = aiResponse.answer || "Maaf, aku tidak bisa menjawab.";
+        aiText = aiResponse.answer || "Maaf, aku tidak bisa menjawab pertanyaan tersebut saat ini.";
       }
 
       const botMessage: Message = {
@@ -326,13 +329,12 @@ const ChatApp = () => {
         sender: "NestiaDev",
         text: aiText,
         time: getNowTime(),
-        avatar:
-          "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp",
+        avatar: "/pomodoro/light-mode/timer/cat-awake.png",
       };
       setMessages((prev) => [...prev, botMessage]);
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : "Terjadi kesalahan.";
+        error instanceof Error ? error.message : "Terjadi kesalahan saat memproses jawaban.";
       setMessages((prev) => [
         ...prev,
         {
@@ -340,8 +342,7 @@ const ChatApp = () => {
           sender: "NestiaDev",
           text: message,
           time: getNowTime(),
-          avatar:
-            "https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp",
+          avatar: "/pomodoro/light-mode/timer/cat-awake.png",
         },
       ]);
     } finally {
@@ -350,230 +351,386 @@ const ChatApp = () => {
   };
 
   return (
-    <section className="min-h-screen pt-20 bg-white dark:bg-gray-950 text-gray-900 dark:text-white flex flex-col items-center px-4 transition-colors duration-300">
-      <h1 className="text-2xl sm:text-3xl font-bold mt-4 text-center">
-        Ask anything
-      </h1>
-      <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base text-center">
-        Kamu bisa menanyakan apa saja soal diriku...
-      </p>
-
-      <div className="w-full sm:w-[90%] md:w-[80%] lg:w-[60%] xl:w-[50%] mt-6 bg-gray-50 dark:bg-gray-900 p-4 rounded-2xl shadow-xl flex flex-col h-[600px] border border-gray-200 dark:border-gray-800">
-
-
-        <div className="flex-grow overflow-y-auto p-4 space-y-4 custom-scrollbar">
-          {messages.map((msg) => (
-            <motion.div
-              key={msg.id}
-              initial={{ opacity: 0, x: msg.sender === "You" ? 50 : -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3 }}
-              className={`flex items-start gap-3 ${
-                msg.sender === "You" ? "flex-row-reverse" : ""
-              }`}
-            >
-              <img
-                src={msg.avatar}
-                alt="Avatar"
-                className="w-8 h-8 rounded-full border border-gray-200 dark:border-gray-700"
-              />
-              <div className="flex flex-col max-w ">
-                <div className="flex items-center space-x-2 text-sm mb-1">
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">
-                    {msg.sender}
-                  </span>
-                  <span className="text-[10px] text-gray-400">{msg.time}</span>
-                </div>
-                <div
-                  className={`p-3 rounded-2xl text-sm max-w-xs leading-snug shadow-sm ${
-                    msg.sender === "You"
-                      ? "bg-blue-600 text-white ml-auto rounded-tr-none"
-                      : "bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 rounded-tl-none border border-gray-200 dark:border-gray-700"
-                  }`}
-                >
-                  {/* Display image if present */}
-                  {msg.imageUrl && (
-                    <img
-                      src={msg.imageUrl}
-                      alt="Uploaded"
-                      className="rounded-lg mb-2 max-w-full max-h-48 object-cover cursor-pointer hover:opacity-90 transition-opacity"
-                      onClick={() => window.open(msg.imageUrl, "_blank")}
-                    />
-                  )}
-                  {msg.text}
-                </div>
-              </div>
-            </motion.div>
-          ))}
-
-          {isTyping && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
-              className="flex items-start gap-3"
-            >
-              <img
-                src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
-                alt="Nestia avatar"
-                className="w-8 h-8 rounded-full border border-gray-200 dark:border-gray-700"
-              />
-              <div className="flex flex-col space-y-1 animate-pulse">
-                <div className="flex items-center space-x-2 text-sm">
-                  <span className="font-semibold text-gray-700 dark:text-gray-300">
-                    NestiaDev
-                  </span>
-                  <span className="text-xs text-gray-400">{time}</span>
-                </div>
-                <div className="bg-white dark:bg-gray-800 text-gray-800 dark:text-white px-4 py-2 size-8 flex items-center text-center rounded-2xl rounded-tl-none border border-gray-200 dark:border-gray-700 w-fit max-w-xs">
-                  <div className="flex space-x-1">
-                    <span className="size-1.5 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce [animation-delay:.1s]"></span>
-                    <span className="size-1.5 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce [animation-delay:.2s]"></span>
-                    <span className="size-1.5 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce [animation-delay:.3s]"></span>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
-
-        {/* ── Image preview bar ───────────────────────────── */}
-        {pendingImagePreview && (
-          <div className="flex items-center gap-2 mx-2 mb-2 p-2 bg-gray-100 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+    <section className="relative w-full min-h-[calc(100vh-70px)] pt-16 pb-16 px-2 sm:px-4 md:px-6 flex items-center justify-center font-pixel-freddy">
+      {/* ── Main Responsive Pixel Window ── */}
+      <div
+        className={`pixel-chat-frame w-full flex flex-col transition-all duration-200 overflow-hidden ${
+          isFullScreen
+            ? "fixed inset-2 z-50 h-[calc(100vh-16px)] max-w-none"
+            : "max-w-4xl h-[min(680px,calc(100vh-140px))] min-h-[500px]"
+        }`}
+      >
+        {/* ── Retro Window Titlebar ── */}
+        <div className="bg-[#f8a5c2] border-b-2 sm:border-b-4 border-[#4a2034] px-2.5 sm:px-4 py-1.5 sm:py-2 flex items-center justify-between select-none shrink-0">
+          {/* Left: Pixel Cat Icon + Window Title */}
+          <div className="flex items-center gap-2">
             <img
-              src={pendingImagePreview}
-              alt="Preview"
-              className="w-16 h-16 rounded-lg object-cover"
+              src="/pomodoro/light-mode/timer/cat-awake.png"
+              alt="Pixel Cat"
+              className="w-5 h-5 sm:w-6 sm:h-6 object-contain image-rendering-pixelated"
             />
-            <div className="flex-grow min-w-0">
-              <p className="text-xs font-medium text-gray-700 dark:text-gray-300 truncate">
-                {pendingImage?.name}
-              </p>
-              <p className="text-[10px] text-gray-400">
-                {pendingImage
-                  ? `${(pendingImage.size / 1024).toFixed(1)} KB`
-                  : ""}
-              </p>
-            </div>
+            <span className="text-[#4a2034] text-xs sm:text-base font-bold tracking-wider">
+              PIXEL CHAT // NESTIA BOT
+            </span>
+            <span className="hidden sm:inline-flex items-center gap-1 ml-2 px-1.5 py-0.5 bg-[#ffffff] border border-[#4a2034] text-[10px] text-[#4a2034] rounded">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              ONLINE
+            </span>
+          </div>
+
+          {/* Right: Window Controls [-] [□] [X] */}
+          <div className="flex items-center gap-1 sm:gap-1.5">
+            {/* Reset / New Session button */}
             <button
-              onClick={clearPendingImage}
-              className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              onClick={handleResetSession}
+              title="Reset Percakapan"
+              className="pixel-btn bg-[#feddde] hover:bg-[#ffc2cf] p-1 sm:p-1.5 rounded flex items-center justify-center text-[#4a2034]"
             >
-              <X className="size-4 text-gray-500" />
+              <RotateCcw className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            </button>
+
+            {/* Minimize / Window Controls */}
+            <button
+              onClick={() => setIsFullScreen((prev) => !prev)}
+              title={isFullScreen ? "Kecilkan Window" : "Perbesar Window"}
+              className="pixel-btn bg-[#feddde] hover:bg-[#ffc2cf] p-1 sm:p-1.5 rounded flex items-center justify-center text-[#4a2034]"
+            >
+              {isFullScreen ? (
+                <Minimize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              ) : (
+                <Maximize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              )}
+            </button>
+
+            {/* Exit [X] button */}
+            <button
+              onClick={() => navigate("/")}
+              title="Tutup / Kembali ke Beranda"
+              className="pixel-btn bg-[#f47fa2] hover:bg-[#e0668b] p-1 sm:p-1.5 rounded flex items-center justify-center text-white"
+            >
+              <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
           </div>
-        )}
+        </div>
 
-        {/* ── Input bar ──────────────────────────────────── */}
-        <div className="flex items-center bg-white dark:bg-gray-800 rounded-xl mt-2 border border-gray-200 dark:border-gray-700 shadow-sm overflow-visible p-1 relative">
-          {/* Emoji button */}
-          <DropdownMenu open={isEmojiOpen} onOpenChange={setIsEmojiOpen}>
-            <DropdownMenuTrigger asChild>
-              <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                <Smile className="size-5 text-gray-500 dark:text-gray-400" />
+        {/* ── Window Inner Layout: Sidebar (Desktop) + Chat Content ── */}
+        <div className="flex-1 flex min-h-0 overflow-hidden bg-[#ffdbe3]">
+          {/* Desktop Left Retro Sidebar */}
+          <div className="hidden md:flex flex-col justify-between w-40 lg:w-44 bg-[#feddde] border-r-2 sm:border-r-4 border-[#4a2034] p-3 select-none shrink-0">
+            <div className="space-y-3">
+              <div className="text-[11px] text-[#893760] font-bold tracking-wider uppercase mb-1">
+                SYSTEM MENU
+              </div>
+
+              {/* Active Chat Tab */}
+              <div className="pixel-btn bg-[#f8a5c2] text-[#4a2034] p-2 rounded flex items-center gap-2 cursor-pointer font-bold text-sm">
+                <img
+                  src="/pomodoro/light-mode/main/timer.png"
+                  alt="Chat icon"
+                  className="w-4 h-4 object-contain"
+                />
+                <span>AI CHAT</span>
+              </div>
+
+              {/* Reset Session Tab */}
+              <button
+                onClick={handleResetSession}
+                className="pixel-btn bg-[#ffffff] hover:bg-[#fff0f4] text-[#893760] w-full p-2 rounded flex items-center gap-2 text-xs font-semibold text-left"
+              >
+                <img
+                  src="/pomodoro/light-mode/main/reset.png"
+                  alt="Reset icon"
+                  className="w-4 h-4 object-contain"
+                />
+                <span>NEW CHAT</span>
               </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="start"
-              sideOffset={6}
-              className="border-none bg-transparent p-0 shadow-none"
-            >
-              <div className="overflow-hidden rounded-xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800">
-                <Picker
-                  data={data}
-                  theme={emojiTheme}
-                  onEmojiSelect={handleEmojiSelect}
+
+              {/* Status Box */}
+              <div className="border-2 border-[#4a2034] bg-[#ffffff] p-2 rounded text-[10px] text-[#893760] space-y-1">
+                <div className="flex justify-between font-bold">
+                  <span>TIME</span>
+                  <span>{time || "12:00"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>SESSION</span>
+                  <span className="text-emerald-600 font-bold">ACTIVE</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Sleeping Cat Widget */}
+            <div className="border-2 border-[#4a2034] bg-[#ffeef2] p-2 rounded flex flex-col items-center text-center">
+              <img
+                src="/pomodoro/light-mode/timer/cat-sleeping.png"
+                alt="Sleeping Cat"
+                className="w-12 h-10 object-contain image-rendering-pixelated mb-1"
+              />
+              <span className="text-[10px] text-[#893760] font-bold">
+                Nestia Bot v1.0
+              </span>
+            </div>
+          </div>
+
+          {/* Main Chat Canvas & Messages Area */}
+          <div className="flex-1 flex flex-col min-w-0 bg-[#fff5f7]">
+            {/* Quick Suggestion Chips (Desktop & Mobile) */}
+            <div className="bg-[#ffe8ef] border-b-2 border-[#4a2034] px-3 py-1.5 overflow-x-auto whitespace-nowrap pixel-scrollbar flex items-center gap-2 shrink-0">
+              <span className="text-[11px] text-[#893760] font-bold flex items-center gap-1 shrink-0">
+                <Sparkles className="w-3 h-3 text-[#f47fa2]" /> TANYA CEPAT:
+              </span>
+              {SUGGESTIONS.map((item, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => sendMessage(item)}
+                  className="pixel-btn bg-[#ffffff] hover:bg-[#fca5b9] text-[#4a2034] text-[11px] px-2.5 py-0.5 rounded-full shrink-0 transition-colors"
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
+
+            {/* Chat Messages Stream */}
+            <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3.5 pixel-scrollbar pixel-chat-canvas">
+              {messages.map((msg) => (
+                <motion.div
+                  key={msg.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className={`flex items-start gap-2 sm:gap-3 ${
+                    msg.sender === "You" ? "flex-row-reverse" : "flex-row"
+                  }`}
+                >
+                  {/* Avatar */}
+                  <img
+                    src={msg.avatar}
+                    alt={msg.sender}
+                    className="w-7 h-7 sm:w-8 sm:h-8 object-contain rounded border-2 border-[#4a2034] bg-[#feddde] shrink-0 image-rendering-pixelated"
+                  />
+
+                  {/* Bubble Content */}
+                  <div
+                    className={`flex flex-col max-w-[85%] sm:max-w-[75%] ${
+                      msg.sender === "You" ? "items-end" : "items-start"
+                    }`}
+                  >
+                    {/* Sender & Timestamp */}
+                    <div className="flex items-center gap-1.5 mb-1 px-1 text-[11px] font-bold text-[#893760]">
+                      <span>{msg.sender}</span>
+                      <span className="text-[10px] opacity-70">[{msg.time}]</span>
+                    </div>
+
+                    {/* Bubble */}
+                    <div
+                      className={`p-2.5 sm:p-3 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap break-words ${
+                        msg.sender === "You"
+                          ? "pixel-bubble-user"
+                          : "pixel-bubble-ai"
+                      }`}
+                    >
+                      {/* Attached image preview if user sent an image */}
+                      {msg.imageUrl && (
+                        <div className="mb-2 overflow-hidden border border-[#4a2034] rounded">
+                          <img
+                            src={msg.imageUrl}
+                            alt="Uploaded"
+                            className="max-h-48 w-full object-cover cursor-pointer hover:opacity-95"
+                            onClick={() => window.open(msg.imageUrl, "_blank")}
+                          />
+                        </div>
+                      )}
+                      {msg.text}
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+
+              {/* Bot Typing Indicator */}
+              {isTyping && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="flex items-start gap-2 sm:gap-3"
+                >
+                  <img
+                    src="/pomodoro/light-mode/timer/cat-awake.png"
+                    alt="Bot thinking"
+                    className="w-7 h-7 sm:w-8 sm:h-8 object-contain rounded border-2 border-[#4a2034] bg-[#feddde] shrink-0 image-rendering-pixelated"
+                  />
+                  <div className="flex flex-col items-start">
+                    <div className="text-[11px] font-bold text-[#893760] mb-1 px-1">
+                      NestiaDev [AI] sedikitt berpikir...
+                    </div>
+                    <div className="pixel-bubble-ai px-3 py-2 flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-[#f47fa2] animate-bounce [animation-delay:0s]"></span>
+                      <span className="w-2 h-2 rounded-full bg-[#f47fa2] animate-bounce [animation-delay:0.15s]"></span>
+                      <span className="w-2 h-2 rounded-full bg-[#f47fa2] animate-bounce [animation-delay:0.3s]"></span>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* ── Pending Image Preview Dock ── */}
+            {pendingImagePreview && (
+              <div className="bg-[#feddde] border-t-2 border-[#4a2034] p-2 flex items-center gap-2 shrink-0">
+                <img
+                  src={pendingImagePreview}
+                  alt="Attachment preview"
+                  className="w-12 h-12 object-cover rounded border-2 border-[#4a2034]"
+                />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-bold text-[#4a2034] truncate">
+                    {pendingImage?.name}
+                  </p>
+                  <p className="text-[10px] text-[#893760]">
+                    {pendingImage
+                      ? `${(pendingImage.size / 1024).toFixed(1)} KB`
+                      : ""}
+                  </p>
+                </div>
+                <button
+                  onClick={clearPendingImage}
+                  className="pixel-btn bg-[#f47fa2] text-white p-1 rounded"
+                  title="Batalkan gambar"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
+            {/* ── Retro Input Toolbar Dock ── */}
+            <div className="bg-[#ffdbe3] border-t-2 sm:border-t-4 border-[#4a2034] p-2 sm:p-2.5 flex items-center gap-1.5 sm:gap-2 shrink-0">
+              {/* Emoji Picker Dropdown */}
+              <DropdownMenu open={isEmojiOpen} onOpenChange={setIsEmojiOpen}>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className="pixel-btn bg-[#feddde] hover:bg-[#ffc6d2] p-2 rounded text-[#4a2034]"
+                    title="Emoji"
+                  >
+                    <Smile className="w-4 h-4 sm:w-5 sm:h-5" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="start"
+                  sideOffset={6}
+                  className="border-none bg-transparent p-0 shadow-none z-50"
+                >
+                  <div className="overflow-hidden rounded-lg border-2 border-[#4a2034] shadow-[4px_4px_0px_#4a2034] bg-white">
+                    <Picker
+                      data={data}
+                      theme="light"
+                      onEmojiSelect={handleEmojiSelect}
+                    />
+                  </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* File Attachment Dropdown */}
+              <DropdownMenu open={isAttachOpen} onOpenChange={setIsAttachOpen}>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    disabled={isUploading}
+                    className="pixel-btn bg-[#feddde] hover:bg-[#ffc6d2] p-2 rounded text-[#4a2034] disabled:opacity-50"
+                    title="Lampirkan File / Dokumen"
+                  >
+                    {isUploading ? (
+                      <Loader className="w-4 h-4 sm:w-5 sm:h-5 animate-spin text-[#f47fa2]" />
+                    ) : (
+                      <Paperclip className="w-4 h-4 sm:w-5 sm:h-5" />
+                    )}
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="start"
+                  sideOffset={6}
+                  className="p-1 min-w-[200px] bg-[#feddde] border-2 border-[#4a2034] shadow-[4px_4px_0px_#4a2034] rounded-lg z-50 font-pixel-freddy"
+                >
+                  <button
+                    onClick={() => {
+                      setIsAttachOpen(false);
+                      fileInputRef.current?.click();
+                    }}
+                    className="flex items-center gap-2.5 w-full px-2.5 py-2 text-xs text-[#4a2034] hover:bg-[#ffdbe3] rounded transition-colors font-bold"
+                  >
+                    <FileText className="w-4 h-4 text-[#893760]" />
+                    <span>Upload Dokumen</span>
+                    <span className="text-[10px] text-[#893760] opacity-80 ml-auto">
+                      PDF, TXT
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsAttachOpen(false);
+                      imageInputRef.current?.click();
+                    }}
+                    className="flex items-center gap-2.5 w-full px-2.5 py-2 text-xs text-[#4a2034] hover:bg-[#ffdbe3] rounded transition-colors font-bold"
+                  >
+                    <ImageIcon className="w-4 h-4 text-[#f47fa2]" />
+                    <span>Upload Gambar</span>
+                    <span className="text-[10px] text-[#893760] opacity-80 ml-auto">
+                      JPG, PNG
+                    </span>
+                  </button>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Hidden File Inputs */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                hidden
+                accept=".txt,.pdf,.doc,.docx"
+                onChange={handleFileUpload}
+                disabled={isUploading}
+              />
+              <input
+                ref={imageInputRef}
+                type="file"
+                hidden
+                accept=".jpg,.jpeg,.png,.webp"
+                onChange={handleImageSelect}
+              />
+
+              {/* Text Input Field */}
+              <div className="flex-1 flex items-center bg-white border-2 border-[#4a2034] rounded px-2.5 py-1 sm:py-1.5 shadow-[inset_1px_1px_0px_rgba(74,32,52,0.1)]">
+                <input
+                  ref={inputRef}
+                  type="text"
+                  className="w-full bg-transparent outline-none text-xs sm:text-sm text-[#4a2034] placeholder:text-[#c4899f] font-sans"
+                  placeholder={
+                    pendingImage
+                      ? "Tanyakan sesuatu tentang gambar ini..."
+                      : "Ketik pesan pertanyaan di sini..."
+                  }
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      sendMessage();
+                    }
+                  }}
                 />
               </div>
-            </DropdownMenuContent>
-          </DropdownMenu>
 
-          {/* Attach button with popup */}
-          <DropdownMenu open={isAttachOpen} onOpenChange={setIsAttachOpen}>
-            <DropdownMenuTrigger asChild>
+              {/* Send Button */}
               <button
-                disabled={isUploading}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Lampirkan file"
+                onClick={() => sendMessage()}
+                disabled={!input.trim() && !pendingImage}
+                className={`pixel-btn px-3 sm:px-4 py-1.5 sm:py-2 rounded font-bold text-xs sm:text-sm flex items-center gap-1.5 ${
+                  input.trim() || pendingImage
+                    ? "bg-[#f47fa2] hover:bg-[#e0668b] text-white cursor-pointer"
+                    : "pixel-btn-disabled bg-[#feddde] text-[#9c5974]"
+                }`}
               >
-                {isUploading ? (
-                  <Loader className="size-5 text-gray-500 dark:text-gray-400 animate-spin" />
-                ) : (
-                  <Paperclip className="size-5 text-gray-500 dark:text-gray-400" />
-                )}
+                <span>KIRIM</span>
+                <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="start"
-              sideOffset={6}
-              className="p-1 min-w-[180px] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg"
-            >
-              <button
-                onClick={() => {
-                  setIsAttachOpen(false);
-                  fileInputRef.current?.click();
-                }}
-                className="flex items-center gap-3 w-full px-3 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-              >
-                <FileText className="size-4 text-blue-500" />
-                <span>Dokumen</span>
-                <span className="text-[10px] text-gray-400 ml-auto">
-                  PDF, TXT, DOCX
-                </span>
-              </button>
-              <button
-                onClick={() => {
-                  setIsAttachOpen(false);
-                  imageInputRef.current?.click();
-                }}
-                className="flex items-center gap-3 w-full px-3 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-              >
-                <ImageIcon className="size-4 text-green-500" />
-                <span>Gambar / Foto</span>
-                <span className="text-[10px] text-gray-400 ml-auto">
-                  JPG, PNG, WEBP
-                </span>
-              </button>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          {/* Hidden file inputs */}
-          <input
-            ref={fileInputRef}
-            type="file"
-            hidden
-            accept=".txt,.pdf,.doc,.docx"
-            onChange={handleFileUpload}
-            disabled={isUploading}
-          />
-          <input
-            ref={imageInputRef}
-            type="file"
-            hidden
-            accept=".jpg,.jpeg,.png,.webp"
-            onChange={handleImageSelect}
-          />
-
-          <input
-            type="text"
-            ref={inputRef}
-            className="flex-grow p-2 bg-transparent outline-none text-sm text-gray-800 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500"
-            placeholder={
-              pendingImage
-                ? "Tulis pertanyaan tentang gambar ini... (opsional)"
-                : "Adakah yang ingin ditanyakan?"
-            }
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-          />
-          <button
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg transition-colors shadow-lg shadow-blue-500/20"
-            onClick={sendMessage}
-          >
-            Kirim
-          </button>
+            </div>
+          </div>
         </div>
       </div>
     </section>

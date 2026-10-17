@@ -1,0 +1,96 @@
+@import './pomodoro-base.css';
+
+.font-pixel-freddy {
+  font-family: "Five Fonts at Freddy's", 'VT323', monospace;
+  -webkit-font-smoothing: none;
+  font-smooth: never;
+  image-rendering: pixelated;
+}
+
+.pixel-chat-frame {
+  border: 4px solid #4a2034;
+  box-shadow: 6px 6px 0px #4a2034;
+  border-radius: 8px;
+  background-color: #ffdbe3;
+}
+
+@media (max-width: 640px) {
+  .pixel-chat-frame {
+    border-width: 3px;
+    box-shadow: 4px 4px 0px #4a2034;
+    border-radius: 6px;
+  }
+}
+
+/* Subtle retro gingham / checkered pattern for chat background */
+.pixel-chat-canvas {
+  background-color: #fff4f7;
+  background-image: 
+    linear-gradient(45deg, #ffe5ec 25%, transparent 25%),
+    linear-gradient(-45deg, #ffe5ec 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #ffe5ec 75%),
+    linear-gradient(-45deg, transparent 75%, #ffe5ec 75%);
+  background-size: 24px 24px;
+  background-position: 0 0, 0 12px, 12px -12px, -12px 0px;
+}
+
+/* Retro scrollbar */
+.pixel-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.pixel-scrollbar::-webkit-scrollbar-track {
+  background: #feddde;
+  border-left: 2px solid #4a2034;
+}
+
+.pixel-scrollbar::-webkit-scrollbar-thumb {
+  background: #f47fa2;
+  border: 2px solid #4a2034;
+}
+
+.pixel-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #c96580;
+}
+
+/* Retro pixel button utility */
+.pixel-btn {
+  border: 2px solid #4a2034;
+  box-shadow: 2px 2px 0px #4a2034;
+  transition: all 0.08s ease;
+  image-rendering: pixelated;
+}
+
+.pixel-btn:hover {
+  filter: brightness(1.05);
+}
+
+.pixel-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0px 0px 0px #4a2034;
+}
+
+.pixel-btn-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: 2px 2px 0px #4a2034 !important;
+}
+
+/* Pixel speech bubble */
+.pixel-bubble-ai {
+  background-color: #ffffff;
+  color: #4a2034;
+  border: 2px solid #4a2034;
+  box-shadow: 3px 3px 0px #4a2034;
+  border-radius: 6px;
+}
+
+.pixel-bubble-user {
+  background-color: #f47fa2;
+  color: #ffffff;
+  border: 2px solid #4a2034;
+  box-shadow: 3px 3px 0px #4a2034;
+  border-radius: 6px;
+}

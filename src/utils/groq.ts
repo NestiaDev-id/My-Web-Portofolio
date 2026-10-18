@@ -9,8 +9,6 @@ interface RequestOptions {
   seed: number;
 }
 
-
-
 // Inisialisasi Groq SDK
 const groq = new Groq({
   apiKey: import.meta.env.VITE_GROQ_API_KEY as string,
@@ -20,7 +18,7 @@ const groq = new Groq({
 // Fungsi untuk mengirim permintaan ke AI
 export const requestToAi = async (
   content: string,
-  option: RequestOptions
+  option: RequestOptions,
 ): Promise<string> => {
   try {
     // Kirim permintaan ke Groq AI
@@ -124,6 +122,6 @@ export const requestToAi = async (
     return reply.choices[0].message.content ?? "";
   } catch (error) {
     console.error("Error requesting AI completion:", error);
-    throw new Error("Failed to get AI completion");
+    throw error;
   }
 };

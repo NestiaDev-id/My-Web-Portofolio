@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { chatWithRag, uploadTask, chatWithVision } from "@/utils/rag";
+import { uploadTask } from "@/utils/rag";
+import { requestAi } from "@/utils/aiRouter";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 import {
@@ -307,19 +308,12 @@ const ChatApp = () => {
       const activeSessionId = refreshAndGetSessionId();
       setSessionId(activeSessionId);
 
-      if (currentImage) {
-        // Vision mode: send image to /chat-vision
-        const visionResponse = await chatWithVision(
-          currentImage,
-          activeSessionId,
-          currentInput
-        );
-        aiText = visionResponse.answer || "Maaf, saya tidak bisa menganalisis gambar ini.";
-      } else {
-        // Text mode: send to /chat
-        const aiResponse = await chatWithRag(currentInput, activeSessionId);
-        aiText = aiResponse.answer || "Maaf, aku tidak bisa menjawab.";
-      }
+      const aiResponse = await requestAi({
+        question: currentInput,
+        sessionId: activeSessionId,
+        image: currentImage
+      });
+      aiText = aiResponse.answer || "Maaf, aku tidak bisa menjawab.";
 
       const botMessage: Message = {
         id: messages.length + 2,

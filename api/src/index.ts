@@ -1,11 +1,5 @@
 import { serve } from "@hono/node-server";
-import { Hono } from "hono";
-
-const app = new Hono().basePath("/api/v1");
-
-app.get("/", (c) => {
-  return c.text("Backend API is running");
-});
+import { app } from "./app.js";
 
 serve(
   {

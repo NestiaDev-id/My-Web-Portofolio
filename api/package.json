@@ -3,7 +3,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsc",
+    "build": "hono-build",
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit"
   },

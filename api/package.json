@@ -3,8 +3,6 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "echo 'Skip tsc check for Vercel'",
-    "start": "node dist/index.js",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

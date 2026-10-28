@@ -1,5 +1,4 @@
 import { Hono } from "hono";
-import { handle } from "hono/vercel";
 import type { Context } from "hono";
 
 export const app = new Hono();
@@ -26,4 +25,4 @@ app.get("/api/v1/health", (c) => {
   return c.json({ status: "ok" });
 });
 
-export default handle(app);
+export default app;

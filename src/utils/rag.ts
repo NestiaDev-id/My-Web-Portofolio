@@ -9,8 +9,6 @@ type ChatResponse = {
   context: string[];
 };
 
-
-
 type UploadResponse = {
   status: string;
   filename: string;

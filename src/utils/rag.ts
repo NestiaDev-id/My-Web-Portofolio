@@ -10,6 +10,7 @@ type ChatResponse = {
 };
 
 
+
 type UploadResponse = {
   status: string;
   filename: string;

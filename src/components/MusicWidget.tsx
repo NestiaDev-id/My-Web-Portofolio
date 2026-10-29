@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import { ListMusic, Music, Pause, Play, X } from "lucide-react";
+import { syncAudioElement } from "../utils/audio";
 
 type MusicPlayerContextValue = {
   isPlaying: boolean;
@@ -26,6 +27,7 @@ export function MusicPlayerProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
+    syncAudioElement(audio);
 
     const updateProgress = () => {
       setProgress(audio.duration ? (audio.currentTime / audio.duration) * 100 : 0);

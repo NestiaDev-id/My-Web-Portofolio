@@ -1,19 +1,33 @@
-import { Redis } from "@upstash/redis";
+import { createClient, type RedisClientType } from "redis";
 import { env } from "../config/env.js";
 import type { ChatMessage } from "./types.js";
 
-let redisClient: Redis | null = null;
+type RedisClient = RedisClientType;
 
-function getRedisClient(): Redis {
-  if (!env.UPSTASH_REDIS_REST_URL || !env.UPSTASH_REDIS_REST_TOKEN) {
-    throw new Error("Upstash Redis environment variables are not configured.");
+let redisClient: RedisClient | null = null;
+let redisConnection: Promise<RedisClient> | null = null;
+
+async function getRedisClient(): Promise<RedisClient> {
+  if (!env.REDIS_URL) {
+    throw new Error("REDIS_URL is not configured.");
   }
 
-  redisClient ??= new Redis({
-    url: env.UPSTASH_REDIS_REST_URL,
-    token: env.UPSTASH_REDIS_REST_TOKEN,
-  });
-  return redisClient;
+  if (redisClient?.isReady) return redisClient;
+
+  redisConnection ??= (async () => {
+    const client = createClient({ url: env.REDIS_URL });
+    client.on("error", (error) => console.error("Redis client error", error));
+    await client.connect();
+    redisClient = client;
+    return client;
+  })();
+
+  try {
+    return await redisConnection;
+  } catch (error) {
+    redisConnection = null;
+    throw error;
+  }
 }
 
 function redisKey(sessionId: string): string {
@@ -24,29 +38,24 @@ export async function saveMessageToRedis(
   sessionId: string,
   message: ChatMessage,
 ): Promise<void> {
-  const redis = getRedisClient();
+  const redis = await getRedisClient();
   const key = redisKey(sessionId);
-  await redis.rpush(key, JSON.stringify(message));
-  await redis.ltrim(key, -env.REDIS_MAX_HISTORY, -1);
+  await redis.rPush(key, JSON.stringify(message));
+  await redis.lTrim(key, -env.REDIS_MAX_HISTORY, -1);
 }
 
 export async function getRecentHistory(
   sessionId: string,
   limit = env.REDIS_MAX_HISTORY,
 ): Promise<ChatMessage[]> {
-  const redis = getRedisClient();
-  const rawMessages = await redis.lrange<string[]>(redisKey(sessionId), -limit, -1);
+  const redis = await getRedisClient();
+  const rawMessages = await redis.lRange(redisKey(sessionId), -limit, -1);
 
-  return rawMessages.map((message) => {
-    if (typeof message !== "string") {
-      return message as unknown as ChatMessage;
-    }
-    return JSON.parse(message) as ChatMessage;
-  });
+  return rawMessages.map((message) => JSON.parse(message) as ChatMessage);
 }
 
 export async function checkRedisHealth(): Promise<"connected"> {
-  const redis = getRedisClient();
+  const redis = await getRedisClient();
   await redis.ping();
   return "connected";
 }

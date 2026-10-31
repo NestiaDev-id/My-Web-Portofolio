@@ -6,8 +6,7 @@ const envSchema = z.object({
   GROQ_API_KEY: z.string().min(1).optional(),
   MONGODB_URI: z.string().min(1).optional(),
   MONGODB_DB_NAME: z.string().min(1).default("nestiadev"),
-  UPSTASH_REDIS_REST_URL: z.string().url().optional(),
-  UPSTASH_REDIS_REST_TOKEN: z.string().min(1).optional(),
+  REDIS_URL: z.string().url().optional(),
   REDIS_MAX_HISTORY: z.coerce.number().int().positive().max(500).default(100),
 });
 

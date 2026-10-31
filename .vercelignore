@@ -1,0 +1,3 @@
+# Deploy the frontend only while the API Gateway is hosted separately.
+api/
+llm-service/

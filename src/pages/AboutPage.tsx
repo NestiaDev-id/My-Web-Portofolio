@@ -257,7 +257,7 @@ const AboutPage: React.FC = () => {
     <section className="relative z-[2] min-h-screen bg-[#ece5d8] newspaper-grid text-black overflow-y-auto p5-scroll">
       <SquiggleDecorations />
       
-      <audio ref={sfxRef} src="/p5/sfx/select.mp3" preload="auto" />
+      <audio ref={sfxRef} src="/p5/sfx/select.mp3" preload="none" />
 
       {/* Top black bar */}
       <div className="w-full h-4 bg-black relative z-10" />

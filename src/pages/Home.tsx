@@ -81,7 +81,7 @@ function HomePage() {
       aria-label="Main menu"
     >
       {/* SFX Audio */}
-      <audio ref={sfxRef} src="/p5/sfx/select.mp3" preload="auto" />
+      <audio ref={sfxRef} src="/p5/sfx/select.mp3" preload="none" />
 
       {/* Hero section */}
       <div className="p5-home-hero flex flex-col items-start w-full pt-1 pb-3">

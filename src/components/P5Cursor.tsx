@@ -15,6 +15,7 @@ const P5Cursor: React.FC = () => {
     document.body.classList.add("p5-cursor-on");
 
     let x = -100, y = -100, frame = 0, last = 0, visible = false;
+    let animationFrame = 0;
 
     const onMove = (e: MouseEvent) => {
       x = e.clientX;
@@ -43,17 +44,18 @@ const P5Cursor: React.FC = () => {
         last = ts;
         cur.style.backgroundPosition = -frame * 48 + "px 0";
       }
-      requestAnimationFrame(tick);
+      animationFrame = requestAnimationFrame(tick);
     };
 
     window.addEventListener("mousemove", onMove, { passive: true });
     document.documentElement.addEventListener("mouseleave", onLeave);
-    requestAnimationFrame(tick);
+    animationFrame = requestAnimationFrame(tick);
 
     return () => {
       document.body.classList.remove("p5-cursor-on");
       window.removeEventListener("mousemove", onMove);
       document.documentElement.removeEventListener("mouseleave", onLeave);
+      cancelAnimationFrame(animationFrame);
     };
   }, []);
 

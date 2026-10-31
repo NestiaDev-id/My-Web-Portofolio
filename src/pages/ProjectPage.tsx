@@ -54,7 +54,7 @@ export default function ProjectPage() {
 
   return (
     <section className="relative z-[2] min-h-screen px-[4vw] py-[2vh] p5-scroll overflow-y-auto">
-      <audio ref={sfxRef} src="/p5/sfx/select.mp3" preload="auto" />
+      <audio ref={sfxRef} src="/p5/sfx/select.mp3" preload="none" />
 
       {/* Screen Header */}
       <div className="flex items-center gap-4 mb-2">

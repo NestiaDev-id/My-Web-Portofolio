@@ -120,7 +120,7 @@ const GameConsolePage: React.FC = () => {
 
   return (
     <section className="relative z-[2] min-h-screen bg-[#ece5d8] newspaper-grid text-black overflow-y-auto p5-scroll pb-20">
-      <audio ref={sfxRef} src="/p5/sfx/select.mp3" preload="auto" />
+      <audio ref={sfxRef} src="/p5/sfx/select.mp3" preload="none" />
 
       {/* Top bar */}
       <div className="w-full h-4 bg-black" />

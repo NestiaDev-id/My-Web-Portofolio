@@ -335,7 +335,7 @@ export function MusicPlayerProvider({ children }: { children: ReactNode }) {
         setInlineVisible,
       }}
     >
-      <audio ref={audioRef} src={queueTracks[0].audioUrl} preload="metadata" />
+      <audio ref={audioRef} src={queueTracks[0].audioUrl} preload="none" />
       {children}
       {isPlaying && !inlineVisible && <MusicWidget variant="floating" />}
     </MusicPlayerContext.Provider>

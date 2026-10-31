@@ -34,6 +34,10 @@ function redisKey(sessionId: string): string {
   return `chat:${sessionId}:messages`;
 }
 
+function sessionTtlSeconds(): number {
+  return env.REDIS_SESSION_TTL_MINUTES * 60;
+}
+
 export async function clearRedisHistory(sessionId: string): Promise<void> {
   const redis = await getRedisClient();
   await redis.del(redisKey(sessionId));
@@ -47,6 +51,7 @@ export async function saveMessageToRedis(
   const key = redisKey(sessionId);
   await redis.rPush(key, JSON.stringify(message));
   await redis.lTrim(key, -env.REDIS_MAX_HISTORY, -1);
+  await redis.expire(key, sessionTtlSeconds());
 }
 
 export async function getRecentHistory(
@@ -54,7 +59,11 @@ export async function getRecentHistory(
   limit = env.REDIS_MAX_HISTORY,
 ): Promise<ChatMessage[]> {
   const redis = await getRedisClient();
-  const rawMessages = await redis.lRange(redisKey(sessionId), -limit, -1);
+  const key = redisKey(sessionId);
+  const rawMessages = await redis.lRange(key, -limit, -1);
+  if (rawMessages.length > 0) {
+    await redis.expire(key, sessionTtlSeconds());
+  }
 
   return rawMessages.map((message) => JSON.parse(message) as ChatMessage);
 }

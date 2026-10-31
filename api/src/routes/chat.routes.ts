@@ -1,7 +1,12 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { bodyLimit } from "hono/body-limit";
-import { clearHistory, getHistory, saveMessage } from "../services/chat-history.service.js";
+import {
+  clearHistory,
+  getActiveHistory,
+  getHistory,
+  saveMessage,
+} from "../services/chat-history.service.js";
 import {
   generateChatAnswer,
   generateVisionAnswer,
@@ -18,7 +23,7 @@ export const chatRoutes = new Hono();
 
 chatRoutes.post("/", validateJson(chatSchema), async (c) => {
   const { question, sessionId } = c.get("validatedBody");
-  const history = await getHistory(sessionId, 20);
+  const history = await getActiveHistory(sessionId, 20);
   const generated = await generateChatAnswer(question, sessionId, history);
   const userMessage = await saveMessage(sessionId, "user", question);
   const assistantMessage = await saveMessage(sessionId, "assistant", generated.answer, {

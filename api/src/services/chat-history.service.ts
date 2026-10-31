@@ -1,6 +1,14 @@
 import { randomUUID } from "node:crypto";
-import { clearMongoHistory, getFullHistory, saveMessageToMongo } from "./mongo.service.js";
-import { clearRedisHistory, getRecentHistory, saveMessageToRedis } from "./redis.service.js";
+import {
+  clearMongoHistory,
+  getFullHistory,
+  saveMessageToMongo,
+} from "./mongo.service.js";
+import {
+  clearRedisHistory,
+  getRecentHistory,
+  saveMessageToRedis,
+} from "./redis.service.js";
 import type { ChatMessage, ChatRole } from "./types.js";
 
 export async function saveMessage(
@@ -49,6 +57,21 @@ export async function getHistory(
   }
 
   return getFullHistory(sessionId, limit);
+}
+
+export async function getActiveHistory(
+  sessionId: string,
+  limit?: number,
+): Promise<ChatMessage[]> {
+  try {
+    return await getRecentHistory(sessionId, limit);
+  } catch (error) {
+    console.error(
+      "Redis active history read failed; falling back to MongoDB",
+      error,
+    );
+    return getFullHistory(sessionId, limit);
+  }
 }
 
 export async function clearHistory(sessionId: string): Promise<void> {

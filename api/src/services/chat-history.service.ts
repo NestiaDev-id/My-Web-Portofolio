@@ -63,15 +63,9 @@ export async function getActiveHistory(
   sessionId: string,
   limit?: number,
 ): Promise<ChatMessage[]> {
-  try {
-    return await getRecentHistory(sessionId, limit);
-  } catch (error) {
-    console.error(
-      "Redis active history read failed; falling back to MongoDB",
-      error,
-    );
-    return getFullHistory(sessionId, limit);
-  }
+  // Active context must never be restored from the permanent archive after
+  // the Redis session expires.
+  return getRecentHistory(sessionId, limit);
 }
 
 export async function clearHistory(sessionId: string): Promise<void> {

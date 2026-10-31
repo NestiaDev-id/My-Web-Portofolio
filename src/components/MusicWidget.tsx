@@ -50,6 +50,9 @@ type MusicPlayerContextValue = {
   currentTrack: QueueTrack;
   tracks: QueueTrack[];
   playTrack: (index: number) => Promise<void>;
+  nextTrack: () => Promise<void>;
+  prevTrack: () => Promise<void>;
+  seek: (seconds: number) => void;
   togglePlay: () => Promise<void>;
   setInlineVisible: (visible: boolean) => void;
 };
@@ -166,6 +169,16 @@ export function MusicPlayerProvider({ children }: { children: ReactNode }) {
     setIsPlaying(true);
   };
 
+  const nextTrack = () => playTrack((trackIndex + 1) % queueTracks.length);
+  const prevTrack = () => playTrack((trackIndex - 1 + queueTracks.length) % queueTracks.length);
+  const seek = (seconds: number) => {
+    const audio = audioRef.current;
+    if (audio && Number.isFinite(audio.duration)) {
+      audio.currentTime = seconds;
+      setCurrentTime(seconds);
+    }
+  };
+
   return (
     <MusicPlayerContext.Provider
       value={{
@@ -176,6 +189,9 @@ export function MusicPlayerProvider({ children }: { children: ReactNode }) {
         currentTrack: queueTracks[trackIndex],
         tracks: queueTracks,
         playTrack,
+        nextTrack,
+        prevTrack,
+        seek,
         togglePlay,
         setInlineVisible,
       }}
@@ -226,7 +242,7 @@ export default function MusicWidget({
 }: {
   variant?: "inline" | "floating";
 }) {
-  const { isPlaying, progress, currentTime, duration, currentTrack, togglePlay, setInlineVisible } = useMusicPlayer();
+  const { isPlaying, progress, currentTime, duration, currentTrack, togglePlay, nextTrack, prevTrack, seek, setInlineVisible } = useMusicPlayer();
   const [isOpen, setIsOpen] = useState(false);
   const inlineRef = useRef<HTMLElement>(null);
 
@@ -246,15 +262,52 @@ export default function MusicWidget({
     };
   }, [setInlineVisible, variant]);
 
+  if (variant === "floating") {
+    return (
+      <aside className="fixed bottom-4 right-4 z-60 w-[min(24rem,calc(100vw-2rem))]">
+        <div className="relative overflow-hidden rounded-3xl border border-rose-100/80 bg-white/95 p-3.5 shadow-2xl shadow-rose-950/15 backdrop-blur-xl">
+          <div className="absolute right-0 top-0 h-32 w-32 rounded-full bg-linear-to-bl from-rose-200/40 via-pink-100/20 to-transparent blur-xl" />
+          <div className="flex items-center justify-between px-1 pb-1">
+            <span className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-wider text-rose-500">
+              <span className={`h-1.5 w-1.5 rounded-full ${isPlaying ? "animate-ping bg-rose-500" : "bg-zinc-300"}`} />
+              Mini Player (Pojok Kanan)
+            </span>
+            <span className="text-zinc-400">⌄</span>
+          </div>
+          <div className="my-1 flex items-center gap-3.5">
+            <div className={`relative h-16 w-16 shrink-0 overflow-hidden rounded-full bg-[#181820] shadow-lg ${isPlaying ? "animate-vinyl" : "animate-vinyl animate-vinyl-paused"}`}>
+              <div className="vinyl-grooves absolute inset-0 rounded-full opacity-80" />
+              <div className="absolute inset-2 rounded-full border border-white/10" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="h-5 w-5 rounded-full border border-[#d4af37] bg-[#242436]" />
+              </div>
+            </div>
+            <div className="min-w-0 flex-1">
+              <h4 className="truncate text-sm font-bold leading-tight text-slate-800">{currentTrack.title}</h4>
+              <p className="mt-0.5 truncate text-xs text-slate-500">{currentTrack.artist}</p>
+              <span className="font-mono text-[10px] font-semibold text-rose-500">{formatTime(currentTime)} / {formatTime(duration)}</span>
+            </div>
+            <div className="flex shrink-0 items-center gap-1">
+              <button type="button" onClick={() => void prevTrack()} aria-label="Previous track" className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-800"><SkipBack className="h-4 w-4 fill-current" /></button>
+              <button type="button" onClick={() => void togglePlay()} aria-label={isPlaying ? "Pause" : "Play"} className="rounded-full bg-rose-500 p-2.5 text-white shadow-md shadow-rose-300/60"><span>{isPlaying ? <Pause className="h-4 w-4 fill-white" /> : <Play className="h-4 w-4 fill-white" />}</span></button>
+              <button type="button" onClick={() => void nextTrack()} aria-label="Next track" className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-800"><SkipForward className="h-4 w-4 fill-current" /></button>
+            </div>
+          </div>
+          <input type="range" min={0} max={duration || 100} value={currentTime} onChange={(event) => seek(Number(event.target.value))} aria-label="Seek mini progress" className="h-1 w-full cursor-pointer appearance-none rounded-full bg-rose-100 accent-rose-500" style={{ background: `linear-gradient(to right, #f43f5e ${progress}%, #ffe4e6 ${progress}%)` }} />
+        </div>
+      </aside>
+    );
+  }
+
   const content = (
     <>
-      <div className={`relative w-full max-w-md transition-all duration-300 ${variant === "floating" ? "max-w-none" : ""}`}>
+      <div className="relative w-full max-w-md transition-all duration-300">
         <div className="relative overflow-visible rounded-[28px] border border-white/60 bg-[#fbf7f4] px-5 pb-16 pt-6 shadow-lg sm:px-6">
           <div className="pointer-events-none absolute right-0 top-0 h-48 w-72 rounded-full bg-linear-to-bl from-pink-100/50 via-rose-50/30 to-transparent blur-2xl" />
           <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-start sm:gap-6">
           <div
             className={`relative z-10 shrink-0 overflow-hidden rounded-full border border-white/20 bg-[#181820] shadow-2xl ${
-              variant === "floating" ? "h-20 w-20" : "h-44 w-44 md:h-48 md:w-48"
+              "h-44 w-44 md:h-48 md:w-48"
             } ${isPlaying ? "animate-vinyl" : "animate-vinyl animate-vinyl-paused"}`}
           >
             <div className="vinyl-grooves absolute inset-0 rounded-full opacity-80" />
@@ -304,10 +357,6 @@ export default function MusicWidget({
       </div>
     </>
   );
-
-  if (variant === "floating") {
-    return <aside className="fixed bottom-4 right-4 z-60 w-[min(21rem,calc(100vw-2rem))]">{content}</aside>;
-  }
 
   return (
     <aside ref={inlineRef} className="mt-8 w-full transition-transform hover:-translate-y-1">

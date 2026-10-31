@@ -8,6 +8,9 @@ const envSchema = z.object({
   MONGODB_DB_NAME: z.string().min(1).default("nestiadev"),
   REDIS_URL: z.string().url().optional(),
   REDIS_MAX_HISTORY: z.coerce.number().int().positive().max(500).default(100),
+  RATE_LIMIT_GENERAL_MAX: z.coerce.number().int().positive().default(60),
+  RATE_LIMIT_CHAT_MAX: z.coerce.number().int().positive().default(30),
+  RATE_LIMIT_WINDOW_SECONDS: z.coerce.number().int().positive().default(60),
 });
 
 export const env = envSchema.parse(process.env);

@@ -7,7 +7,7 @@ type RedisClient = RedisClientType;
 let redisClient: RedisClient | null = null;
 let redisConnection: Promise<RedisClient> | null = null;
 
-async function getRedisClient(): Promise<RedisClient> {
+export async function getRedisClient(): Promise<RedisClient> {
   if (!env.REDIS_URL) {
     throw new Error("REDIS_URL is not configured.");
   }

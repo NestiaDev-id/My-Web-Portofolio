@@ -3,6 +3,7 @@ import P5Background from "./components/P5Background";
 import P5Cursor from "./components/P5Cursor";
 import P5HUD from "./components/P5HUD";
 import { lazy, Suspense } from "react";
+import { MusicPlayerProvider } from "./components/MusicWidget";
 
 const HomePage = lazy(() => import("./pages/Home"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
@@ -44,6 +45,7 @@ function App() {
   }
 
   return (
+    <MusicPlayerProvider>
     <div className="relative min-h-screen overflow-hidden font-p5-condensed text-p5-white">
       <P5Background />
       <div id="p5-slash" aria-hidden="true" />
@@ -73,6 +75,7 @@ function App() {
         </div>
       </div>
     </div>
+    </MusicPlayerProvider>
   );
 }
 

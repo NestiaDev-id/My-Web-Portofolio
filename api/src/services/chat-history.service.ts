@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
-import { getFullHistory, saveMessageToMongo } from "./mongo.service.js";
-import { getRecentHistory, saveMessageToRedis } from "./redis.service.js";
+import { clearMongoHistory, getFullHistory, saveMessageToMongo } from "./mongo.service.js";
+import { clearRedisHistory, getRecentHistory, saveMessageToRedis } from "./redis.service.js";
 import type { ChatMessage, ChatRole } from "./types.js";
 
 export async function saveMessage(
@@ -49,4 +49,14 @@ export async function getHistory(
   }
 
   return getFullHistory(sessionId, limit);
+}
+
+export async function clearHistory(sessionId: string): Promise<void> {
+  const results = await Promise.allSettled([
+    clearRedisHistory(sessionId),
+    clearMongoHistory(sessionId),
+  ]);
+  if (results.every((result) => result.status === "rejected")) {
+    throw new Error("Unable to clear chat history.");
+  }
 }

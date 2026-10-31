@@ -4,6 +4,8 @@ const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   FRONTEND_URL: z.string().url().optional(),
   GROQ_API_KEY: z.string().min(1).optional(),
+  GROQ_CHAT_MODEL: z.string().default("llama-3.1-8b-instant"),
+  LLM_SERVICE_URL: z.string().url().optional(),
   MONGODB_URI: z.string().min(1).optional(),
   MONGODB_DB_NAME: z.string().min(1).default("nestiadev"),
   REDIS_URL: z.string().url().optional(),

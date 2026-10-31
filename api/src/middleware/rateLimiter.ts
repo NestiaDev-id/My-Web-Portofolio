@@ -42,16 +42,34 @@ export function createRateLimiter(options: RateLimitOptions): MiddlewareHandler 
     const now = Math.floor(Date.now() / 1000);
     const member = `${now}:${crypto.randomUUID()}`;
     const key = `${prefix}:${clientIp(c.req.raw)}`;
-    const redis = await getRedisClient();
-    const result = (await redis.eval(slidingWindowScript, {
-      keys: [key],
-      arguments: [
-        String(now),
-        String(windowSeconds),
-        member,
-        String(options.limit),
-      ],
-    })) as number[];
+    let result: number[];
+
+    try {
+      const redis = await getRedisClient();
+      result = (await redis.eval(slidingWindowScript, {
+        keys: [key],
+        arguments: [
+          String(now),
+          String(windowSeconds),
+          member,
+          String(options.limit),
+        ],
+      })) as number[];
+    } catch (error) {
+      console.error("Rate limiter unavailable", error);
+      return c.json(
+        {
+          success: false,
+          error: {
+            code: "RATE_LIMIT_UNAVAILABLE",
+            message: "Proteksi rate limit sedang tidak tersedia.",
+          },
+          meta: { timestamp: new Date().toISOString() },
+        },
+        503,
+      );
+    }
+
     const [allowed, remaining, reset] = result;
 
     c.header("X-RateLimit-Limit", String(options.limit));
@@ -80,4 +98,9 @@ export function createRateLimiter(options: RateLimitOptions): MiddlewareHandler 
 export const generalRateLimiter = createRateLimiter({
   limit: env.RATE_LIMIT_GENERAL_MAX,
   keyPrefix: "api:rate-limit:general",
+});
+
+export const chatRateLimiter = createRateLimiter({
+  limit: env.RATE_LIMIT_CHAT_MAX,
+  keyPrefix: "api:rate-limit:chat",
 });

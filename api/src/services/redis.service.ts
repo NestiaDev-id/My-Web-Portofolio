@@ -34,6 +34,11 @@ function redisKey(sessionId: string): string {
   return `chat:${sessionId}:messages`;
 }
 
+export async function clearRedisHistory(sessionId: string): Promise<void> {
+  const redis = await getRedisClient();
+  await redis.del(redisKey(sessionId));
+}
+
 export async function saveMessageToRedis(
   sessionId: string,
   message: ChatMessage,

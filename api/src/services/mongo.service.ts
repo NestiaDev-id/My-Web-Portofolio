@@ -107,6 +107,14 @@ export async function getFullHistory(
   }));
 }
 
+export async function clearMongoHistory(sessionId: string): Promise<void> {
+  const db = getMongoDatabase();
+  await Promise.all([
+    db.collection<MessageDocument>("messages").deleteMany({ session_id: sessionId }),
+    db.collection<ConversationDocument>("conversations").deleteOne({ _id: sessionId }),
+  ]);
+}
+
 export async function checkMongoHealth(): Promise<"connected"> {
   const db = getMongoDatabase();
   await db.command({ ping: 1 });

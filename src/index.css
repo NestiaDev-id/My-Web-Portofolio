@@ -294,6 +294,26 @@ em-emoji-picker {
   }
 }
 
+@media (max-width: 768px) {
+  #p5-bg-stripes {
+    animation: none;
+    background-position: 0 0;
+  }
+
+  #p5-bg-halftone {
+    animation: none;
+    background-position: 0 0;
+    mix-blend-mode: normal;
+    opacity: 0.25;
+  }
+
+  .p5-bg-star,
+  .p5-bg-star.s2 {
+    animation: none;
+    transform: none;
+  }
+}
+
 /* ====================================================
    PERSONA 5 — SLASH (diagonal black cutout)
 ==================================================== */

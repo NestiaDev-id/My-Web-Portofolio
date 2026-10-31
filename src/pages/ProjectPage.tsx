@@ -29,6 +29,92 @@ function splitTitle(title: string) {
 
 const CATEGORIES = ["All", "Website Development", "Data Science", "Mobile Development"];
 
+function ProjectCard({
+  project,
+  index,
+  onSelect,
+}: {
+  project: (typeof projects)[number];
+  index: number;
+  onSelect: () => void;
+}) {
+  const [imageState, setImageState] = useState<"loading" | "ready" | "error">(
+    "loading",
+  );
+  const tilt = ((hash(project.slug) % 5) - 2) * 0.8;
+  const { first, rest } = splitTitle(project.title);
+  const langColor = categoryColors[project.category] || "#e60012";
+
+  return (
+    <a
+      className={`p5-card ${project.status === "Production" ? "feat" : ""}`}
+      style={{
+        "--tilt": `${tilt}deg`,
+        "--d": `${index * 70}ms`,
+        "--lc": langColor,
+      } as React.CSSProperties}
+      href={project.demo && project.demo !== "#" ? project.demo : project.github}
+      target="_blank"
+      rel="noopener noreferrer"
+      onClick={(event) => {
+        event.preventDefault();
+        onSelect();
+      }}
+    >
+      <div className="thumb relative overflow-hidden">
+        {imageState === "loading" && (
+          <div
+            className="absolute inset-0 animate-pulse bg-black/10"
+            aria-label={`Loading ${project.title} image`}
+          >
+            <div className="h-full w-2/3 -skew-x-12 bg-white/40" />
+          </div>
+        )}
+        {imageState !== "error" && (
+          <img
+            src={project.image}
+            alt={project.title}
+            loading="lazy"
+            onLoad={() => setImageState("ready")}
+            onError={() => setImageState("error")}
+            className={`transition-opacity duration-300 ${
+              imageState === "ready" ? "opacity-100" : "opacity-0"
+            }`}
+          />
+        )}
+        {imageState === "error" && (
+          <div className="flex h-full items-center justify-center bg-black/5 px-4 text-center text-xs font-bold uppercase text-black/50">
+            Preview unavailable
+          </div>
+        )}
+      </div>
+
+      <span className="lang">{project.category}</span>
+      <h3>
+        {project.status === "Production" && <span className="p5-live-dot" />}
+        <em>{first}</em>{rest}
+      </h3>
+      <p>{project.description}</p>
+      <div className="meta">
+        <span>
+          {project.status === "Production"
+            ? "LIVE NOW"
+            : project.status === "Completed"
+              ? "COMPLETED"
+              : project.status === "Ongoing"
+                ? "ONGOING"
+                : "IN DEV"}
+        </span>
+        <span className="go">
+          {project.demo && project.demo !== "#"
+            ? "View Demo →"
+            : "View on GitHub →"}
+        </span>
+      </div>
+    </a>
+  );
+}
+
 export default function ProjectPage() {
   const [filter, setFilter] = useState("All");
   const navigate = useNavigate();
@@ -54,7 +140,7 @@ export default function ProjectPage() {
 
   return (
     <section className="relative z-[2] min-h-screen px-[4vw] py-[2vh] p5-scroll overflow-y-auto">
-      <audio ref={sfxRef} src="/p5/sfx/select.mp3" preload="auto" />
+      <audio ref={sfxRef} src="/p5/sfx/select.mp3" preload="none" />
 
       {/* Screen Header */}
       <div className="flex items-center gap-4 mb-2">
@@ -103,80 +189,19 @@ export default function ProjectPage() {
 
       {/* Project Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 pb-[10vh]">
-        {filteredProjects.map((project, i) => {
-          const tilt = ((hash(project.slug) % 5) - 2) * 0.8;
-          const { first, rest } = splitTitle(project.title);
-          const langColor = categoryColors[project.category] || "#e60012";
-
-          return (
-            <a
-              key={project.slug}
-              className={`p5-card ${project.status === "Production" ? "feat" : ""}`}
-              style={{
-                "--tilt": `${tilt}deg`,
-                "--d": `${i * 70}ms`,
-                "--lc": langColor,
-              } as React.CSSProperties}
-              href={project.demo && project.demo !== "#" ? project.demo : project.github}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => {
-                // If clicking on internal links, navigate internally
-                if (project.slug) {
-                  e.preventDefault();
-                  playSelect();
-                  navigate(`/projects/${project.slug}`, {
-                    state: { github: project.github, demo: project.demo },
-                  });
-                }
-              }}
-            >
-              {/* Thumbnail */}
-              <div className="thumb">
-                <img
-                  src={project.image}
-                  alt={project.title}
-                  loading="lazy"
-                  onError={(e) => {
-                    (e.target as HTMLElement).closest(".thumb")?.remove();
-                  }}
-                />
-              </div>
-
-              {/* Language tag */}
-              <span className="lang">{project.category}</span>
-
-              {/* Title with first word in red */}
-              <h3>
-                {project.status === "Production" && (
-                  <span className="p5-live-dot" />
-                )}
-                <em>{first}</em>{rest}
-              </h3>
-
-              {/* Description */}
-              <p>{project.description}</p>
-
-              {/* Meta footer */}
-              <div className="meta">
-                <span>
-                  {project.status === "Production"
-                    ? "LIVE NOW"
-                    : project.status === "Completed"
-                    ? "COMPLETED"
-                    : project.status === "Ongoing"
-                    ? "ONGOING"
-                    : "IN DEV"}
-                </span>
-                <span className="go">
-                  {project.demo && project.demo !== "#"
-                    ? "View Demo →"
-                    : "View on GitHub →"}
-                </span>
-              </div>
-            </a>
-          );
-        })}
+        {filteredProjects.map((project, index) => (
+          <ProjectCard
+            key={project.slug}
+            project={project}
+            index={index}
+            onSelect={() => {
+              playSelect();
+              navigate(`/projects/${project.slug}`, {
+                state: { github: project.github, demo: project.demo },
+              });
+            }}
+          />
+        ))}
       </div>
     </section>
   );

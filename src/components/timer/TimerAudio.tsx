@@ -38,8 +38,8 @@ export function TimerAudio({ phase, running, soundOn }: TimerAudioProps): React.
 
   return (
     <>
-      <audio ref={focusRef} src={focusSrc} loop preload="auto" />
-      <audio ref={relaxRef} src={relaxSrc} loop preload="auto" />
+      <audio ref={focusRef} src={focusSrc} loop preload="none" />
+      <audio ref={relaxRef} src={relaxSrc} loop preload="none" />
     </>
   )
 }

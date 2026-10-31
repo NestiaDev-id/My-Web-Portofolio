@@ -28,9 +28,7 @@ function RouteLoading() {
           Loading...
         </div>
       </div>
-      </div>
-      )}
-    </MusicPlayerProvider>
+    </div>
   );
 }
 

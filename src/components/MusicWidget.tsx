@@ -226,10 +226,12 @@ export function MusicPlayerProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const syncSynthMute = () => {
-      if (synthRef.current) synthRef.current.gain.gain.value = getMuteState() ? 0 : 0.12;
+      if (synthRef.current)
+        synthRef.current.gain.gain.value = getMuteState() ? 0 : 0.12;
     };
     window.addEventListener("global-audio-mute-change", syncSynthMute);
-    return () => window.removeEventListener("global-audio-mute-change", syncSynthMute);
+    return () =>
+      window.removeEventListener("global-audio-mute-change", syncSynthMute);
   }, []);
 
   useEffect(() => {
@@ -353,19 +355,25 @@ function PlaylistDump({ onClose }: { onClose: () => void }) {
   const { currentTrack, tracks, playTrack } = useMusicPlayer();
 
   return (
-    <div className="h-full rounded-[28px] border border-white/60 bg-[#fbf7f4] p-6 shadow-lg">
-      <div className="mb-5 flex items-center justify-between border-b border-rose-100 pb-4">
+    <div className="relative h-full overflow-hidden border-2 border-black bg-[#f4f1ed] p-5 shadow-[10px_10px_0_#111]">
+      <div className="pointer-events-none absolute -right-10 -top-16 h-40 w-72 rotate-[-18deg] bg-[#e91e2b]" />
+      <div className="relative mb-5 flex items-center justify-between border-b-2 border-black pb-4">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-rose-400">
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#e91e2b]">
             Playlist
           </p>
-          <h3 className="mt-1 text-xl font-bold text-slate-800">
+          <h3 className="mt-1 text-xl font-black uppercase italic text-black">
             Playlist dump
           </h3>
         </div>
         {onClose && (
-          <button type="button" onClick={onClose} aria-label="Close playlist">
-            <X className="h-4 w-4 text-slate-400" />
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close playlist"
+            className="bg-black p-1 text-white transition hover:bg-[#e91e2b]"
+          >
+            <X className="h-4 w-4" />
           </button>
         )}
       </div>
@@ -376,7 +384,7 @@ function PlaylistDump({ onClose }: { onClose: () => void }) {
             key={track.id}
             disabled={!track.audioUrl && !track.synthPreset}
             onClick={() => void playTrack(index)}
-            className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left ${track.id === currentTrack.id ? "bg-rose-50 text-rose-600" : "text-slate-500"} ${!track.audioUrl && !track.synthPreset ? "cursor-not-allowed opacity-50" : "hover:bg-rose-50/60"}`}
+            className={`flex w-full items-center gap-3 border-b border-black/10 px-3 py-3 text-left ${track.id === currentTrack.id ? "bg-[#e91e2b] font-bold text-white" : "text-black"} ${!track.audioUrl && !track.synthPreset ? "cursor-not-allowed opacity-50" : "hover:bg-black hover:text-white"}`}
           >
             <span className="w-5 font-mono text-xs text-zinc-400">
               0{index + 1}
@@ -385,7 +393,9 @@ function PlaylistDump({ onClose }: { onClose: () => void }) {
             <span className="truncate text-sm font-semibold">
               {track.title}
             </span>
-            <span className="ml-auto text-[9px] uppercase text-rose-400">
+            <span
+              className={`ml-auto text-[9px] uppercase ${track.id === currentTrack.id ? "text-white" : "text-[#e91e2b]"}`}
+            >
               {track.synthPreset ? "web audio" : "local audio"}
             </span>
           </button>
@@ -519,9 +529,13 @@ export default function MusicWidget({
   const content = (
     <>
       <div className="relative w-full max-w-md transition-all duration-300">
-        <div className="relative overflow-visible rounded-[28px] border border-white/60 bg-[#fbf7f4] px-5 pb-16 pt-6 shadow-lg sm:px-6">
-          <div className="pointer-events-none absolute right-0 top-0 h-48 w-72 rounded-full bg-linear-to-bl from-pink-100/50 via-rose-50/30 to-transparent blur-2xl" />
-          <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-start sm:gap-6">
+        <div className="relative overflow-visible border-2 border-black bg-[#f7f1e8] px-5 pb-16 pt-6 shadow-[10px_10px_0_#111217] sm:px-6">
+          <div
+            className="pointer-events-none absolute right-0 top-0 h-24 w-1/2 bg-[#e91e2b]"
+            style={{ clipPath: "polygon(18% 0, 100% 0, 100% 100%, 0 100%)" }}
+          />
+          <div className="pointer-events-none absolute bottom-0 left-0 h-16 w-2/3 -skew-x-12 bg-[#e8dfd3]" />
+          <div className="relative z-10 flex flex-col items-center gap-5 sm:flex-row sm:items-start sm:gap-6">
             <div
               className={`relative z-10 shrink-0 overflow-hidden rounded-full border border-white/20 bg-[#181820] shadow-2xl ${"h-44 w-44 md:h-48 md:w-48"} ${isPlaying ? "animate-vinyl" : "animate-vinyl animate-vinyl-paused"}`}
             >
@@ -542,21 +556,21 @@ export default function MusicWidget({
               </div>
             </div>
 
-            <div className="flex w-full min-w-0 flex-1 flex-col justify-center pt-2 text-center sm:text-left">
+            <div className="flex w-full min-w-0 flex-1 flex-col justify-center pt-2 text-center text-black sm:text-left">
               <div className="mb-2 flex items-center gap-2">
-                <Music className="h-3 w-3 animate-pulse text-rose-500" />
-                <span className="text-[10px] font-bold uppercase tracking-widest text-rose-400">
+                {/* <Music className="h-3 w-3 animate-pulse text-[#ff3040]" /> */}
+                <span className="text-[10px] font-black uppercase tracking-widest text-black/60 ml-2">
                   {isPlaying ? "NOW PLAYING" : "PAUSED"}
                 </span>
               </div>
-              <h4 className="truncate text-xl font-bold tracking-tight text-slate-800 sm:text-2xl">
+              <h4 className="truncate text-xl font-black uppercase italic tracking-tight text-black sm:text-2xl">
                 {currentTrack.title}
               </h4>
-              <p className="mt-1 truncate text-xs font-medium text-slate-500 sm:text-sm">
+              <p className="mt-1 truncate text-xs font-medium text-black/60 sm:text-sm">
                 {currentTrack.artist} — {currentTrack.album}
               </p>
               <div className="mt-4 w-full">
-                <div className="mb-1.5 flex justify-between font-mono text-xs font-semibold text-rose-400">
+                <div className="mb-1.5 flex justify-between font-mono text-xs font-semibold text-[#ff3040]">
                   <span>{formatTime(currentTime)}</span>
                   <span>{formatTime(duration)}</span>
                 </div>
@@ -567,29 +581,29 @@ export default function MusicWidget({
                   value={currentTime}
                   onChange={(event) => seek(Number(event.target.value))}
                   aria-label="Seek player progress"
-                  className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-rose-200/60 accent-rose-500"
+                  className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-black/15 accent-[#e91e2b]"
                   style={{
-                    background: `linear-gradient(to right, #f43f5e ${progress}%, #fecdd3 ${progress}%)`,
+                    background: `linear-gradient(to right, #e91e2b ${progress}%, rgba(17,18,23,.18) ${progress}%)`,
                   }}
                 />
               </div>
             </div>
           </div>
 
-          <div className="absolute -bottom-9 left-1/2 z-20 flex w-[92%] -translate-x-1/2 items-center justify-between rounded-3xl border border-white/80 bg-white/95 px-4 py-3 shadow-xl">
+          <div className="absolute -bottom-9 left-1/2 z-20 flex w-[92%] -translate-x-1/2 items-center justify-between border-2 border-black bg-[#f4f1ed] px-4 py-3 shadow-[6px_6px_0_#111217]">
             <div className="flex items-center gap-1">
               <button
                 type="button"
                 onClick={() => setIsOpen((open) => !open)}
                 aria-label="Toggle playlist"
-                className={`rounded-xl p-2 transition-colors ${isOpen ? "bg-rose-50 text-rose-500" : "text-zinc-400 hover:text-zinc-700"}`}
+                className={`p-2 transition-colors ${isOpen ? "bg-[#e91e2b] text-white" : "text-black hover:bg-[#e91e2b] hover:text-white"}`}
               >
                 <ListMusic className="h-4 w-4" />
               </button>
               <button
                 type="button"
                 aria-label="Shuffle"
-                className="rounded-xl p-2 text-zinc-400 hover:bg-rose-50 hover:text-rose-500"
+                className="p-2 text-black hover:bg-[#e91e2b] hover:text-white"
               >
                 <Shuffle className="h-4 w-4" />
               </button>
@@ -599,7 +613,7 @@ export default function MusicWidget({
                 type="button"
                 onClick={() => void prevTrack()}
                 aria-label="Previous track"
-                className="rounded-2xl p-3 text-slate-400 hover:bg-slate-100"
+                className="p-3 text-black hover:bg-[#e91e2b] hover:text-white"
               >
                 <SkipBack className="h-5 w-5 fill-current" />
               </button>
@@ -607,7 +621,7 @@ export default function MusicWidget({
                 type="button"
                 onClick={() => void togglePlay()}
                 aria-label={isPlaying ? "Pause music" : "Play music"}
-                className="flex h-12 w-12 items-center justify-center rounded-2xl bg-linear-to-tr from-rose-500 to-pink-400 text-white shadow-lg shadow-rose-300/60 transition hover:scale-105 active:scale-95"
+                className="flex h-12 w-12 items-center justify-center rounded-none bg-[#e91e2b] text-white shadow-[4px_4px_0_#111] transition hover:scale-105 active:scale-95"
               >
                 {isPlaying ? (
                   <Pause className="h-6 w-6 fill-white" />
@@ -619,7 +633,7 @@ export default function MusicWidget({
                 type="button"
                 onClick={() => void nextTrack()}
                 aria-label="Next track"
-                className="rounded-2xl p-3 text-slate-400 hover:bg-slate-100"
+                className="p-3 text-black hover:bg-[#e91e2b] hover:text-white"
               >
                 <SkipForward className="h-5 w-5 fill-current" />
               </button>
@@ -627,7 +641,7 @@ export default function MusicWidget({
             <button
               type="button"
               aria-label="Repeat"
-              className="rounded-xl p-2 text-zinc-400 hover:bg-rose-50 hover:text-rose-500"
+              className="p-2 text-black hover:bg-[#e91e2b] hover:text-white"
             >
               <Repeat className="h-4 w-4" />
             </button>

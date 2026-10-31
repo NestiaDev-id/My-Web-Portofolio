@@ -1,28 +1,13 @@
 import { Hono } from "hono";
-import type { Context } from "hono";
+import { logger } from "hono/logger";
+import { healthRoutes } from "./routes/health.routes.js";
 
 export const app = new Hono();
 
-const statusResponse = (c: Context) =>
-  c.json({
-    status: "ok",
-    message: "Backend API is running",
-  });
+app.use("*", logger());
 
-app.get("/", statusResponse);
-app.get("/api", statusResponse);
-
-app.get("/health", (c) => {
-  return c.json({ status: "ok" });
-});
-
-app.get("/api/health", (c) => {
-  return c.json({ status: "ok" });
-});
-
-app.get("/api/v1", statusResponse);
-app.get("/api/v1/health", (c) => {
-  return c.json({ status: "ok" });
-});
+app.route("/", healthRoutes);
+app.route("/api", healthRoutes);
+app.route("/api/v1", healthRoutes);
 
 export default app;

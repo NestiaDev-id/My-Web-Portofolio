@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { Volume2, VolumeX } from "lucide-react";
+import { getMuteState, toggleMute } from "../utils/audio";
 
 const P5HUD: React.FC = () => {
   const [clock, setClock] = useState("");
+  const [isMuted, setIsMuted] = useState(getMuteState);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -30,6 +33,12 @@ const P5HUD: React.FC = () => {
     update();
     const id = setInterval(update, 1000);
     return () => clearInterval(id);
+  }, []);
+
+  useEffect(() => {
+    const handleMuteChange = () => setIsMuted(getMuteState());
+    window.addEventListener("global-audio-mute-change", handleMuteChange);
+    return () => window.removeEventListener("global-audio-mute-change", handleMuteChange);
   }, []);
 
   return (
@@ -72,6 +81,16 @@ const P5HUD: React.FC = () => {
         </button>
         
         <span style={{ marginLeft: "auto", opacity: 0.8 }}>{clock}</span>
+        <button
+          type="button"
+          onClick={() => toggleMute()}
+          className="ml-3 flex items-center gap-1 transition-colors hover:text-p5-red"
+          aria-label={isMuted ? "Unmute all audio" : "Mute all audio"}
+          title={isMuted ? "Unmute all audio" : "Mute all audio"}
+        >
+          {isMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
+          <span className="sr-only">{isMuted ? "Unmute" : "Mute"}</span>
+        </button>
       </div>
     </>
   );

@@ -8,7 +8,6 @@ import {
 } from "react";
 import {
   ListMusic,
-  Music,
   Pause,
   Play,
   Repeat,

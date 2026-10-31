@@ -9,6 +9,34 @@ import {
 import { ListMusic, Music, Pause, Play, Repeat, Shuffle, SkipBack, SkipForward, X } from "lucide-react";
 import { syncAudioElement } from "../utils/audio";
 
+type QueueTrack = {
+  id: string;
+  title: string;
+  artist: string;
+  album: string;
+  audioUrl?: string;
+  synthPreset?: "pastel-breeze" | "ambient-dream" | "retro-synth" | "lofi-sunset" | "chill-hop";
+  duration: number;
+};
+
+const queueTracks: QueueTrack[] = [
+  { id: "local-relax", title: "Lofi chill", artist: "Kero One", album: "Relax Session", audioUrl: "/assets/Audio/Relax.m4a", duration: 180 },
+  { id: "local-focus", title: "Focus Session", artist: "Sonora", album: "Focus Session", audioUrl: "/assets/Audio/Focus.m4a", duration: 180 },
+  { id: "sonora-me-you", title: "Me & You", artist: "Alex Skrindo", album: "NCS Release", synthPreset: "pastel-breeze", duration: 198 },
+  { id: "sonora-tearing", title: "Tearing Me Up", artist: "Bob Moses", album: "Days Gone By", synthPreset: "ambient-dream", duration: 388 },
+  { id: "sonora-lovers", title: "Lovers Rock", artist: "Sonora Demo", album: "Modern Vinyl", synthPreset: "retro-synth", duration: 216 },
+  { id: "sonora-midnight", title: "Midnight Vinyl Groove", artist: "The Noir Quartet", album: "Pure Analog 33 RPM", synthPreset: "lofi-sunset", duration: 245 },
+  { id: "sonora-tape", title: "Analog Tape Nostalgia", artist: "Vintage Frequency", album: "Side B Unreleased", synthPreset: "chill-hop", duration: 182 },
+];
+
+const synthChords: Record<NonNullable<QueueTrack["synthPreset"]>, number[][]> = {
+  "pastel-breeze": [[261.63, 329.63, 392, 493.88], [220, 261.63, 329.63, 392], [174.61, 220, 261.63, 329.63], [196, 246.94, 293.66, 349.23]],
+  "ambient-dream": [[146.83, 220, 293.66, 349.23], [130.81, 196, 261.63, 329.63], [110, 164.81, 220, 261.63], [123.47, 185, 246.94, 329.63]],
+  "retro-synth": [[130.81, 164.81, 196, 246.94], [110, 138.59, 164.81, 220], [146.83, 174.61, 220, 261.63], [164.81, 196, 246.94, 293.66]],
+  "lofi-sunset": [[174.61, 220, 261.63, 329.63], [164.81, 196, 246.94, 293.66], [146.83, 174.61, 220, 261.63], [130.81, 164.81, 196, 246.94]],
+  "chill-hop": [[220, 261.63, 329.63, 392], [174.61, 220, 261.63, 329.63], [196, 246.94, 293.66, 349.23], [164.81, 207.65, 246.94, 329.63]],
+};
+
 function formatTime(seconds: number) {
   if (!Number.isFinite(seconds) || seconds < 0) return "00:00";
   return `${String(Math.floor(seconds / 60)).padStart(2, "0")}:${String(Math.floor(seconds % 60)).padStart(2, "0")}`;
@@ -19,6 +47,9 @@ type MusicPlayerContextValue = {
   progress: number;
   currentTime: number;
   duration: number;
+  currentTrack: QueueTrack;
+  tracks: QueueTrack[];
+  playTrack: (index: number) => Promise<void>;
   togglePlay: () => Promise<void>;
   setInlineVisible: (visible: boolean) => void;
 };
@@ -28,10 +59,46 @@ const MusicPlayerContext = createContext<MusicPlayerContextValue | null>(null);
 export function MusicPlayerProvider({ children }: { children: ReactNode }) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [trackIndex, setTrackIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [inlineVisible, setInlineVisible] = useState(false);
+  const synthRef = useRef<{ context: AudioContext; gain: GainNode; timer: number | null } | null>(null);
+
+  const stopSynth = () => {
+    if (synthRef.current?.timer) window.clearInterval(synthRef.current.timer);
+    synthRef.current?.context.close();
+    synthRef.current = null;
+  };
+
+  const startSynth = (track: QueueTrack) => {
+    stopSynth();
+    if (!track.synthPreset) return;
+    const context = new AudioContext();
+    const gain = context.createGain();
+    gain.gain.value = 0.12;
+    gain.connect(context.destination);
+    let step = 0;
+    const playStep = () => {
+      const chord = synthChords[track.synthPreset!][step++ % 4];
+      chord.forEach((frequency, index) => {
+        const oscillator = context.createOscillator();
+        const noteGain = context.createGain();
+        oscillator.type = index === 0 ? "triangle" : "sine";
+        oscillator.frequency.value = frequency;
+        noteGain.gain.setValueAtTime(0.001, context.currentTime);
+        noteGain.gain.exponentialRampToValueAtTime(0.06 / chord.length, context.currentTime + 0.3);
+        noteGain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 2.8);
+        oscillator.connect(noteGain).connect(gain);
+        oscillator.start();
+        oscillator.stop(context.currentTime + 3);
+      });
+    };
+    void context.resume();
+    playStep();
+    synthRef.current = { context, gain, timer: window.setInterval(playStep, 2400) };
+  };
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -53,24 +120,67 @@ export function MusicPlayerProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  useEffect(() => () => stopSynth(), []);
+
   const togglePlay = async () => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    if (audio.paused) {
-      await audio.play();
+    const track = queueTracks[trackIndex];
+    if (isPlaying) {
+      audio.pause();
+      stopSynth();
+      setIsPlaying(false);
+    } else if (track.synthPreset) {
+      startSynth(track);
       setIsPlaying(true);
     } else {
-      audio.pause();
-      setIsPlaying(false);
+      try {
+        await audio.play();
+        setIsPlaying(true);
+      } catch {
+        startSynth({ ...track, synthPreset: "pastel-breeze" });
+        setIsPlaying(true);
+      }
     }
+  };
+
+  const playTrack = async (index: number) => {
+    const track = queueTracks[index];
+    if (!track.audioUrl && !track.synthPreset) return;
+    setTrackIndex(index);
+    setCurrentTime(0);
+    setProgress(0);
+    stopSynth();
+    if (audioRef.current) audioRef.current.pause();
+    if (track.synthPreset) {
+      startSynth(track);
+    } else if (audioRef.current) {
+      audioRef.current.src = track.audioUrl ?? "";
+      try {
+        await audioRef.current.play();
+      } catch {
+        startSynth({ ...track, synthPreset: "pastel-breeze" });
+      }
+    }
+    setIsPlaying(true);
   };
 
   return (
     <MusicPlayerContext.Provider
-      value={{ isPlaying, progress, currentTime, duration, togglePlay, setInlineVisible }}
+      value={{
+        isPlaying,
+        progress,
+        currentTime,
+        duration: queueTracks[trackIndex].synthPreset ? queueTracks[trackIndex].duration : duration,
+        currentTrack: queueTracks[trackIndex],
+        tracks: queueTracks,
+        playTrack,
+        togglePlay,
+        setInlineVisible,
+      }}
     >
-      <audio ref={audioRef} src="/pomodoro/audio/Relax.m4a" preload="metadata" />
+      <audio ref={audioRef} src={queueTracks[0].audioUrl} preload="metadata" />
       {children}
       {isPlaying && !inlineVisible && <MusicWidget variant="floating" />}
     </MusicPlayerContext.Provider>
@@ -86,6 +196,8 @@ function useMusicPlayer() {
 }
 
 function PlaylistDump({ onClose }: { onClose: () => void }) {
+  const { currentTrack, tracks, playTrack } = useMusicPlayer();
+
   return (
     <div className="h-full rounded-[28px] border border-white/60 bg-[#fbf7f4] p-6 shadow-lg">
       <div className="mb-5 flex items-center justify-between border-b border-rose-100 pb-4">
@@ -95,13 +207,14 @@ function PlaylistDump({ onClose }: { onClose: () => void }) {
         </div>
         {onClose && <button type="button" onClick={onClose} aria-label="Close playlist"><X className="h-4 w-4 text-slate-400" /></button>}
       </div>
-      <div className="space-y-2">
-        {["Lofi chill", "Lovers Rock", "Come Inside Of My Heart"].map((track, index) => (
-          <div key={track} className={`flex items-center gap-3 rounded-xl px-3 py-3 ${index === 0 ? "bg-rose-50 text-rose-600" : "text-slate-500"}`}>
+      <div className="max-h-96 space-y-2 overflow-y-auto pr-1">
+        {tracks.map((track, index) => (
+          <button type="button" key={track.id} disabled={!track.audioUrl && !track.synthPreset} onClick={() => void playTrack(index)} className={`flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left ${track.id === currentTrack.id ? "bg-rose-50 text-rose-600" : "text-slate-500"} ${!track.audioUrl && !track.synthPreset ? "cursor-not-allowed opacity-50" : "hover:bg-rose-50/60"}`}>
             <span className="w-5 font-mono text-xs text-zinc-400">0{index + 1}</span>
             <ListMusic className="h-4 w-4" />
-            <span className="truncate text-sm font-semibold">{track}</span>
-          </div>
+            <span className="truncate text-sm font-semibold">{track.title}</span>
+            <span className="ml-auto text-[9px] uppercase text-rose-400">{track.synthPreset ? "web audio" : "local audio"}</span>
+          </button>
         ))}
       </div>
     </div>
@@ -113,7 +226,7 @@ export default function MusicWidget({
 }: {
   variant?: "inline" | "floating";
 }) {
-  const { isPlaying, progress, currentTime, duration, togglePlay, setInlineVisible } = useMusicPlayer();
+  const { isPlaying, progress, currentTime, duration, currentTrack, togglePlay, setInlineVisible } = useMusicPlayer();
   const [isOpen, setIsOpen] = useState(false);
   const inlineRef = useRef<HTMLElement>(null);
 
@@ -151,7 +264,7 @@ export default function MusicWidget({
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="relative flex h-20 w-20 flex-col items-center justify-center rounded-full border-2 border-[#d4af37]/60 bg-linear-to-br from-[#1a1a24] via-[#242436] to-[#121218] text-center shadow-inner">
                 <span className="absolute top-5 text-[7px] font-bold tracking-widest text-[#d4af37]">SONORA 33⅓</span>
-                <span className="absolute top-8 text-[8px] font-semibold text-rose-200">Lofi chill</span>
+                <span className="absolute top-8 max-w-[90%] truncate px-1 text-[8px] font-semibold text-rose-200">{currentTrack.title}</span>
                 <span className="absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-[#d4af37] bg-black" />
               </div>
             </div>
@@ -162,8 +275,8 @@ export default function MusicWidget({
               <Music className="h-3 w-3 animate-pulse text-rose-500" />
               <span className="text-[10px] font-bold uppercase tracking-widest text-rose-400">{isPlaying ? "NOW PLAYING" : "PAUSED"}</span>
             </div>
-            <h4 className="truncate text-xl font-bold tracking-tight text-slate-800 sm:text-2xl">Lofi chill</h4>
-            <p className="mt-1 truncate text-xs font-medium text-slate-500 sm:text-sm">Kero One</p>
+            <h4 className="truncate text-xl font-bold tracking-tight text-slate-800 sm:text-2xl">{currentTrack.title}</h4>
+            <p className="mt-1 truncate text-xs font-medium text-slate-500 sm:text-sm">{currentTrack.artist} — {currentTrack.album}</p>
             <div className="mt-4 w-full">
               <div className="mb-1.5 flex justify-between font-mono text-xs font-semibold text-rose-400"><span>{formatTime(currentTime)}</span><span>{formatTime(duration)}</span></div>
               <div className="h-1.5 overflow-hidden rounded-full bg-rose-200/60"><div className="h-full bg-rose-500 transition-all" style={{ width: `${progress}%` }} /></div>

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { asset } from '../../lib/assets'
 import type { TimerPhase } from '../../lib/useTimer'
+import { syncAudioElement } from '../../utils/audio'
 
 const focusSrc = asset('audio/Focus.m4a')
 const relaxSrc = asset('audio/Relax.m4a')
@@ -23,6 +24,8 @@ export function TimerAudio({ phase, running, soundOn }: TimerAudioProps): React.
     const focus = focusRef.current
     const relax = relaxRef.current
     if (!focus || !relax) return
+    syncAudioElement(focus)
+    syncAudioElement(relax)
     const active = running && soundOn ? (phase === 'focus' ? focus : relax) : null
     for (const el of [focus, relax]) {
       if (el === active) {

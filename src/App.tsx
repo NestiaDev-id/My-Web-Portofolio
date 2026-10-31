@@ -10,16 +10,17 @@ import P5Cursor from "./components/P5Cursor";
 import P5HUD from "./components/P5HUD";
 import NotFound from "./pages/NotFound";
 import TestingPage from "./pages/Testing";
+import { MusicPlayerProvider } from "./components/MusicWidget";
 
 function App() {
   const location = useLocation();
 
-  if (location.pathname === "/testing") {
-    return <TestingPage />;
-  }
-
   return (
-    <div className="relative min-h-screen font-p5-condensed text-p5-white overflow-hidden">
+    <MusicPlayerProvider>
+      {location.pathname === "/testing" ? (
+        <TestingPage />
+      ) : (
+      <div className="relative min-h-screen font-p5-condensed text-p5-white overflow-hidden">
       {/* Fixed background layers */}
       <P5Background />
 
@@ -56,7 +57,9 @@ function App() {
           </Routes>
         </div>
       </div>
-    </div>
+      </div>
+      )}
+    </MusicPlayerProvider>
   );
 }
 

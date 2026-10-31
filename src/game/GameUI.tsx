@@ -11,6 +11,7 @@ import {
 import MainScene from "./scenes/MainScene";
 import BattleScene from "./scenes/BattleScene";
 import { GAME_WIDTH, GAME_HEIGHT } from "./constants";
+import { getMuteState, toggleMute } from "../utils/audio";
 
 // ── Helpers ──────────────────────────────────────────────────
 
@@ -48,7 +49,7 @@ const handleDirectionalMovement = (
 
 const GameUI: React.FC = () => {
   // ── State ──
-  const [isMuted, setIsMuted] = useState(false);
+  const [isMuted, setIsMuted] = useState(getMuteState);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isControlsVisible, setIsControlsVisible] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
@@ -142,9 +143,11 @@ const GameUI: React.FC = () => {
     }
   };
 
-  const toggleMute = () => {
-    setIsMuted(!isMuted);
-  };
+  useEffect(() => {
+    const handleMuteChange = () => setIsMuted(getMuteState());
+    window.addEventListener("global-audio-mute-change", handleMuteChange);
+    return () => window.removeEventListener("global-audio-mute-change", handleMuteChange);
+  }, []);
 
   const toggleControls = () => {
     setIsControlsVisible(!isControlsVisible);
@@ -214,7 +217,7 @@ const GameUI: React.FC = () => {
             className="flex gap-3"
           >
             <button
-              onClick={toggleMute}
+              onClick={() => toggleMute()}
               className="p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors duration-300"
               title={isMuted ? "Unmute" : "Mute"}
             >

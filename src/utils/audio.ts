@@ -1,7 +1,16 @@
 // Web Audio API Synthesizer for Nintendo Switch Sounds
 
 let audioCtx: AudioContext | null = null;
-let isMuted = false;
+let isMuted =
+  typeof window !== "undefined" &&
+  window.localStorage.getItem("global-audio-muted") === "true";
+
+const syncHtmlAudio = () => {
+  if (typeof document === "undefined") return;
+  document.querySelectorAll("audio").forEach((audio) => {
+    audio.muted = isMuted;
+  });
+};
 
 function getAudioContext() {
   if (isMuted) return null;
@@ -16,15 +25,24 @@ function getAudioContext() {
 
 export function setMute(muted: boolean) {
   isMuted = muted;
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem("global-audio-muted", String(muted));
+    window.dispatchEvent(new CustomEvent("global-audio-mute-change"));
+  }
+  syncHtmlAudio();
 }
 
 export function toggleMute() {
-  isMuted = !isMuted;
-  return isMuted;
+  setMute(!isMuted);
+  return getMuteState();
 }
 
 export function getMuteState() {
   return isMuted;
+}
+
+export function syncAudioElement(audio: HTMLAudioElement | null) {
+  if (audio) audio.muted = isMuted;
 }
 
 // 1. Nintendo Switch Snap / Click Sound
@@ -307,4 +325,3 @@ export function playExplosionSound() {
   osc.start(now);
   osc.stop(now + 0.4);
 }
-

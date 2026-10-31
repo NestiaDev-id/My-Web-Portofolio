@@ -15,6 +15,7 @@ const GameConsolePage: React.FC = () => {
   const navigate = useNavigate();
   const sfxRef = useRef<HTMLAudioElement | null>(null);
   const gbGameRef = useRef<Phaser.Game | null>(null);
+  const powerTimerRef = useRef<number | null>(null);
   const audioUnlocked = useRef(false);
 
   const [consoleType, setConsoleType] = useState<"gameboy" | "switch">("gameboy");
@@ -79,6 +80,10 @@ const GameConsolePage: React.FC = () => {
   // Cleanup Game Boy Phaser on unmount or switch change
   useEffect(() => {
     return () => {
+      if (powerTimerRef.current !== null) {
+        window.clearTimeout(powerTimerRef.current);
+        powerTimerRef.current = null;
+      }
       if (gbGameRef.current) {
         gbGameRef.current.destroy(true);
         gbGameRef.current = null;
@@ -90,8 +95,15 @@ const GameConsolePage: React.FC = () => {
     playSound();
     if (gbPower === "off") {
       setGbPower("boot");
-      setTimeout(() => setGbPower("on"), 2000);
+      powerTimerRef.current = window.setTimeout(() => {
+        powerTimerRef.current = null;
+        setGbPower("on");
+      }, 2000);
     } else {
+      if (powerTimerRef.current !== null) {
+        window.clearTimeout(powerTimerRef.current);
+        powerTimerRef.current = null;
+      }
       setGbPower("off");
       if (gbGameRef.current) {
         gbGameRef.current.destroy(true);
@@ -109,6 +121,10 @@ const GameConsolePage: React.FC = () => {
   const handleConsoleSwitch = (type: "gameboy" | "switch") => {
     playSound();
     if (type !== consoleType) {
+      if (powerTimerRef.current !== null) {
+        window.clearTimeout(powerTimerRef.current);
+        powerTimerRef.current = null;
+      }
       if (gbGameRef.current) {
         gbGameRef.current.destroy(true);
         gbGameRef.current = null;

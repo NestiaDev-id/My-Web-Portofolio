@@ -56,37 +56,6 @@ chatRoutes.post(
         },
         400,
       );
-
-      chatRoutes.post(
-        "/upload-task",
-        bodyLimit({ maxSize: 10 * 1024 * 1024 }),
-        async (c) => {
-          const form = await c.req.formData();
-          const file = form.get("file");
-          const sessionId = String(form.get("sessionId") ?? form.get("session_id") ?? "").trim();
-
-          if (!(file instanceof File) || !sessionId) {
-            return c.json(
-              {
-                success: false,
-                error: {
-                  code: "INVALID_REQUEST",
-                  message: "File tugas dan sessionId wajib diisi.",
-                },
-                meta: { timestamp: new Date().toISOString() },
-              },
-              400,
-            );
-          }
-
-          const result = await uploadTaskDocument(file, sessionId);
-          return c.json({
-            success: true,
-            data: result,
-            meta: { timestamp: new Date().toISOString() },
-          });
-        },
-      );
     }
 
     const generated = await generateVisionAnswer(file, question, sessionId);
@@ -102,6 +71,37 @@ chatRoutes.post(
     return c.json({
       success: true,
       data: { answer: generated.answer, sessionId, messageId: assistantMessage.id, filename: file.name },
+      meta: { timestamp: new Date().toISOString() },
+    });
+  },
+);
+
+chatRoutes.post(
+  "/upload-task",
+  bodyLimit({ maxSize: 10 * 1024 * 1024 }),
+  async (c) => {
+    const form = await c.req.formData();
+    const file = form.get("file");
+    const sessionId = String(form.get("sessionId") ?? form.get("session_id") ?? "").trim();
+
+    if (!(file instanceof File) || !sessionId) {
+      return c.json(
+        {
+          success: false,
+          error: {
+            code: "INVALID_REQUEST",
+            message: "File tugas dan sessionId wajib diisi.",
+          },
+          meta: { timestamp: new Date().toISOString() },
+        },
+        400,
+      );
+    }
+
+    const result = await uploadTaskDocument(file, sessionId);
+    return c.json({
+      success: true,
+      data: result,
       meta: { timestamp: new Date().toISOString() },
     });
   },

@@ -1,0 +1,34 @@
+name: HF Ping
+on:
+  schedule:
+    - cron: "*/45 * * * *"
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wake up Space via Official API
+        id: api_wakeup
+        continue-on-error: true
+        run: |
+          echo "Mencoba membangunkan via API resmi..."
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+            https://huggingface.co/spaces/NestiaDev/llm-service \
+            -H "Authorization: Bearer ${{ secrets.HF_TOKEN }}")
+
+          if [ "$RESPONSE" -eq 200 ] || [ "$RESPONSE" -eq 201 ]; then
+            echo "SUCCESS: Space berhasil dibangunkan via API (Status: $RESPONSE)"
+          else
+            echo "FAILED: API mengembalikan status $RESPONSE. Akan dicoba via jalur cadangan."
+            exit 1
+          fi
+
+      - name: Fallback Ping via Web URL
+        if: failure()
+        run: |
+          echo "Menjalankan jalur cadangan via Web Ping..."
+          curl -s -I https://huggingface.co/spaces/NestiaDev/llm-service > /dev/null
+          echo "SUCCESS: Ping cadangan selesai dikirim!"

@@ -1,34 +1,222 @@
-name: HF Ping
+name: NestiaDev - HF Space Monitor
+
 on:
   schedule:
-    - cron: "*/45 * * * *"
+    - cron: "0 * * * *"
   workflow_dispatch:
-  pull_request:
-    branches: [main]
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: hf-space-monitor
+  cancel-in-progress: false
 
 jobs:
-  keep-alive:
+  monitor:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+
     steps:
-      - name: Wake up Space via Official API
-        id: api_wakeup
-        continue-on-error: true
+      - name: Check Hugging Face Health
+        id: health
+        shell: bash
         run: |
-          echo "Mencoba membangunkan via API resmi..."
-          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
-            https://huggingface.co/spaces/NestiaDev/llm-service \
-            -H "Authorization: Bearer ${{ secrets.HF_TOKEN }}")
+          URL="https://nestiadev-llm-service.hf.space/"
 
-          if [ "$RESPONSE" -eq 200 ] || [ "$RESPONSE" -eq 201 ]; then
-            echo "SUCCESS: Space berhasil dibangunkan via API (Status: $RESPONSE)"
-          else
-            echo "FAILED: API mengembalikan status $RESPONSE. Akan dicoba via jalur cadangan."
-            exit 1
-          fi
+          echo "Checking Hugging Face: $URL"
 
-      - name: Fallback Ping via Web URL
-        if: failure()
-        run: |
-          echo "Menjalankan jalur cadangan via Web Ping..."
-          curl -s -I https://huggingface.co/spaces/NestiaDev/llm-service > /dev/null
-          echo "SUCCESS: Ping cadangan selesai dikirim!"
+          SUCCESS_COUNT=0
+          HTTP_CODE="000"
+
+          for attempt in 1 2 3 4 5; do
+            HTTP_CODE=$(curl -L -sS \
+              --connect-timeout 20 \
+              --max-time 60 \
+              -o /tmp/response.txt \
+              -w "%{http_code}" \
+              "$URL")
+
+            CURL_EXIT=$?
+
+            if [ "$CURL_EXIT" -ne 0 ]; then
+              HTTP_CODE="000"
+            fi
+
+            echo "Attempt $attempt: HTTP $HTTP_CODE"
+
+            if [[ "$HTTP_CODE" =~ ^2[0-9][0-9]$ ]]; then
+              SUCCESS_COUNT=$((SUCCESS_COUNT + 1))
+              echo "Successful checks: $SUCCESS_COUNT"
+            else
+              SUCCESS_COUNT=0
+              echo "Health check failed. Resetting counter."
+            fi
+
+            # Require 2 consecutive successful checks
+            if [ "$SUCCESS_COUNT" -ge 2 ]; then
+              echo "status=healthy" >> "$GITHUB_OUTPUT"
+              echo "http_code=$HTTP_CODE" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+
+            if [ "$attempt" -lt 5 ]; then
+              sleep 30
+            fi
+          done
+
+          echo "status=failed" >> "$GITHUB_OUTPUT"
+          echo "http_code=$HTTP_CODE" >> "$GITHUB_OUTPUT"
+          exit 1
+
+      - name: Create GitHub Incident
+        if: failure() && steps.health.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = "[Incident] Hugging Face Space Unavailable";
+            const marker = "<!-- hf-space-monitor -->";
+
+            const { owner, repo } = context.repo;
+
+            // Retrieve all open issues (pagination supported)
+            const issues = await github.paginate(
+              github.rest.issues.listForRepo,
+              {
+                owner,
+                repo,
+                state: "open",
+                per_page: 100
+              }
+            );
+
+            // Find an existing monitor incident
+            const existing = issues.find(issue =>
+              !issue.pull_request &&
+              issue.title === title &&
+              issue.body?.includes(marker)
+            );
+
+            // Prevent duplicate incidents
+            if (existing) {
+              console.log(
+                `Incident already exists: #${existing.number}`
+              );
+              return;
+            }
+
+            const status = "${{ steps.health.outputs.http_code }}";
+
+            const runUrl =
+              `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`;
+
+            const body = `
+            ${marker}
+
+            ## Hugging Face Space Incident
+
+            **Status:** FAILED
+
+            **Service:** NestiaDev / llm-service
+
+            **HTTP Status:** ${status}
+
+            **Detected at:** ${new Date().toISOString()}
+
+            **Workflow:** [View GitHub Actions Run](${runUrl})
+
+            **Triggered by:** @${context.actor}
+
+            ---
+
+            ### Possible causes
+
+            - Hugging Face Space is sleeping or starting.
+            - Docker container has crashed.
+            - Backend API is unavailable.
+            - Application health endpoint is not responding.
+            - Network or connection timeout.
+
+            ### Action required
+
+            Please inspect the Hugging Face Space runtime logs
+            and verify that the backend is operational.
+
+            *Automatically reported by NestiaDev HF Monitor.*
+            `;
+
+            const issue = await github.rest.issues.create({
+              owner,
+              repo,
+              title,
+              body
+            });
+
+            console.log("Incident created:", issue.data.html_url);
+
+      - name: Resolve Incident
+        if: success() && steps.health.outcome == 'success'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = "[Incident] Hugging Face Space Unavailable";
+            const marker = "<!-- hf-space-monitor -->";
+
+            const { owner, repo } = context.repo;
+
+            // Retrieve all open issues (pagination supported)
+            const issues = await github.paginate(
+              github.rest.issues.listForRepo,
+              {
+                owner,
+                repo,
+                state: "open",
+                per_page: 100
+              }
+            );
+
+            // Find the existing monitor incident
+            const existing = issues.find(issue =>
+              !issue.pull_request &&
+              issue.title === title &&
+              issue.body?.includes(marker)
+            );
+
+            if (!existing) {
+              console.log("No open incident to resolve.");
+              return;
+            }
+
+            // Add recovery comment
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: existing.number,
+              body: `
+            ## Service Recovered
+
+            Hugging Face Space is responding successfully again.
+
+            **HTTP Status:** ${{ steps.health.outputs.http_code }}
+
+            **Recovery confirmed at:** ${new Date().toISOString()}
+
+            **Confirmation:** 2 consecutive successful health checks.
+
+            Automatically detected by NestiaDev HF Monitor.
+              `
+            });
+
+            // Close the incident automatically
+            await github.rest.issues.update({
+              owner,
+              repo,
+              issue_number: existing.number,
+              state: "closed",
+              state_reason: "completed"
+            });
+
+            console.log(
+              `Incident #${existing.number} successfully resolved.`
+            );

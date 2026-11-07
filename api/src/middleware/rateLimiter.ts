@@ -104,3 +104,8 @@ export const chatRateLimiter = createRateLimiter({
   limit: env.RATE_LIMIT_CHAT_MAX,
   keyPrefix: "api:rate-limit:chat",
 });
+
+export const presenceRateLimiter = createRateLimiter({
+  limit: env.RATE_LIMIT_PRESENCE_MAX,
+  keyPrefix: "api:rate-limit:presence",
+});

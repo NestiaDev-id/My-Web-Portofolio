@@ -1,4 +1,5 @@
 import { env } from "../config/env.js";
+import { executeWithQueue } from "./queue.service.js";
 import type { ChatMessage } from "./types.js";
 
 type ChatCompletionResponse = {
@@ -35,12 +36,14 @@ export async function generateChatAnswer(
       throw new Error("LLM_SERVICE_URL must be configured for deep-focus requests.");
     }
 
-    const payload = await parseResponse(
-      await fetch(serviceUrl("/chat"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question, session_id: sessionId }),
-      }),
+    const payload = await executeWithQueue(async () =>
+      parseResponse(
+        await fetch(serviceUrl("/chat"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question, session_id: sessionId }),
+        }),
+      ),
     );
     const answer = String(payload.answer ?? "").trim();
     if (!answer) throw new Error("Deep-focus service returned an empty answer.");
@@ -98,8 +101,10 @@ export async function generateVisionAnswer(
   formData.append("file", file, file.name);
   formData.append("question", question);
   formData.append("session_id", sessionId);
-  const payload = await parseResponse(
-    await fetch(serviceUrl("/chat-vision"), { method: "POST", body: formData }),
+  const payload = await executeWithQueue(async () =>
+    parseResponse(
+      await fetch(serviceUrl("/chat-vision"), { method: "POST", body: formData }),
+    ),
   );
   return { answer: String(payload.answer ?? ""), modelUsed: "llm-service-vision" };
 }
@@ -115,7 +120,9 @@ export async function uploadTaskDocument(
   const formData = new FormData();
   formData.append("file", file, file.name);
   formData.append("session_id", sessionId);
-  return parseResponse(
-    await fetch(serviceUrl("/upload-task"), { method: "POST", body: formData }),
+  return executeWithQueue(async () =>
+    parseResponse(
+      await fetch(serviceUrl("/upload-task"), { method: "POST", body: formData }),
+    ),
   );
 }

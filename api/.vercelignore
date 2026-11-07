@@ -1,0 +1,9 @@
+# Backend-only Vercel project.
+# This file takes precedence over the repository-level .vercelignore when
+# the Vercel project Root Directory is set to /api.
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+*.log

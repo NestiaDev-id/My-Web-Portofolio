@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { uploadTask } from "@/utils/rag";
+import { uploadTask, clearChatSession } from "@/utils/rag";
 import { requestAi } from "@/utils/aiRouter";
+import { useChatPresence } from "@/hooks/useChatPresence";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 import {
@@ -18,6 +19,7 @@ import {
   Minimize2,
   Send,
   MessageSquare,
+  Users,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -114,13 +116,21 @@ const ChatApp = () => {
     return freshId;
   };
 
-  const [, setSessionId] = useState(refreshAndGetSessionId);
+  const [sessionId, setSessionId] = useState(refreshAndGetSessionId);
+  const { activeUsers, queueInfo } = useChatPresence(sessionId);
 
   const handleResetSession = () => {
+    const oldSessionId = sessionId;
     const freshId = window.crypto?.randomUUID?.() ?? `session-${Date.now()}`;
     window.localStorage.setItem("rag-session-id", freshId);
     window.localStorage.setItem("rag-last-activity", Date.now().toString());
     setSessionId(freshId);
+
+    // Asynchronously clear old session on API Gateway (Redis + MongoDB)
+    if (oldSessionId) {
+      clearChatSession(oldSessionId).catch(() => {});
+    }
+
     setMessages([
       {
         id: 1,
@@ -381,15 +391,24 @@ const ChatApp = () => {
       >
         {/* ── Retro Window Titlebar ── */}
         <div className="bg-[#f8a5c2] border-b-2 sm:border-b-4 border-[#4a2034] px-2.5 sm:px-4 py-1.5 sm:py-2 flex items-center justify-between select-none shrink-0 font-pixel-freddy">
-          {/* Left: Pixel Bot Icon + Window Title */}
+          {/* Left: Pixel Bot Icon + Window Title + Active Users Badge */}
           <div className="flex items-center gap-2 mt-2">
             <span className="text-[#4a2034] text-xs sm:text-base font-bold tracking-wider">
               Chat with My Assistant
             </span>
-            {/* <span className="hidden sm:inline-flex items-center gap-1 sm:gap-1.5 ml-0 sm:ml-1 md:ml-2 px-1.5 py-0.5 bg-[#ffffff] border border-[#4a2034] text-[11px] text-[#4a2034] rounded">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <p className="text-[6px] sm:text-[10px] font-bold mt-2 tracking-wider">ONLINE</p>
-            </span> */}
+            <div
+              title={`${activeUsers} pengguna aktif di ChatMe. Sistem dilindungi antrean pintar.`}
+              className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-white border border-[#4a2034] text-[#4a2034] rounded shadow-[1px_1px_0px_#4a2034] select-none"
+            >
+              <Users className="w-3 h-3 text-[#4a2034]" />
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              <span className="text-[9px] sm:text-[10px] font-pixel-freddy tracking-wider uppercase">
+                {activeUsers} {activeUsers === 1 ? "USER" : "USERS"}
+              </span>
+            </div>
           </div>
 
           {/* Right: Window Controls [-] [□] [X] */}
@@ -452,11 +471,34 @@ const ChatApp = () => {
               </button>
 
               {/* Status Box */}
-              <div className="border-2 border-[#4a2034] bg-[#ffffff] p-2.5 rounded text-[11px] text-[#893760] space-y-1 shadow-[2px_2px_0px_#4a2034]">
+              <div className="border-2 border-[#4a2034] bg-[#ffffff] p-2.5 rounded text-[11px] text-[#893760] space-y-1.5 shadow-[2px_2px_0px_#4a2034]">
                 <div className="flex justify-between font-bold">
                   <span>TIME</span>
                   <span>{time || "12:00"}</span>
                 </div>
+                <div className="flex justify-between font-bold">
+                  <span>USERS</span>
+                  <span className="text-emerald-600 flex items-center gap-1 font-bold">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block" />
+                    {activeUsers} Online
+                  </span>
+                </div>
+                {queueInfo && (
+                  <div className="flex justify-between font-bold text-[10px]">
+                    <span>AI QUEUE</span>
+                    <span
+                      className={
+                        queueInfo.queuedCount > 0
+                          ? "text-amber-600 font-bold"
+                          : "text-emerald-600"
+                      }
+                    >
+                      {queueInfo.queuedCount > 0
+                        ? `${queueInfo.queuedCount} Antre`
+                        : "Lancar"}
+                    </span>
+                  </div>
+                )}
                 <div className="flex justify-between font-bold">
                   <span>SESSION</span>
                   <span className="text-emerald-600">ACTIVE</span>
@@ -577,10 +619,17 @@ const ChatApp = () => {
                     <div className="font-pixel-freddy text-xs font-bold text-[#893760] mb-1 px-1">
                       NestiaDev [AI] sedang berpikir...
                     </div>
-                    <div className="pixel-bubble-ai px-4 py-2.5 flex items-center gap-1.5">
-                      <span className="w-2 h-2 rounded-full bg-[#f47fa2] animate-bounce [animation-delay:0s]"></span>
-                      <span className="w-2 h-2 rounded-full bg-[#f47fa2] animate-bounce [animation-delay:0.15s]"></span>
-                      <span className="w-2 h-2 rounded-full bg-[#f47fa2] animate-bounce [animation-delay:0.3s]"></span>
+                    <div className="pixel-bubble-ai px-4 py-2.5 flex flex-col gap-1.5">
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-[#f47fa2] animate-bounce [animation-delay:0s]"></span>
+                        <span className="w-2 h-2 rounded-full bg-[#f47fa2] animate-bounce [animation-delay:0.15s]"></span>
+                        <span className="w-2 h-2 rounded-full bg-[#f47fa2] animate-bounce [animation-delay:0.3s]"></span>
+                      </div>
+                      {queueInfo && queueInfo.queuedCount > 0 && (
+                        <div className="text-[10px] text-amber-800 bg-amber-100/80 border border-amber-300 px-2 py-0.5 rounded font-pixel-freddy">
+                          Sedang dalam antrean AI ({queueInfo.queuedCount} antrean). Mohon tunggu sejenak...
+                        </div>
+                      )}
                     </div>
                   </div>
                 </motion.div>

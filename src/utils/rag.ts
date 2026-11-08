@@ -1,115 +1,128 @@
-const DEFAULT_RAG_BASE_URL = "https://nestiadev-llm-service.hf.space";
+const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
 
-const RAG_BASE_URL = (
-  import.meta.env.VITE_RAG_API_BASE ?? DEFAULT_RAG_BASE_URL
-).replace(/\/$/, "");
+export function getApiUrl(path: string): string {
+  return `${API_BASE}${path}`;
+}
 
-type ChatResponse = {
-  answer: string;
-  context: string[];
+export type ApiResponse<T> = {
+  success: boolean;
+  data?: T;
+  error?: {
+    code: string;
+    message: string;
+  };
+  meta?: {
+    timestamp: string;
+  };
 };
 
-type UploadResponse = {
+export type ChatAnswerData = {
+  answer: string;
+  sessionId: string;
+  messageId?: string;
+  userMessageId?: string;
+  filename?: string;
+};
+
+export type UploadTaskData = {
   status: string;
   filename: string;
   chunks_added: number;
   collection: string;
 };
 
-const parseErrorMessage = async (response: Response) => {
-  const text = await response.text();
-  if (!text) return response.statusText;
-  try {
-    const data = JSON.parse(text) as { detail?: string; message?: string };
-    return data.detail ?? data.message ?? text;
-  } catch {
-    return text;
-  }
-};
+async function handleApiResponse<T>(response: Response): Promise<T> {
+  const json = (await response
+    .json()
+    .catch(() => null)) as ApiResponse<T> | null;
 
-export const uploadDocument = async (file: File, sessionId: string) => {
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("session_id", sessionId);
-
-  const response = await fetch(`${RAG_BASE_URL}/upload`, {
-    method: "POST",
-    body: formData,
-  });
-
-  if (!response.ok) {
-    throw new Error(await parseErrorMessage(response));
+  if (!response.ok || !json?.success) {
+    const errorMsg =
+      json?.error?.message ||
+      `Request failed with status ${response.status} (${response.statusText})`;
+    throw new Error(errorMsg);
   }
 
-  return (await response.json()) as UploadResponse;
-};
+  return json.data as T;
+}
 
+/**
+ * Send text question to API Gateway (/api/v1/chat).
+ * Intelligently routes between Groq Fast Chat & HuggingFace RAG, with dual-write history.
+ */
 export const chatWithRag = async (
   question: string,
   sessionId: string,
-  topK = 3,
-) => {
-  const response = await fetch(`${RAG_BASE_URL}/chat`, {
+): Promise<{ answer: string; sessionId: string }> => {
+  const response = await fetch(getApiUrl("/api/v1/chat"), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
       question,
-      session_id: sessionId,
-      top_k: topK,
+      sessionId,
     }),
   });
 
-  if (!response.ok) {
-    throw new Error(await parseErrorMessage(response));
-  }
-
-  return (await response.json()) as ChatResponse;
+  return handleApiResponse<ChatAnswerData>(response);
 };
 
-export const uploadTask = async (file: File, sessionId: string) => {
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("session_id", sessionId);
-
-  const response = await fetch(`${RAG_BASE_URL}/upload-task`, {
-    method: "POST",
-    body: formData,
-  });
-
-  if (!response.ok) {
-    throw new Error(await parseErrorMessage(response));
-  }
-
-  return (await response.json()) as UploadResponse;
-};
-
-type VisionResponse = {
-  answer: string;
-  filename: string;
-};
-
+/**
+ * Send image + optional question to API Gateway (/api/v1/chat/vision).
+ * Passes through HuggingFace distributed queue to prevent server sleep/crash.
+ */
 export const chatWithVision = async (
   imageFile: File,
   sessionId: string,
   question: string = "",
-) => {
+): Promise<{ answer: string; filename?: string }> => {
   const formData = new FormData();
   formData.append("file", imageFile);
-  formData.append("session_id", sessionId);
+  formData.append("sessionId", sessionId);
   if (question.trim()) {
     formData.append("question", question);
   }
 
-  const response = await fetch(`${RAG_BASE_URL}/chat-vision`, {
+  const response = await fetch(getApiUrl("/api/v1/chat/vision"), {
     method: "POST",
     body: formData,
   });
 
-  if (!response.ok) {
-    throw new Error(await parseErrorMessage(response));
-  }
+  return handleApiResponse<ChatAnswerData>(response);
+};
 
-  return (await response.json()) as VisionResponse;
+/**
+ * Upload task document to API Gateway (/api/v1/chat/upload-task).
+ * Passes through HuggingFace distributed queue for ChromaDB indexing.
+ */
+export const uploadTask = async (
+  file: File,
+  sessionId: string,
+): Promise<UploadTaskData> => {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("sessionId", sessionId);
+
+  const response = await fetch(getApiUrl("/api/v1/chat/upload-task"), {
+    method: "POST",
+    body: formData,
+  });
+
+  return handleApiResponse<UploadTaskData>(response);
+};
+
+/**
+ * Reset and clear session history on both Redis and MongoDB Atlas.
+ */
+export const clearChatSession = async (
+  sessionId: string,
+): Promise<{ sessionId: string; cleared: boolean }> => {
+  const response = await fetch(getApiUrl("/api/v1/chat/clear"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sessionId }),
+  });
+
+  return handleApiResponse<{ sessionId: string; cleared: boolean }>(response);
 };

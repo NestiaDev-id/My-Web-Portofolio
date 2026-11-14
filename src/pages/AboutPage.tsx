@@ -169,22 +169,22 @@ const experiences = [
       "Azure Container Apps", "Generative AI Applications"
     ],
   },
-  {
-    img: "https://id.wikipedia.org/wiki/Berkas:Logo_of_Ministry_of_Education_and_Culture_of_Republic_of_Indonesia.svg",
+ {
+    img: "https://upload.wikimedia.org/wikipedia/commons/9/9c/Logo_of_Ministry_of_Education_and_Culture_of_Republic_of_Indonesia.svg",
     role: "KIP Kuliah Scholarship Awardee",
-    company: "Ministry of Education, Culture, Research, and Technology of the Republic of Indonesia",
+    company: "Ministry of Education, Culture, Research, and Technology (Kemendikbudristek)",
     period: "2021 – 2025",
     desc: [
-      "Awarded a full higher education scholarship based on academic potential and selection criteria.",
-      "Maintained the required academic performance and GPA standards throughout the undergraduate program."
+      "Selected as a full-tuition scholarship recipient for the Informatics undergraduate program based on academic merit and selection criteria.",
+      "Maintained consistent academic performance while actively developing software engineering and machine learning projects throughout university."
     ],
-    tags: ["Scholarship", "Academic Excellence", "Government Funded"]
+    tags: ["Full Scholarship", "Informatics", "Academic Merit", "Higher Education"]
   },
 ];
 
 const bioText = [
   "Hi, I'm Christian, a passionate software engineer with a strong background in full-stack development, artificial intelligence, and data analytics. I specialize in building intelligent, scalable, and high-performance applications.",
-  "My interest in AI began during university, where I worked on time series forecasting using Holt-Winters optimized by Genetic Algorithms. Later, I explored YOLO, CNNs, and LSTM models for real-time detection. Curiosity drives me — I'm always eager to learn and contribute to open-source.",
+  "My interest in machine learning began during university, where I worked on my thesis, time series forecasting using Holt-Winters optimized by Genetic Algorithms. After graduating, I continued diving into AI research and building real-world applications. Curiosity drives me—I'm always eager to learn, build, and actively contribute to the community through GitHub.",
 ];
 
 
@@ -212,41 +212,41 @@ const AboutPage: React.FC = () => {
   const getSkillDesc = (skillName: string) => {
     const descriptions: Record<string, string> = {
       // Front-End
-      "JavaScript": "Telah diandalkan untuk memanipulasi DOM tingkat lanjut, integrasi API dinamis, dan merancang logika interaktif sisi klien.",
-      "TypeScript": "Diterapkan pada proyek berskala besar guna menjamin keamanan tipe (type-safety) dan meminimalisir bug kritis saat runtime.",
-      "React": "Menjadi fondasi utama saya dalam merancang arsitektur antarmuka modular, manajemen state global, dan UI yang highly-reactive.",
-      "Next.js": "Berhasil mendeploy portal web berkinerja tinggi dengan optimasi SEO maksimal memanfaatkan fitur Server-Side Rendering (SSR).",
-      "Flutter": "Telah digunakan untuk mengembangkan aplikasi mobile multi-platform (Android & iOS) dengan animasi mulus dan performa mendekati native.",
-      "Tailwind": "Diimplementasikan sebagai standar alur kerja untuk menyusun tata letak kustom dan sistem desain responsif dengan sangat cepat.",
-      "Bootstrap": "Dimanfaatkan pada fase prototyping cepat dan pengembangan sistem informasi web tradisional berbasis sistem grid standar.",
-      "Figma": "Terbiasa merancang alur UX, wireframe, mockup fidelitas tinggi, hingga transisi aset visual (handoff) untuk tim pengembang.",
-      
+      "JavaScript": "The language where my web development journey began, from manipulating the DOM to building interactive client-side logic.",
+      "TypeScript": "My go-to choice for larger projects to keep codebases disciplined, catch errors early, and maintain long-term scalability.",
+      "React": "My primary tool for crafting modular, component-based interfaces and reactive user experiences across modern web apps.",
+      "Next.js": "My framework of choice when building production-ready React apps that need clean routing, high performance, and SSR for SEO.",
+      "Flutter": "Used to build cross-platform Android and iOS apps from a single codebase with smooth animations and native-like responsiveness.",
+      "Tailwind": "A staple in my daily workflow that lets me translate designs into responsive UIs directly inside components without context-switching.",
+      "Bootstrap": "Helped me immensely in my early web projects and remains handy for rapidly prototyping clean, grid-based interfaces.",
+      "Figma": "Where I turn rough ideas into structured wireframes and high-fidelity UI mockups before writing a single line of code.",
+
       // Back-End & DB
-      "Python": "Digunakan secara ekstensif untuk merancang model AI/ML, memproses data berjumlah besar, dan mendeploy layanan backend.",
-      "PHP": "Menjadi pijakan awal saya dalam memahami fundamental pemrograman sisi server dan arsitektur pengembangan web dinamis.",
-      "Dart": "Dikembangkan secara mendalam demi merajut logika state management yang kompleks di dalam ekosistem aplikasi Flutter.",
-      "Java": "Diaplikasikan dalam membedah konsep Object-Oriented Programming (OOP) tingkat lanjut dan pola arsitektur sistem enterprise.",
-      "Node.js": "Menjadi andalan utama saat merancang ekosistem backend asinkron yang efisien sepenuhnya dengan tumpukan JavaScript.",
-      "Express": "Diimplementasikan untuk merancang endpoint RESTful API yang ringan, cepat, dan mudah diintegrasikan dengan berbagai database.",
-      "FastAPI": "Digunakan khusus untuk merancang backend berkinerja ekstrim yang melayani inferensi model AI dengan latensi sangat rendah.",
-      "Laravel": "Terbiasa mengelola arsitektur web modern memanfaatkan sistem routing dinamis, perintah artisan, dan ORM Eloquent.",
-      "MongoDB": "Solusi NoSQL pilihan utama saat menangani skema data dokumen JSON yang sangat dinamis dan butuh skalabilitas tinggi.",
-      "PostgreSQL": "Diandalkan dalam proyek krusial yang menuntut integritas relasi tabel kompleks dan performa komputasi query yang berat.",
-      "MySQL": "Terbukti andal dan konsisten dalam mengelola aliran data transaksi pengguna pada sebagian besar pengembangan web tradisional.",
-      "Firebase": "Diintegrasikan sebagai solusi backend-as-a-service (BaaS) kilat untuk sistem autentikasi realtime dan manajemen berkas.",
-      "Supabase": "Pilihan terfavorit saya saat ini untuk kebutuhan backend-as-a-service berbekal kekuatan penuh dari ekosistem Postgres.",
-      
+      "Python": "The language closest to my daily routine—powering my AI/ML experiments, data processing pipelines, and backend services.",
+      "PHP": "Introduced me to the fundamentals of server-side programming and how dynamic web pages communicate with databases.",
+      "Dart": "Explored deeply alongside Flutter to manage complex application logic, asynchronous flows, and state management.",
+      "Java": "Shaped my understanding of strict Object-Oriented Programming (OOP) principles and structured software architecture.",
+      "Node.js": "Allows me to bring my JavaScript workflow to the server side to build lightweight, asynchronous backend services.",
+      "Express": "A minimalist framework I frequently rely on to spin up fast, straightforward RESTful APIs without heavy boilerplate.",
+      "FastAPI": "My top pick for wrapping machine learning models into high-performance, low-latency APIs with automatic documentation.",
+      "Laravel": "Makes full-stack PHP development feel clean and structured thanks to its routing, Artisan CLI, and Eloquent ORM.",
+      "MongoDB": "My choice when working with flexible, evolving data structures where a rigid relational schema would slow things down.",
+      "PostgreSQL": "My preferred relational database for projects that demand strict data integrity and complex query performance.",
+      "MySQL": "A reliable workhorse that has powered many of my traditional web applications and structured transactional data.",
+      "Firebase": "A practical backend-as-a-service I reach for when I need instant authentication, real-time databases, and quick deployment.",
+      "Supabase": "My favorite open-source BaaS today, combining rapid development tools with the full power of PostgreSQL.",
+
       // Tools & AI
-      "Git": "Terintegrasi penuh dalam alur kerja harian untuk versioning kode, code review, dan kolaborasi tim yang terstruktur rapi.",
-      "Docker": "Membungkus arsitektur aplikasi ke dalam container terisolasi untuk menjamin konsistensi mutlak dari tahap lokal ke production.",
-      "Postman": "Utilitas esensial harian untuk memvalidasi respon endpoint, menyimulasikan berbagai skenario payload, dan mendokumentasikan API.",
-      "Arch Linux": "Sistem operasi harian (daily driver) kebanggaan yang melatih pemahaman mendalam saya terhadap manajemen core OS secara mandiri.",
-      "PowerShell": "Dimanfaatkan secara khusus untuk mengeksekusi skrip otomatisasi tugas administratif di lingkup server dan desktop Windows.",
-      "GCP": "Dieksplorasi secara teknis untuk mengelola arsitektur komputasi awan, virtual machine, dan kebutuhan hosting terdistribusi.",
-      "TensorFlow": "Diandalkan secara proaktif untuk merancang arsitektur jaringan saraf tiruan (ANN) dari fase eksperimen hingga evaluasi model.",
-      "PyTorch": "Framework pilihan utama dalam riset machine learning mutakhir, prapemrosesan tensor dinamis, dan implementasi computer vision.",
-      "LangChain": "Digunakan secara intensif untuk merancang agen orchestration yang menjembatani kecerdasan LLM dengan sumber data eksternal.",
-      "Hugging Face": "Dimanfaatkan untuk mengadopsi, bereksperimen, dan memoles (fine-tuning) model bahasa alami (NLP) open-source terkemuka."
+      "Git": "An essential part of my daily coding routine for tracking changes, experimenting safely with branches, and collaborating on GitHub.",
+      "Docker": "Helps me package applications with all their dependencies so they run identically from my local machine to production.",
+      "Postman": "My daily companion during backend development for testing API endpoints, inspecting payloads, and debugging responses.",
+      "Arch Linux": "My daily driver OS; maintaining and customizing my Arch setup every day has sharpened my understanding of how an OS works under the hood.",
+      "PowerShell": "Coming from a terminal-heavy Linux workflow, I actively use PowerShell for console-driven tasks and scripting whenever I'm on Windows.",
+      "GCP": "Explored for deploying cloud-hosted applications, managing virtual machines, and configuring server infrastructure.",
+      "TensorFlow": "Supported my deep dive into neural networks, guiding me from early model experimentation through training and evaluation.",
+      "PyTorch": "My preferred framework for AI research, offering an intuitive, Pythonic workflow that makes model prototyping and debugging seamless.",
+      "LangChain": "Used to orchestrate LLM-powered workflows, connecting language models with external data and tools to build smarter apps.",
+      "Hugging Face": "My go-to hub for discovering, experimenting with, and fine-tuning open-source AI models for personal projects."
     };
 
     
@@ -359,7 +359,7 @@ const AboutPage: React.FC = () => {
               {/* Cut line */}
               <div className="border-t-2 border-dashed border-black mt-6 pt-4 flex justify-between items-center text-[10px] font-mono text-gray-500">
                 <span><Scissors className="inline w-3 h-3 mr-1" />GUNTING DI SINI UNTUK KARTU NAMA</span>
-                <span>YOHANES_DEV_2026</span>
+                <span>NestiaDev-id</span>
               </div>
             </div>
 

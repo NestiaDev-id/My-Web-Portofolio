@@ -6,9 +6,9 @@ import { projects } from "../data/projects";
 // Map categories to colors for the language dot
 const categoryColors: Record<string, string> = {
   "All": "#e60012",
-  "Website Development": "#f1e05a",
-  "Data Science": "#3572A5",
-  "Mobile Development": "#3178c6",
+  "Web Dev": "#00F0FF",
+  "ML/AI": "#f1e05a",
+  "Apps & Games Dev": "#3572A5",
 };
 
 // Deterministic hash for card tilt
@@ -27,7 +27,7 @@ function splitTitle(title: string) {
   return { first, rest };
 }
 
-const CATEGORIES = ["All", "Website Development", "Data Science", "Mobile Development"];
+const CATEGORIES = ["All", "Web Dev", "Machine Learning", "Apps & Games"];
 
 function ProjectCard({
   project,

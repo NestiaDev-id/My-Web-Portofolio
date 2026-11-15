@@ -47,7 +47,7 @@ export default function SwitchShell() {
       case "DOWN": key = "s"; break;
       case "RIGHT": key = "d"; break;
       case "A": key = " "; break;
-      case "B": key = "Escape"; break;
+      case "B": key = "b"; break;
       case "X": key = "w"; break;
       case "Y": key = "a"; break;
       case "MINUS": key = "q"; break;

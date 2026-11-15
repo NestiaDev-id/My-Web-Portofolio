@@ -15,6 +15,7 @@ import {
 } from "../constants";
 
 import type { Character } from "../constants";
+import { virtualPad } from "../virtualPad";
 
 export default class MainScene extends Phaser.Scene {
   private player!: Phaser.Physics.Arcade.Sprite;
@@ -29,6 +30,9 @@ export default class MainScene extends Phaser.Scene {
   private battleInitiated: boolean = false;
   private dialogueBox!: Phaser.GameObjects.Container;
   private isInteracting: boolean = false;
+  private isPaused: boolean = false;
+  private pauseContainer!: Phaser.GameObjects.Container;
+  private unsubVirtualPad?: () => void;
   private timeText!: Phaser.GameObjects.Text;
 
   // NPC direction frames: down=0, left=1, right=2, up=3
@@ -134,11 +138,12 @@ export default class MainScene extends Phaser.Scene {
 
     // Dialogue & interactions
     this.createDialogueSystem();
+    this.createPauseSystem();
     this.setupInteractions();
   }
 
   update() {
-    if (!this.player || !this.cursors || this.isInteracting) return;
+    if (!this.player || !this.cursors || this.isInteracting || this.isPaused) return;
 
     this.player.setVelocity(0);
     this.moving = false;
@@ -147,27 +152,35 @@ export default class MainScene extends Phaser.Scene {
       [key: string]: Phaser.Input.Keyboard.Key;
     };
 
+    const isLeft = this.cursors.left.isDown || keys.A.isDown || virtualPad.state.left;
+    const isRight = this.cursors.right.isDown || keys.D.isDown || virtualPad.state.right;
+    const isUp = this.cursors.up.isDown || keys.W.isDown || virtualPad.state.up;
+    const isDown = this.cursors.down.isDown || keys.S.isDown || virtualPad.state.down;
+    const isRunning = this.cursors.shift?.isDown || virtualPad.state.b;
+
+    const moveSpeed = isRunning ? this.speed * 1.5 : this.speed;
+
     // Movement (4-way only, no diagonal)
-    if (this.cursors.left.isDown || keys.A.isDown) {
-      this.player.setVelocityX(-this.speed);
+    if (isLeft) {
+      this.player.setVelocityX(-moveSpeed);
       this.player.setVelocityY(0);
       this.player.anims.play("walk-left", true);
       this.lastKey = "left";
       this.moving = true;
-    } else if (this.cursors.right.isDown || keys.D.isDown) {
-      this.player.setVelocityX(this.speed);
+    } else if (isRight) {
+      this.player.setVelocityX(moveSpeed);
       this.player.setVelocityY(0);
       this.player.anims.play("walk-right", true);
       this.lastKey = "right";
       this.moving = true;
-    } else if (this.cursors.up.isDown || keys.W.isDown) {
-      this.player.setVelocityY(-this.speed);
+    } else if (isUp) {
+      this.player.setVelocityY(-moveSpeed);
       this.player.setVelocityX(0);
       this.player.anims.play("walk-up", true);
       this.lastKey = "up";
       this.moving = true;
-    } else if (this.cursors.down.isDown || keys.S.isDown) {
-      this.player.setVelocityY(this.speed);
+    } else if (isDown) {
+      this.player.setVelocityY(moveSpeed);
       this.player.setVelocityX(0);
       this.player.anims.play("walk-down", true);
       this.lastKey = "down";
@@ -328,7 +341,7 @@ export default class MainScene extends Phaser.Scene {
       color: "#000000",
     });
 
-    const spaceIcon = this.add.text(320, 30, "[Space]", {
+    const spaceIcon = this.add.text(320, 30, "[A / Space]", {
       fontSize: "16px",
       backgroundColor: "#dddddd",
       color: "#000000",
@@ -365,28 +378,89 @@ export default class MainScene extends Phaser.Scene {
     this.timeText.setText(jakartaTime);
   }
 
-  private setupInteractions() {
-    this.input.keyboard!.on("keydown-SPACE", () => {
-      if (this.isInteracting) {
-        const activeNPC = this.getActiveNPC();
-        if (!activeNPC) {
-          this.endDialogue();
-          return;
-        }
+  private createPauseSystem() {
+    this.pauseContainer = this.add.container(512, 288);
+    this.pauseContainer.setScrollFactor(0);
+    this.pauseContainer.setDepth(999);
 
-        const dialogues = activeNPC.getData("dialogue");
-        const currentIndex = activeNPC.getData("dialogueIndex");
+    const bg = this.add.rectangle(0, 0, 160, 48, 0x000000, 0.85);
+    bg.setStrokeStyle(3, 0xffffff);
 
-        if (currentIndex >= dialogues.length - 1) {
-          this.endDialogue();
-          activeNPC.setData("dialogueIndex", 0);
-        } else {
-          activeNPC.setData("dialogueIndex", currentIndex + 1);
-          this.showDialogue(activeNPC);
-        }
-      } else {
-        this.checkForCharacterInteraction();
+    const pauseText = this.add.text(0, 0, "PAUSE", {
+      fontSize: "22px",
+      fontFamily: "Courier, monospace",
+      color: "#ffffff",
+      fontStyle: "bold",
+    });
+    pauseText.setOrigin(0.5, 0.5);
+
+    this.pauseContainer.add([bg, pauseText]);
+    this.pauseContainer.setVisible(false);
+  }
+
+  private togglePause() {
+    this.isPaused = !this.isPaused;
+    if (this.pauseContainer) {
+      this.pauseContainer.setVisible(this.isPaused);
+    }
+    if (this.isPaused && this.player) {
+      this.player.setVelocity(0);
+    }
+  }
+
+  private handleInteract = () => {
+    if (this.isPaused) return;
+
+    if (this.isInteracting) {
+      const activeNPC = this.getActiveNPC();
+      if (!activeNPC) {
+        this.endDialogue();
+        return;
       }
+
+      const dialogues = activeNPC.getData("dialogue");
+      const currentIndex = activeNPC.getData("dialogueIndex");
+
+      if (currentIndex >= dialogues.length - 1) {
+        this.endDialogue();
+        activeNPC.setData("dialogueIndex", 0);
+      } else {
+        activeNPC.setData("dialogueIndex", currentIndex + 1);
+        this.showDialogue(activeNPC);
+      }
+    } else {
+      this.checkForCharacterInteraction();
+    }
+  };
+
+  private handleCancel = () => {
+    if (this.isInteracting) {
+      this.endDialogue();
+    }
+  };
+
+  private setupInteractions() {
+    this.input.keyboard!.on("keydown-SPACE", this.handleInteract);
+    this.input.keyboard!.on("keydown-ENTER", this.handleInteract);
+    this.input.keyboard!.on("keydown-ESC", this.handleCancel);
+    this.input.keyboard!.on("keydown-B", this.handleCancel);
+    this.input.keyboard!.on("keydown-X", this.handleCancel);
+
+    // Virtual pad subscriber
+    this.unsubVirtualPad = virtualPad.subscribe((btn, isDown) => {
+      if (isDown) {
+        if (btn === "a") {
+          this.handleInteract();
+        } else if (btn === "b") {
+          this.handleCancel();
+        } else if (btn === "start") {
+          this.togglePause();
+        }
+      }
+    });
+
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.unsubVirtualPad?.();
     });
   }
 

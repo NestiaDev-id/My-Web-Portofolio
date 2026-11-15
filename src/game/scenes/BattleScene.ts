@@ -1,6 +1,9 @@
 import Phaser from "phaser";
+import { virtualPad } from "../virtualPad";
 
 export default class BattleScene extends Phaser.Scene {
+  private unsubPad?: () => void;
+
   constructor() {
     super({ key: "BattleScene" });
   }
@@ -11,8 +14,22 @@ export default class BattleScene extends Phaser.Scene {
 
     this.createBattleUI();
 
-    this.input.keyboard!.on("keydown-SPACE", () => {
+    const returnToTown = () => {
       this.scene.start("MainScene");
+    };
+
+    this.input.keyboard!.on("keydown-SPACE", returnToTown);
+    this.input.keyboard!.on("keydown-ENTER", returnToTown);
+    this.input.keyboard!.on("keydown-ESC", returnToTown);
+
+    this.unsubPad = virtualPad.subscribe((btn, isDown) => {
+      if (isDown && (btn === "a" || btn === "b" || btn === "start")) {
+        returnToTown();
+      }
+    });
+
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.unsubPad?.();
     });
   }
 
@@ -29,11 +46,20 @@ export default class BattleScene extends Phaser.Scene {
       fontSize: "16px",
     });
 
+    const tipText = this.add.text(512, 500, "Tekan A / B / Space untuk kembali ke kota", {
+      fontSize: "18px",
+      color: "#ffffff",
+      backgroundColor: "#222222",
+      padding: { x: 12, y: 6 },
+    });
+    tipText.setOrigin(0.5, 0.5);
+
     uiContainer.add([
       enemyHealthBar,
       enemyHealthText,
       playerHealthBar,
       playerHealthText,
+      tipText,
     ]);
   }
 }

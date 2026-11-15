@@ -85,7 +85,6 @@ class VirtualPad {
       ],
       a: [
         { key: " ", code: "Space", keyCode: 32 },
-        { key: "Enter", code: "Enter", keyCode: 13 },
       ],
       b: [
         { key: "Shift", code: "ShiftLeft", keyCode: 16 },

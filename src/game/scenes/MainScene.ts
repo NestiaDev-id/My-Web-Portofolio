@@ -331,6 +331,8 @@ export default class MainScene extends Phaser.Scene {
 
   private createDialogueSystem() {
     this.dialogueBox = this.add.container(512, 500);
+    this.dialogueBox.setScrollFactor(0);
+    this.dialogueBox.setDepth(900);
 
     const box = this.add.rectangle(0, 0, 800, 100, 0xffffff);
     box.setStrokeStyle(2, 0x000000);
@@ -408,8 +410,16 @@ export default class MainScene extends Phaser.Scene {
     }
   }
 
+  private lastInteractTime: number = 0;
+
   private handleInteract = () => {
     if (this.isPaused) return;
+
+    const now = Date.now();
+    if (now - this.lastInteractTime < 250) {
+      return; // Debounce to prevent multiple fires within same tap/frame
+    }
+    this.lastInteractTime = now;
 
     if (this.isInteracting) {
       const activeNPC = this.getActiveNPC();
@@ -419,7 +429,7 @@ export default class MainScene extends Phaser.Scene {
       }
 
       const dialogues = activeNPC.getData("dialogue");
-      const currentIndex = activeNPC.getData("dialogueIndex");
+      const currentIndex = activeNPC.getData("dialogueIndex") || 0;
 
       if (currentIndex >= dialogues.length - 1) {
         this.endDialogue();
@@ -436,6 +446,7 @@ export default class MainScene extends Phaser.Scene {
   private handleCancel = () => {
     if (this.isInteracting) {
       this.endDialogue();
+      this.lastInteractTime = Date.now();
     }
   };
 
@@ -465,7 +476,7 @@ export default class MainScene extends Phaser.Scene {
   }
 
   private getActiveNPC(): Phaser.GameObjects.Sprite | undefined {
-    const nearby = this.physics.overlapCirc(this.player.x, this.player.y, 50);
+    const nearby = this.physics.overlapCirc(this.player.x, this.player.y, 70);
 
     const nearbySprite = nearby.find(
       (obj) =>

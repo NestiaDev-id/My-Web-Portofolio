@@ -241,9 +241,14 @@ const GameConsolePage: React.FC = () => {
   // ─── Action Buttons Logic (A, B, START, SELECT) ───
   const handleButtonDown = (
     btn: "a" | "b" | "start" | "select",
-    e?: React.SyntheticEvent
+    e?: React.PointerEvent<HTMLButtonElement> | React.SyntheticEvent
   ) => {
     e?.preventDefault();
+    if (e && "pointerId" in e && e.currentTarget) {
+      try {
+        (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+      } catch {}
+    }
     triggerHaptic(15);
     playRetroSound(btn);
 
@@ -269,9 +274,14 @@ const GameConsolePage: React.FC = () => {
 
   const handleButtonUp = (
     btn: "a" | "b" | "start" | "select",
-    e?: React.SyntheticEvent
+    e?: React.PointerEvent<HTMLButtonElement> | React.SyntheticEvent
   ) => {
     e?.preventDefault();
+    if (e && "pointerId" in e && e.currentTarget) {
+      try {
+        (e.currentTarget as HTMLElement).releasePointerCapture?.(e.pointerId);
+      } catch {}
+    }
     if (btn === "a") {
       setIsAPressed(false);
       virtualPad.setButton("a", false);

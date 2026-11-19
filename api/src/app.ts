@@ -13,6 +13,7 @@ import {
 } from "./middleware/rateLimiter.js";
 import { chatRoutes } from "./routes/chat.routes.js";
 import { presenceRoutes } from "./routes/presence.routes.js";
+import { contactRoutes } from "./routes/contact.routes.js";
 
 export const app = new Hono();
 
@@ -51,6 +52,7 @@ app.route("/api", healthRoutes);
 app.route("/api/v1", healthRoutes);
 app.route("/api/v1/chat/presence", presenceRoutes);
 app.route("/api/v1/chat", chatRoutes);
+app.route("/api/v1/contact", contactRoutes);
 
 app.onError(errorHandler);
 

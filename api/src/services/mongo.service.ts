@@ -120,3 +120,26 @@ export async function checkMongoHealth(): Promise<"connected"> {
   await db.command({ ping: 1 });
   return "connected";
 }
+
+export interface ContactAuditRecord {
+  name: string;
+  email: string;
+  message: string;
+  ip?: string;
+  resend_id?: string;
+  status: "sent" | "failed";
+}
+
+export async function saveContactToMongo(record: ContactAuditRecord): Promise<void> {
+  if (!env.MONGODB_URI) return;
+  try {
+    const db = getMongoDatabase();
+    await db.collection("contacts").insertOne({
+      ...record,
+      created_at: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.warn("[MongoService] Failed to record contact in MongoDB:", err);
+  }
+}
+

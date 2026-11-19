@@ -1,9 +1,3 @@
-"""
-LLM generation service via Groq API.
-Supports both text chat (llama-3.1-8b-instant) and
-vision/image analysis (llama-3.2-11b-vision-preview).
-"""
-
 import base64
 import os
 import requests
@@ -17,6 +11,14 @@ SYSTEM_PROMPT = (
     "Tujuan utama Anda: membantu pengunjung memahami profil NestiaDev, "
     "memberi analisis singkat jika ada dokumen tugas client, serta "
     "mendorong kolaborasi secara relevan dan tidak memaksa.\n\n"
+    "Aturan Privasi & Kontak Resmi:\n"
+    "- Kontak resmi NestiaDev HANYA:\n"
+    "  * Email: support@nestia.my.id\n"
+    "  * LinkedIn: https://www.linkedin.com/in/yohanes-christian-devano/\n"
+    "  * GitHub: https://github.com/NestiaDev-id\n"
+    "  * Website: https://nestia.my.id\n"
+    "- DILARANG KERAS membagikan nomor telepon pribadi, nomor WhatsApp pribadi, atau alamat tempat tinggal.\n"
+    "- Jika pengunjung menanyakan nomor WhatsApp atau ingin menghubungi langsung, sarankan untuk mengirim email ke support@nestia.my.id atau melalui formulir kontak/LinkedIn.\n\n"
     "Aturan perilaku:\n"
     "1) Jika konteks kosong dan pertanyaan berupa sapaan umum (contoh: \"Hai\"), "
     "balas dengan sapaan hangat dan perkenalan singkat NestiaDev.\n"
@@ -43,7 +45,6 @@ def _get_groq_key() -> str:
 
 
 def _groq_chat(payload: dict) -> str:
-    """Send a chat completion request to Groq and return the text."""
     url = "https://api.groq.com/openai/v1/chat/completions"
     headers = {
         "Authorization": f"Bearer {_get_groq_key()}",
@@ -57,16 +58,6 @@ def _groq_chat(payload: dict) -> str:
 # ── Text generation ──────────────────────────────────────
 
 def generate_answer(question: str, context_chunks: list[str], history: list[dict] | None = None) -> str:
-    """Build a RAG prompt and get an answer from the LLM via Groq.
-
-    Args:
-        question: The user's question.
-        context_chunks: Relevant document chunks retrieved from the vector store.
-        history: Optional list of previous chat messages.
-
-    Returns:
-        The generated answer string.
-    """
     if context_chunks:
         context = "\n\n".join(context_chunks)
         user_content = f"Konteks RAG:\n{context}\n\nPertanyaan:\n{question}"
@@ -107,17 +98,6 @@ def generate_vision_answer(
     question: str | None = None,
     context_chunks: list[str] | None = None,
 ) -> str:
-    """Analyse an image using Groq Vision API.
-
-    Args:
-        image_bytes: Raw bytes of the uploaded image.
-        mime_type: MIME type of the image (e.g. image/jpeg, image/png).
-        question: Optional question about the image.
-        context_chunks: Optional context from RAG.
-
-    Returns:
-        The generated analysis string.
-    """
     b64_image = base64.b64encode(image_bytes).decode("utf-8")
     data_uri = f"data:{mime_type};base64,{b64_image}"
 

@@ -200,7 +200,7 @@ export async function sendContactEmail(params: SendContactParams): Promise<SendE
 
     // 2. Send friendly confirmation to the sender (visitor)
     // Run asynchronously without blocking main response
-    sendConfirmationToVisitor({ name: safeName, email: email.trim() }).catch((err) => {
+    sendConfirmationToVisitor({ name: safeName, email: email.trim(), safeMessage }).catch((err) => {
       console.warn("[EmailService] Failed to send confirmation email to visitor:", err);
     });
 

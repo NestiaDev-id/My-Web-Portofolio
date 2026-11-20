@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { uploadTask, clearChatSession, getApiUrl } from "@/utils/rag";
 import { requestAi } from "@/utils/aiRouter";
 import { useChatPresence } from "@/hooks/useChatPresence";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 import {
@@ -80,6 +81,11 @@ const ContactFormCard = ({ prefill = "Diskusi Proyek / Kolaborasi" }: ContactFor
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState(0);
 
+  const turnstileRef = useRef<TurnstileInstance | undefined>(undefined);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileSiteKey =
+    import.meta.env.VITE_TURNSTILE_SITE_KEY || "1x00000000000000000000AA";
+
   useEffect(() => {
     if (cooldown <= 0) return;
     const interval = setInterval(() => {
@@ -113,6 +119,7 @@ const ContactFormCard = ({ prefill = "Diskusi Proyek / Kolaborasi" }: ContactFor
           email: email.trim(),
           message: message.trim(),
           _hp_website: hp.trim(),
+          turnstileToken: turnstileToken || undefined,
         }),
       });
 
@@ -128,12 +135,16 @@ const ContactFormCard = ({ prefill = "Diskusi Proyek / Kolaborasi" }: ContactFor
       }
 
       if (!response.ok || data.success === false) {
+        turnstileRef.current?.reset();
+        setTurnstileToken(null);
         throw new Error(data.error || `Gagal mengirim pesan (HTTP ${response.status})`);
       }
 
       setIsSuccess(true);
       setTrackingId(data.id || `re_${Math.random().toString(36).substring(2, 9)}`);
       setCooldown(30);
+      turnstileRef.current?.reset();
+      setTurnstileToken(null);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Gagal terhubung ke API Gateway.";
       setErrorMessage(msg);
@@ -149,6 +160,8 @@ const ContactFormCard = ({ prefill = "Diskusi Proyek / Kolaborasi" }: ContactFor
     setMessage(prefill ? `${prefill}: ` : "Diskusi Proyek / Kolaborasi: ");
     setHp("");
     setErrorMessage(null);
+    turnstileRef.current?.reset();
+    setTurnstileToken(null);
   };
 
   if (isSuccess) {
@@ -226,11 +239,26 @@ const ContactFormCard = ({ prefill = "Diskusi Proyek / Kolaborasi" }: ContactFor
           </div>
         )}
 
+        {/* Cloudflare Turnstile Verification Widget */}
+        <div className="flex justify-center sm:justify-start my-1.5 overflow-hidden min-h-[65px]">
+          <Turnstile
+            ref={turnstileRef}
+            siteKey={turnstileSiteKey}
+            onSuccess={(token) => setTurnstileToken(token)}
+            onError={() => setTurnstileToken(null)}
+            onExpire={() => setTurnstileToken(null)}
+            options={{
+              theme: "light",
+              size: "flexible",
+            }}
+          />
+        </div>
+
         {/* Bottom Action Bar */}
         <div className="flex items-center justify-between pt-1">
           <div className="flex items-center gap-1.5 text-[#8C5061] font-mono text-[10.5px]">
             <Shield className="w-3.5 h-3.5 text-[#00966D]" />
-            <span>Turnstile Protected</span>
+            <span>{turnstileToken ? "Verified by Turnstile" : "Turnstile Protected"}</span>
           </div>
           <button
             type="submit"

@@ -109,3 +109,9 @@ export const presenceRateLimiter = createRateLimiter({
   limit: env.RATE_LIMIT_PRESENCE_MAX,
   keyPrefix: "api:rate-limit:presence",
 });
+
+export const contactRateLimiter = createRateLimiter({
+  limit: env.CONTACT_RATE_LIMIT_MAX,
+  windowSeconds: env.CONTACT_RATE_LIMIT_WINDOW_SECONDS,
+  keyPrefix: "api:rate-limit:contact",
+});

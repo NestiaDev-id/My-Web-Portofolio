@@ -2,6 +2,8 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { sendContactEmail } from "../services/email.service.js";
 import { saveContactToMongo } from "../services/mongo.service.js";
+import { verifyTurnstileToken } from "../services/turnstile.service.js";
+import { isDisposableEmail } from "../services/disposable-email.service.js";
 
 const contactSchema = z.object({
   name: z
@@ -56,6 +58,29 @@ contactRoutes.post("/", async (c) => {
       success: true,
       message: "Pesan berhasil dikirim.",
     });
+  }
+
+  // Layer 2: Cloudflare Turnstile Verification
+  const turnstileResult = await verifyTurnstileToken(data.turnstileToken, ip);
+  if (!turnstileResult.ok) {
+    return c.json(
+      {
+        success: false,
+        error: turnstileResult.error ?? "Verifikasi keamanan (Turnstile) gagal.",
+      },
+      403,
+    );
+  }
+
+  // Layer 3: Disposable Email Filter
+  if (isDisposableEmail(data.email)) {
+    return c.json(
+      {
+        success: false,
+        error: "Alamat email sementara (disposable/throwaway email) tidak diizinkan. Silakan gunakan email aktif Anda.",
+      },
+      400,
+    );
   }
 
   // Send email via Resend

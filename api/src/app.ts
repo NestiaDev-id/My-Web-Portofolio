@@ -8,6 +8,7 @@ import { isAllowedOrigin } from "./config/security.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import {
   chatRateLimiter,
+  contactRateLimiter,
   generalRateLimiter,
   presenceRateLimiter,
 } from "./middleware/rateLimiter.js";
@@ -43,6 +44,9 @@ app.use("/api/v1/*", async (c, next) => {
   }
   if (c.req.path.startsWith("/api/v1/chat")) {
     return chatRateLimiter(c, next);
+  }
+  if (c.req.path.startsWith("/api/v1/contact")) {
+    return contactRateLimiter(c, next);
   }
   return generalRateLimiter(c, next);
 });

@@ -8,6 +8,11 @@ import {
   isSuspiciousEmailPattern,
   hasValidMxRecord,
 } from "../services/email-validation.service.js";
+import { ipCooldownMiddleware } from "../middleware/cooldown.middleware.js";
+import {
+  setIpCooldown,
+  checkEmailRateLimit,
+} from "../services/cooldown.service.js";
 
 const contactSchema = z.object({
   name: z
@@ -30,6 +35,9 @@ const contactSchema = z.object({
 });
 
 export const contactRoutes = new Hono();
+
+// Layer 2: IP Cooldown Gatekeeper (Redis Hot-Cache + MongoDB)
+contactRoutes.use("*", ipCooldownMiddleware);
 
 contactRoutes.post("/", async (c) => {
   const ip =
@@ -55,16 +63,32 @@ contactRoutes.post("/", async (c) => {
 
   const data = parsed.data;
 
-  // Layer 1: Honeypot Protection — If bot fills hidden field, silent discard
+  // Layer 1: Honeypot Protection — If bot fills hidden field, silent discard & cooldown escalation
   if (data._hp_website && data._hp_website.trim().length > 0) {
-    console.warn(`[AntiSpam] Honeypot triggered by IP ${ip}. Discarding silently.`);
+    console.warn(`[AntiSpam] Honeypot triggered by IP ${ip}. Activating cooldown period.`);
+    setIpCooldown(ip, "HONEYPOT_TRIGGERED", 24 * 3600).catch((err) =>
+      console.warn("[Cooldown] Error setting cooldown for honeypot IP:", err),
+    );
     return c.json({
       success: true,
       message: "Pesan berhasil dikirim.",
     });
   }
 
-  // Layer 2: Cloudflare Turnstile Verification
+  // Layer 3b: Target Email Cooldown Window (max 3 submissions per 45 mins)
+  const emailLimit = await checkEmailRateLimit(data.email);
+  if (!emailLimit.allowed) {
+    return c.json(
+      {
+        success: false,
+        error:
+          "Alamat email ini baru saja digunakan untuk mengirim pesan. Mohon tunggu masa jeda sebelum mengirim pesan baru ke alamat yang sama.",
+      },
+      429,
+    );
+  }
+
+  // Layer 4: Cloudflare Turnstile Verification
   const turnstileResult = await verifyTurnstileToken(data.turnstileToken, ip);
   if (!turnstileResult.ok) {
     return c.json(

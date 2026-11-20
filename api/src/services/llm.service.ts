@@ -14,6 +14,14 @@ function serviceUrl(path: string): string {
   return `${env.LLM_SERVICE_URL?.replace(/\/$/, "")}${path}`;
 }
 
+function internalHeaders(extra: Record<string, string> = {}): Record<string, string> {
+  const headers: Record<string, string> = { ...extra };
+  if (env.LLM_SERVICE_SECRET) {
+    headers["X-Internal-Secret"] = env.LLM_SERVICE_SECRET;
+  }
+  return headers;
+}
+
 async function parseResponse(response: Response): Promise<Record<string, unknown>> {
   const payload = (await response.json().catch(() => ({}))) as Record<string, unknown>;
   if (!response.ok) {
@@ -36,12 +44,17 @@ export async function generateChatAnswer(
       throw new Error("LLM_SERVICE_URL must be configured for deep-focus requests.");
     }
 
+    const historyPayload = history.map(({ role, content }) => ({ role, content }));
     const payload = await executeWithQueue(async () =>
       parseResponse(
         await fetch(serviceUrl("/chat"), {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ question, session_id: sessionId }),
+          headers: internalHeaders({ "Content-Type": "application/json" }),
+          body: JSON.stringify({
+            question,
+            session_id: sessionId,
+            history: historyPayload,
+          }),
         }),
       ),
     );
@@ -108,7 +121,11 @@ export async function generateVisionAnswer(
   formData.append("session_id", sessionId);
   const payload = await executeWithQueue(async () =>
     parseResponse(
-      await fetch(serviceUrl("/chat-vision"), { method: "POST", body: formData }),
+      await fetch(serviceUrl("/chat-vision"), {
+        method: "POST",
+        headers: internalHeaders(),
+        body: formData,
+      }),
     ),
   );
   return { answer: String(payload.answer ?? ""), modelUsed: "llm-service-vision" };
@@ -127,7 +144,24 @@ export async function uploadTaskDocument(
   formData.append("session_id", sessionId);
   return executeWithQueue(async () =>
     parseResponse(
-      await fetch(serviceUrl("/upload-task"), { method: "POST", body: formData }),
+      await fetch(serviceUrl("/upload-task"), {
+        method: "POST",
+        headers: internalHeaders(),
+        body: formData,
+      }),
     ),
   );
+}
+
+export async function clearLlmServiceSession(sessionId: string): Promise<void> {
+  if (!env.LLM_SERVICE_URL) return;
+  try {
+    await fetch(serviceUrl("/clear"), {
+      method: "POST",
+      headers: internalHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify({ session_id: sessionId }),
+    });
+  } catch (error) {
+    console.warn(`[LLM Service] Failed to clear session ${sessionId}:`, error);
+  }
 }

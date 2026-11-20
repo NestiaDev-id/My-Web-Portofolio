@@ -1,6 +1,7 @@
 import base64
 import os
 import requests
+from app.utils.config import GROQ_CHAT_MODEL, GROQ_VISION_MODEL
 
 # ── System prompt ────────────────────────────────────────
 SYSTEM_PROMPT = (
@@ -72,7 +73,6 @@ def generate_answer(question: str, context_chunks: list[str], history: list[dict
             content = msg.get("content")
             if role in ["user", "assistant"] and content:
                 # Hindari memasukkan pesan "Konteks:" panjang dari history
-                # jika itu berasal dari RAG user message.
                 if role == "user" and "Konteks:\n" in content and "Pertanyaan:\n" in content:
                     content = content.split("Pertanyaan:\n")[-1]
                 messages.append({"role": role, "content": content})
@@ -80,7 +80,7 @@ def generate_answer(question: str, context_chunks: list[str], history: list[dict
     messages.append({"role": "user", "content": user_content})
 
     payload = {
-        "model": "llama-3.1-8b-instant",
+        "model": GROQ_CHAT_MODEL,
         "messages": messages,
         "temperature": 0.2,
         "max_tokens": 512,
@@ -101,7 +101,6 @@ def generate_vision_answer(
     b64_image = base64.b64encode(image_bytes).decode("utf-8")
     data_uri = f"data:{mime_type};base64,{b64_image}"
 
-    # Build user message with optional text
     user_parts: list[str] = []
 
     if context_chunks:
@@ -116,7 +115,7 @@ def generate_vision_answer(
     text_content = "\n\n".join(user_parts)
 
     payload = {
-        "model": "meta-llama/llama-4-scout-17b-16e-instruct",
+        "model": GROQ_VISION_MODEL,
         "messages": [
             {"role": "system", "content": SYSTEM_PROMPT},
             {

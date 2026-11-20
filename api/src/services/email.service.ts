@@ -198,11 +198,13 @@ export async function sendContactEmail(params: SendContactParams): Promise<SendE
       };
     }
 
-    // 2. Send friendly confirmation to the sender (visitor)
-    // Run asynchronously without blocking main response
+    /* Auto-reply visitor confirmation temporarily disabled for security.
+       To re-enable, uncomment the block below:
+
     sendConfirmationToVisitor({ name: safeName, email: email.trim(), safeMessage }).catch((err) => {
       console.warn("[EmailService] Failed to send confirmation email to visitor:", err);
     });
+    */
 
     return {
       success: true,

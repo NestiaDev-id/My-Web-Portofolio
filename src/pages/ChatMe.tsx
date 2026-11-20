@@ -153,43 +153,31 @@ const ContactFormCard = ({ prefill = "Diskusi Proyek / Kolaborasi" }: ContactFor
 
   if (isSuccess) {
     return (
-      <div className="bg-[#ECFDF5] border-2 border-[#00966D] rounded-xl p-4 text-center space-y-2 shadow-[2px_2px_0px_#00966D] w-full max-w-[480px]">
-        <div className="font-pixel-freddy text-[11px] sm:text-xs font-bold text-[#00966D] flex items-center justify-center gap-1.5">
-          <span>✅</span> <span>EMAIL BERHASIL TERKIRIM!</span>
-        </div>
+      <div className="bg-[#fffafd] border-2 border-[#4a2034] rounded-lg p-3 text-left space-y-2 w-full max-w-[480px]">
+        <p className="font-pixel-freddy text-xs font-bold text-[#893760]">
+          Pesan berhasil dikirim
+        </p>
         <p className="font-mono text-xs text-[#2D1B22] leading-relaxed">
-          Pesan telah diteruskan ke <strong>support@nestia.my.id</strong> via Resend API.
+          Pesan sudah diteruskan ke <strong>support@nestia.my.id</strong>.
         </p>
         {trackingId && (
-          <div className="inline-block bg-white border border-[#00966D]/40 rounded px-2 py-0.5 font-mono text-[10px] text-gray-600">
-            Tracking ID: <code className="text-[#00966D] font-bold">{trackingId}</code>
-          </div>
+          <p className="font-mono text-[10px] text-[#8C5061] break-all">
+            ID: {trackingId}
+          </p>
         )}
-        <div className="pt-1.5">
-          <button
-            type="button"
-            onClick={handleResetForm}
-            className="pixel-btn bg-white hover:bg-[#FCE7EE] text-[#2D1B22] font-pixel-freddy text-[10px] px-3 py-1 rounded-md border border-[#2D1B22] cursor-pointer shadow-[1px_1px_0px_#2D1B22]"
-          >
-            + KIRIM PESAN LAIN
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={handleResetForm}
+          className="pixel-btn bg-white hover:bg-[#fff0f4] text-[#893760] font-pixel-freddy text-[10px] px-3 py-1.5 rounded border border-[#4a2034] cursor-pointer"
+        >
+          Kirim pesan lain
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="bg-white border-[3px] border-[#2D1B22] rounded-[14px] p-3.5 sm:p-4 shadow-[4px_4px_0px_#2D1B22] space-y-3 w-full max-w-[500px]">
-      {/* Card Header with Resend API Badge */}
-      <div className="flex items-center justify-between border-b-2 border-[#2D1B22] pb-2.5">
-        <div className="font-pixel-freddy text-[11px] sm:text-xs font-bold text-[#2D1B22] flex items-center gap-1.5 tracking-wide">
-          <span>📩</span>
-          <span>KIRIM EMAIL KE NESTIADEV</span>
-        </div>
-        <span className="font-pixel-freddy text-[9px] font-bold bg-[#00966D] text-white px-2.5 py-0.5 rounded-md tracking-wider">
-          RESEND API
-        </span>
-      </div>
+    <div className="bg-[#fffafd] border-2 border-[#4a2034] rounded-lg p-3 sm:p-3.5 space-y-2.5 w-full max-w-[500px]">
 
       {/* Form Body */}
       <form onSubmit={handleSubmit} className="space-y-2.5">
@@ -567,7 +555,7 @@ const ChatApp = () => {
         setIsTyping(false);
         const cardMessage: Message = {
           id: Date.now(),
-          sender: "NESTIADEV - GENERATIVE UI TOOL",
+          sender: "NestiaDev",
           text: "",
           time: getNowTime(),
           avatar: "AI",
@@ -818,10 +806,9 @@ const ChatApp = () => {
 
                       {/* Contact Card Container */}
                       <div className="flex flex-col flex-1 min-w-0 items-start">
-                        {/* Header: NESTIADEV - GENERATIVE UI TOOL [HH.MM] */}
-                        <div className="font-pixel-freddy flex items-center gap-1.5 mb-1 px-1 text-[10px] sm:text-[11px] font-bold text-[#8C030E] tracking-wider">
-                          <span>NESTIADEV - GENERATIVE UI TOOL</span>
-                          <span className="text-[#EB6E96]">[{msg.time}]</span>
+                        <div className="font-pixel-freddy flex items-center gap-1.5 mb-1 px-1 text-[11px] font-bold text-[#893760]">
+                          <span>NestiaDev</span>
+                          <span className="text-[10px] opacity-75">[{msg.time}]</span>
                         </div>
 
                         {/* Inline Contact Card Form */}

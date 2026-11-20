@@ -36,6 +36,12 @@ const envSchema = z.object({
   PRESENCE_TTL_SECONDS: safeInt(35, 20, 120),
   HF_MAX_CONCURRENCY: safeInt(2, 1, 5),
   HF_QUEUE_TIMEOUT_SECONDS: safeInt(30, 5, 120),
+  RESEND_API_KEY: z.string().min(1).optional(),
+  CONTACT_FROM_EMAIL: z.string().default("NestiaDev <support@nestia.my.id>"),
+  CONTACT_TO_EMAIL: z.string().default("support@nestia.my.id"),
+  TURNSTILE_SECRET_KEY: z.string().min(1).optional(),
+  CONTACT_RATE_LIMIT_MAX: safeInt(3, 1, 20),
+  CONTACT_RATE_LIMIT_WINDOW_SECONDS: safeInt(600, 60, 3600),
 });
 
 export const env = envSchema.parse(process.env);

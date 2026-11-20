@@ -8,11 +8,13 @@ import { isAllowedOrigin } from "./config/security.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import {
   chatRateLimiter,
+  contactRateLimiter,
   generalRateLimiter,
   presenceRateLimiter,
 } from "./middleware/rateLimiter.js";
 import { chatRoutes } from "./routes/chat.routes.js";
 import { presenceRoutes } from "./routes/presence.routes.js";
+import { contactRoutes } from "./routes/contact.routes.js";
 
 export const app = new Hono();
 
@@ -43,6 +45,9 @@ app.use("/api/v1/*", async (c, next) => {
   if (c.req.path.startsWith("/api/v1/chat")) {
     return chatRateLimiter(c, next);
   }
+  if (c.req.path.startsWith("/api/v1/contact")) {
+    return contactRateLimiter(c, next);
+  }
   return generalRateLimiter(c, next);
 });
 
@@ -51,6 +56,7 @@ app.route("/api", healthRoutes);
 app.route("/api/v1", healthRoutes);
 app.route("/api/v1/chat/presence", presenceRoutes);
 app.route("/api/v1/chat", chatRoutes);
+app.route("/api/v1/contact", contactRoutes);
 
 app.onError(errorHandler);
 

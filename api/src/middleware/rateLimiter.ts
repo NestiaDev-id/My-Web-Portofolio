@@ -1,11 +1,14 @@
 import type { MiddlewareHandler } from "hono";
 import { env } from "../config/env.js";
 import { getRedisClient } from "../services/redis.service.js";
+import { setIpCooldown } from "../services/cooldown.service.js";
 
 type RateLimitOptions = {
   limit: number;
   windowSeconds?: number;
   keyPrefix?: string;
+  onExceeded?: (ip: string) => Promise<void> | void;
+  exceededMessage?: string;
 };
 
 const slidingWindowScript = `
@@ -77,13 +80,20 @@ export function createRateLimiter(options: RateLimitOptions): MiddlewareHandler 
     c.header("X-RateLimit-Reset", String(reset));
 
     if (allowed !== 1) {
+      if (options.onExceeded) {
+        Promise.resolve(options.onExceeded(clientIp(c.req.raw))).catch((err) =>
+          console.warn("[RateLimiter] onExceeded escalation error:", err),
+        );
+      }
       c.header("Retry-After", String(Math.max(1, reset - now)));
       return c.json(
         {
           success: false,
           error: {
             code: "RATE_LIMIT_EXCEEDED",
-            message: "Terlalu banyak permintaan. Silakan tunggu beberapa saat.",
+            message:
+              options.exceededMessage ??
+              "Terlalu banyak permintaan. Silakan tunggu beberapa saat.",
           },
           meta: { timestamp: new Date().toISOString() },
         },
@@ -108,4 +118,15 @@ export const chatRateLimiter = createRateLimiter({
 export const presenceRateLimiter = createRateLimiter({
   limit: env.RATE_LIMIT_PRESENCE_MAX,
   keyPrefix: "api:rate-limit:presence",
+});
+
+export const contactRateLimiter = createRateLimiter({
+  limit: env.CONTACT_RATE_LIMIT_MAX,
+  windowSeconds: env.CONTACT_RATE_LIMIT_WINDOW_SECONDS,
+  keyPrefix: "api:rate-limit:contact",
+  exceededMessage:
+    "Aktivitas pengiriman pesan telah melebihi batas toleransi. Sistem mengaktifkan jeda keamanan sementara (cooldown time). Silakan beristirahat sejenak.",
+  onExceeded: async (ip) => {
+    await setIpCooldown(ip, "RATE_LIMIT_EXCEEDED", 24 * 3600);
+  },
 });

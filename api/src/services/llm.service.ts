@@ -68,7 +68,12 @@ export async function generateChatAnswer(
       messages: [
         {
           role: "system",
-          content: "Anda adalah Asisten AI pribadi untuk portfolio NestiaDev. Jawab dengan ringkas dan akurat.",
+          content:
+            "Anda adalah Asisten AI pribadi untuk portfolio NestiaDev. Jawab dengan ramah, ringkas, dan akurat.\n" +
+            "Aturan Privasi & Kontak Resmi:\n" +
+            "- Kontak resmi NestiaDev HANYA: Email support@nestia.my.id, Website https://nestia.my.id, LinkedIn https://www.linkedin.com/in/yohanes-christian-devano/, GitHub https://github.com/NestiaDev-id.\n" +
+            "- DILARANG KERAS membagikan nomor telepon pribadi, WhatsApp pribadi, atau alamat tempat tinggal.\n" +
+            "- Jika pengguna menanyakan nomor WhatsApp atau ingin menghubungi langsung, sarankan untuk mengirim email ke support@nestia.my.id atau via LinkedIn.",
         },
         ...history.map(({ role, content }) => ({ role, content })),
         { role: "user", content: question },

@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { uploadTask, clearChatSession } from "@/utils/rag";
+import { uploadTask, clearChatSession, getApiUrl } from "@/utils/rag";
 import { requestAi } from "@/utils/aiRouter";
 import { useChatPresence } from "@/hooks/useChatPresence";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import data from "@emoji-mart/data";
 import Picker from "@emoji-mart/react";
 import {
@@ -20,6 +21,7 @@ import {
   Send,
   MessageSquare,
   Users,
+  Shield,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -35,6 +37,8 @@ type Message = {
   time: string;
   avatar: string;
   imageUrl?: string;
+  isContactCard?: boolean;
+  contactPrefill?: string;
 };
 
 const BOT_AVATAR =
@@ -54,11 +58,232 @@ const SUGGESTIONS = [
     text: "Ceritakan pengalaman proyek terbaikmu!",
   },
   {
-    label: "Cara menghubungi Nestia?",
+    label: "Kirim Pesan / Kontak",
     emoji: "📬",
-    text: "Bagaimana cara menghubungi Nestia?",
+    text: "/kontak",
   },
 ];
+
+interface ContactFormCardProps {
+  prefill?: string;
+}
+
+const ContactFormCard = ({ prefill = "Diskusi Proyek / Kolaborasi" }: ContactFormCardProps) => {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState(
+    prefill ? `${prefill}: ` : "Diskusi Proyek / Kolaborasi: "
+  );
+  const [hp, setHp] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [trackingId, setTrackingId] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [cooldown, setCooldown] = useState(0);
+
+  const turnstileRef = useRef<TurnstileInstance | undefined>(undefined);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const turnstileSiteKey =
+    import.meta.env.VITE_TURNSTILE_SITE_KEY || "1x00000000000000000000AA";
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const interval = setInterval(() => {
+      setCooldown((prev) => Math.max(0, prev - 1));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [cooldown]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (cooldown > 0) {
+      setErrorMessage(`Mohon tunggu ${cooldown} detik sebelum mengirim pesan kembali (anti-spam cooldown).`);
+      return;
+    }
+
+    if (!name.trim() || !email.trim() || !message.trim()) {
+      setErrorMessage("Mohon lengkapi seluruh field sebelum mengirim.");
+      return;
+    }
+
+    setIsLoading(true);
+    setErrorMessage(null);
+
+    try {
+      const response = await fetch(getApiUrl("/api/v1/contact"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim(),
+          message: message.trim(),
+          _hp_website: hp.trim(),
+          turnstileToken: turnstileToken || undefined,
+        }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (response.status === 429) {
+        const retryAfter = Number(response.headers.get("Retry-After")) || 60;
+        setCooldown(retryAfter);
+        throw new Error(
+          data?.error?.message ||
+            `Terlalu banyak permintaan kontak dari IP Anda. Silakan tunggu ${retryAfter} detik.`
+        );
+      }
+
+      if (!response.ok || data.success === false) {
+        turnstileRef.current?.reset();
+        setTurnstileToken(null);
+        throw new Error(data.error || `Gagal mengirim pesan (HTTP ${response.status})`);
+      }
+
+      setIsSuccess(true);
+      setTrackingId(data.id || `re_${Math.random().toString(36).substring(2, 9)}`);
+      setCooldown(30);
+      turnstileRef.current?.reset();
+      setTurnstileToken(null);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Gagal terhubung ke API Gateway.";
+      setErrorMessage(msg);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResetForm = () => {
+    setIsSuccess(false);
+    setName("");
+    setEmail("");
+    setMessage(prefill ? `${prefill}: ` : "Diskusi Proyek / Kolaborasi: ");
+    setHp("");
+    setErrorMessage(null);
+    turnstileRef.current?.reset();
+    setTurnstileToken(null);
+  };
+
+  if (isSuccess) {
+    return (
+      <div className="bg-[#fffafd] border-2 border-[#4a2034] rounded-lg p-3 text-left space-y-2 w-full max-w-[480px]">
+        <p className="font-pixel-freddy text-xs font-bold text-[#893760]">
+          Pesan berhasil dikirim
+        </p>
+        <p className="font-mono text-xs text-[#2D1B22] leading-relaxed">
+          Pesan sudah diteruskan ke <strong>support@nestia.my.id</strong>.
+        </p>
+        {trackingId && (
+          <p className="font-mono text-[10px] text-[#8C5061] break-all">
+            ID: {trackingId}
+          </p>
+        )}
+        <button
+          type="button"
+          onClick={handleResetForm}
+          className="pixel-btn bg-white hover:bg-[#fff0f4] text-[#893760] font-pixel-freddy text-[10px] px-3 py-1.5 rounded border border-[#4a2034] cursor-pointer"
+        >
+          Kirim pesan lain
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-[#fffafd] border-2 border-[#4a2034] rounded-lg p-3 sm:p-3.5 space-y-2.5 w-full max-w-[500px]">
+
+      {/* Form Body */}
+      <form onSubmit={handleSubmit} className="space-y-2.5">
+        {/* Honeypot protection field (hidden from real users) */}
+        <input
+          type="text"
+          name="_hp_website"
+          style={{ display: "none" }}
+          tabIndex={-1}
+          autoComplete="off"
+          value={hp}
+          onChange={(e) => setHp(e.target.value)}
+        />
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <input
+            type="text"
+            required
+            placeholder="Nama Anda"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full bg-white border-2 border-[#2D1B22] rounded-lg px-3 py-1.5 font-mono text-xs text-[#2D1B22] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#00966D]"
+          />
+          <input
+            type="email"
+            required
+            placeholder="email@domain.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full bg-white border-2 border-[#2D1B22] rounded-lg px-3 py-1.5 font-mono text-xs text-[#2D1B22] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#00966D]"
+          />
+        </div>
+
+        <textarea
+          rows={3}
+          required
+          placeholder="Diskusi Proyek / Kolaborasi:"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          className="w-full bg-white border-2 border-[#2D1B22] rounded-lg px-3 py-2 font-mono text-xs text-[#2D1B22] placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-[#00966D] resize-y"
+        />
+
+        {errorMessage && (
+          <div className="text-[11px] text-rose-700 bg-rose-50 border border-rose-300 rounded p-1.5 font-mono">
+            ⚠️ {errorMessage}
+          </div>
+        )}
+
+        {/* Cloudflare Turnstile Verification Widget */}
+        <div className="flex justify-center sm:justify-start my-1.5 overflow-hidden min-h-[65px]">
+          <Turnstile
+            ref={turnstileRef}
+            siteKey={turnstileSiteKey}
+            onSuccess={(token) => setTurnstileToken(token)}
+            onError={() => setTurnstileToken(null)}
+            onExpire={() => setTurnstileToken(null)}
+            options={{
+              theme: "light",
+              size: "flexible",
+            }}
+          />
+        </div>
+
+        {/* Bottom Action Bar */}
+        <div className="flex items-center justify-between pt-1">
+          <div className="flex items-center gap-1.5 text-[#8C5061] font-mono text-[10.5px]">
+            <Shield className="w-3.5 h-3.5 text-[#00966D]" />
+            <span>{turnstileToken ? "Verified by Turnstile" : "Turnstile Protected"}</span>
+          </div>
+          <button
+            type="submit"
+            disabled={isLoading || cooldown > 0}
+            className="pixel-btn bg-[#00966D] hover:bg-[#047857] text-white font-pixel-freddy text-[10px] sm:text-[11px] px-3.5 py-1.5 rounded-lg border-2 border-[#2D1B22] shadow-[2.5px_2.5px_0px_#2D1B22] cursor-pointer flex items-center gap-1.5 font-bold transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? (
+              <>
+                <span>MENGIRIM...</span>
+                <span>⏳</span>
+              </>
+            ) : cooldown > 0 ? (
+              <span>TUNGGU ({cooldown}s)</span>
+            ) : (
+              <>
+                <span>KIRIM EMAIL</span>
+                <span>➤</span>
+              </>
+            )}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+};
 
 const ChatApp = () => {
   const navigate = useNavigate();
@@ -66,7 +291,7 @@ const ChatApp = () => {
     {
       id: 1,
       sender: "NestiaDev",
-      text: "Halo! Aku AI Assistant NestiaDev. Tanyakan apa saja tentang profil, tech stack, portofolio, atau kirim gambar/dokumen untuk dianalisis!",
+      text: 'Halo! Aku AI Assistant NestiaDev. Tanyakan apa saja tentang profil, tech stack, portofolio, atau ketik "kontak" / "hire" untuk memunculkan kartu formulir langsung di dalam chat!',
       time: new Date().toLocaleTimeString("id-ID", {
         hour: "2-digit",
         minute: "2-digit",
@@ -337,6 +562,39 @@ const ChatApp = () => {
     const currentImage = pendingImage;
     setInput("");
     clearPendingImage();
+
+    // Intercept contact/hire command to render Generative UI card
+    const normalized = currentInput.toLowerCase().trim();
+    const isContactCommand =
+      normalized === "/kontak" ||
+      normalized === "/contact" ||
+      normalized === "/hire" ||
+      normalized === "kontak" ||
+      normalized === "hire" ||
+      normalized === "hubungi" ||
+      normalized === "cara kontak" ||
+      normalized.includes("cara menghubungi") ||
+      normalized.includes("hubungi nestia") ||
+      normalized.includes("kirim email");
+
+    if (isContactCommand) {
+      setIsTyping(true);
+      setTimeout(() => {
+        setIsTyping(false);
+        const cardMessage: Message = {
+          id: Date.now(),
+          sender: "NestiaDev",
+          text: "",
+          time: getNowTime(),
+          avatar: "AI",
+          isContactCard: true,
+          contactPrefill: "Diskusi Proyek / Kolaborasi",
+        };
+        setMessages((prev) => [...prev, cardMessage]);
+      }, 350);
+      return;
+    }
+
     setIsTyping(true);
 
     try {
@@ -470,6 +728,16 @@ const ChatApp = () => {
                 <span className="mt-2 text-[12px] ">NEW CHAT</span>
               </button>
 
+              {/* Quick Contact Form Tab */}
+              <button
+                onClick={() => sendMessage("/kontak")}
+                className="pixel-btn bg-[#ffffff] hover:bg-[#fff0f4] text-[#893760] w-full p-2 rounded flex items-center gap-2 text-xs font-semibold text-left"
+                title="Buka Formulir Kontak"
+              >
+                <span className="text-sm">📩</span>
+                <span className="mt-2 text-[12px] ">/KONTAK</span>
+              </button>
+
               {/* Status Box */}
               <div className="border-2 border-[#4a2034] bg-[#ffffff] p-2.5 rounded text-[11px] text-[#893760] space-y-1.5 shadow-[2px_2px_0px_#4a2034]">
                 <div className="flex justify-between font-bold">
@@ -547,61 +815,93 @@ const ChatApp = () => {
 
             {/* Chat Messages Stream */}
             <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3.5 pixel-scrollbar pixel-chat-canvas">
-              {messages.map((msg) => (
-                <motion.div
-                  key={msg.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className={`flex items-start gap-2 sm:gap-3 ${
-                    msg.sender === "You" ? "flex-row-reverse" : "flex-row"
-                  }`}
-                >
-                  {/* Face Avatar */}
-                  <img
-                    src={msg.avatar}
-                    alt={msg.sender}
-                    className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover border-2 border-[#4a2034] shadow-[1.5px_1.5px_0px_#4a2034] shrink-0 bg-white"
-                  />
+              {messages.map((msg) => {
+                if (msg.isContactCard) {
+                  return (
+                    <motion.div
+                      key={msg.id}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="flex items-start gap-2 sm:gap-3 flex-row w-full"
+                    >
+                      {/* Retro AI Avatar Badge */}
+                      <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border-[2.5px] border-[#2D1B22] bg-[#FCE7EE] shrink-0 overflow-hidden flex items-center justify-center mt-1 shadow-[1px_1px_0px_#2D1B22]">
+                        <span className="font-pixel-freddy text-[11px] font-bold text-[#2D1B22]">
+                          AI
+                        </span>
+                      </div>
 
-                  {/* Bubble Content */}
-                  <div
-                    className={`flex flex-col max-w-[85%] sm:max-w-[75%] ${
-                      msg.sender === "You" ? "items-end" : "items-start"
+                      {/* Contact Card Container */}
+                      <div className="flex flex-col flex-1 min-w-0 items-start">
+                        <div className="font-pixel-freddy flex items-center gap-1.5 mb-1 px-1 text-[11px] font-bold text-[#893760]">
+                          <span>NestiaDev</span>
+                          <span className="text-[10px] opacity-75">[{msg.time}]</span>
+                        </div>
+
+                        {/* Inline Contact Card Form */}
+                        <ContactFormCard prefill={msg.contactPrefill} />
+                      </div>
+                    </motion.div>
+                  );
+                }
+
+                return (
+                  <motion.div
+                    key={msg.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className={`flex items-start gap-2 sm:gap-3 ${
+                      msg.sender === "You" ? "flex-row-reverse" : "flex-row"
                     }`}
                   >
-                    {/* Sender & Timestamp */}
-                    <div className="font-pixel-freddy flex items-center gap-1.5 mb-1 px-1 text-[11px] font-bold text-[#893760]">
-                      <span>{msg.sender}</span>
-                      <span className="text-[10px] opacity-75">
-                        [{msg.time}]
-                      </span>
-                    </div>
+                    {/* Face Avatar */}
+                    <img
+                      src={msg.avatar}
+                      alt={msg.sender}
+                      className="w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover border-2 border-[#4a2034] shadow-[1.5px_1.5px_0px_#4a2034] shrink-0 bg-white"
+                    />
 
-                    {/* Bubble */}
+                    {/* Bubble Content */}
                     <div
-                      className={`p-2 sm:p-2.5 px-3 text-xs sm:text-[13px] pixel-bubble-text leading-snug whitespace-pre-wrap break-words select-text ${
-                        msg.sender === "You"
-                          ? "pixel-bubble-user"
-                          : "pixel-bubble-ai"
+                      className={`flex flex-col max-w-[85%] sm:max-w-[75%] ${
+                        msg.sender === "You" ? "items-end" : "items-start"
                       }`}
                     >
-                      {/* Attached image preview if user sent an image */}
-                      {msg.imageUrl && (
-                        <div className="mb-2 overflow-hidden border-2 border-[#4a2034] rounded-lg shadow-sm">
-                          <img
-                            src={msg.imageUrl}
-                            alt="Uploaded"
-                            className="max-h-52 w-full object-cover cursor-pointer hover:opacity-95"
-                            onClick={() => window.open(msg.imageUrl, "_blank")}
-                          />
-                        </div>
-                      )}
-                      <span>{msg.text}</span>
+                      {/* Sender & Timestamp */}
+                      <div className="font-pixel-freddy flex items-center gap-1.5 mb-1 px-1 text-[11px] font-bold text-[#893760]">
+                        <span>{msg.sender}</span>
+                        <span className="text-[10px] opacity-75">
+                          [{msg.time}]
+                        </span>
+                      </div>
+
+                      {/* Bubble */}
+                      <div
+                        className={`p-2 sm:p-2.5 px-3 text-xs sm:text-[13px] pixel-bubble-text leading-snug whitespace-pre-wrap break-words select-text ${
+                          msg.sender === "You"
+                            ? "pixel-bubble-user"
+                            : "pixel-bubble-ai"
+                        }`}
+                      >
+                        {/* Attached image preview if user sent an image */}
+                        {msg.imageUrl && (
+                          <div className="mb-2 overflow-hidden border-2 border-[#4a2034] rounded-lg shadow-sm">
+                            <img
+                              src={msg.imageUrl}
+                              alt="Uploaded"
+                              className="max-h-52 w-full object-cover cursor-pointer hover:opacity-95"
+                              onClick={() => window.open(msg.imageUrl, "_blank")}
+                            />
+                          </div>
+                        )}
+                        <span>{msg.text}</span>
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
-              ))}
+                  </motion.div>
+                );
+              })}
 
               {/* Bot Typing Indicator */}
               {isTyping && (

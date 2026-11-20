@@ -120,3 +120,104 @@ export async function checkMongoHealth(): Promise<"connected"> {
   await db.command({ ping: 1 });
   return "connected";
 }
+
+export interface ContactAuditRecord {
+  name: string;
+  email: string;
+  message: string;
+  ip?: string;
+  resend_id?: string;
+  status: "sent" | "failed";
+}
+
+export async function saveContactToMongo(record: ContactAuditRecord): Promise<void> {
+  if (!env.MONGODB_URI) return;
+  try {
+    const db = getMongoDatabase();
+    await db.collection("contacts").insertOne({
+      ...record,
+      created_at: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.warn("[MongoService] Failed to record contact in MongoDB:", err);
+  }
+}
+
+export interface IpCooldownRecord {
+  ip: string;
+  reason: string;
+  createdAt: Date;
+  expiresAt: Date;
+}
+
+let cooldownIndexEnsured = false;
+async function ensureCooldownIndex(db: Db): Promise<void> {
+  if (cooldownIndexEnsured) return;
+  try {
+    await db.collection("ip_cooldowns").createIndex(
+      { expiresAt: 1 },
+      { expireAfterSeconds: 0 },
+    );
+    cooldownIndexEnsured = true;
+  } catch (err) {
+    console.warn("[MongoService] Failed to create TTL index for ip_cooldowns:", err);
+  }
+}
+
+export async function saveIpCooldownToMongo(
+  ip: string,
+  reason: string,
+  durationSeconds: number,
+): Promise<void> {
+  if (!env.MONGODB_URI) return;
+  try {
+    const db = getMongoDatabase();
+    await ensureCooldownIndex(db);
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + durationSeconds * 1000);
+    await db.collection("ip_cooldowns").updateOne(
+      { ip },
+      {
+        $set: {
+          ip,
+          reason,
+          updatedAt: now,
+          expiresAt,
+        },
+        $setOnInsert: { createdAt: now },
+      },
+      { upsert: true },
+    );
+  } catch (err) {
+    console.warn("[MongoService] Failed to record IP cooldown in MongoDB:", err);
+  }
+}
+
+export async function getIpCooldownFromMongo(
+  ip: string,
+): Promise<{ inCooldown: boolean; remainingSeconds?: number; reason?: string }> {
+  if (!env.MONGODB_URI) return { inCooldown: false };
+  try {
+    const db = getMongoDatabase();
+    const now = new Date();
+    const record = await db
+      .collection<{ ip: string; reason: string; expiresAt: Date }>("ip_cooldowns")
+      .findOne({ ip, expiresAt: { $gt: now } });
+
+    if (!record) return { inCooldown: false };
+
+    const remaining = Math.max(
+      0,
+      Math.ceil((new Date(record.expiresAt).getTime() - now.getTime()) / 1000),
+    );
+    return {
+      inCooldown: true,
+      remainingSeconds: remaining,
+      reason: record.reason,
+    };
+  } catch (err) {
+    console.warn("[MongoService] Failed to query IP cooldown from MongoDB:", err);
+    return { inCooldown: false };
+  }
+}
+

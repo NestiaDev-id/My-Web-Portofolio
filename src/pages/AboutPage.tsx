@@ -406,16 +406,24 @@ const AboutPage: React.FC = () => {
               <h3 className="font-bungee text-sm text-black mt-4 mb-6 uppercase">📬 HUBUNGI / JARINGAN</h3>
               <div className="flex flex-col gap-4">
                 {[
-                  { label: "KIRIM EMAIL", url: "mailto:yohanesdevano90@gmail.com", color: "bg-rose-500 text-white", tilt: "-rotate-2" },
+                  { label: "KIRIM EMAIL", url: "mailto:support@nestia.my.id", color: "bg-rose-500 text-white", tilt: "-rotate-2" },
                   { label: "GITHUB REPO", url: "https://github.com/NestiaDev-id", color: "bg-emerald-500 text-black", tilt: "rotate-3" },
                   { label: "LINKEDIN", url: "https://www.linkedin.com/in/yohanes-christian-devano/", color: "bg-blue-500 text-white", tilt: "-rotate-1" },
-                  { label: "WHATSAPP", url: "https://api.whatsapp.com/send/?phone=6281325720265", color: "bg-green-500 text-black", tilt: "rotate-2" },
+                  { label: "KONSULTASI / CHAT", url: "/chat-me", color: "bg-amber-400 text-black", tilt: "rotate-2", isInternal: true },
                 ].map((s, i) => (
-                  <a key={i} href={s.url} target="_blank" rel="noreferrer"
-                    className={`block p-4 border-2 border-black font-heavy-block text-xs uppercase tracking-wider text-center paper-shadow-sm transition-all hover:-translate-y-1 hover:rotate-0 hover:scale-105 ${s.color} ${s.tilt}`}
-                  >
-                    {s.label} ↗
-                  </a>
+                  s.isInternal ? (
+                    <button key={i} onClick={() => { playSound(); navigate(s.url); }}
+                      className={`block w-full p-4 border-2 border-black font-heavy-block text-xs uppercase tracking-wider text-center paper-shadow-sm transition-all hover:-translate-y-1 hover:rotate-0 hover:scale-105 ${s.color} ${s.tilt} cursor-pointer`}
+                    >
+                      {s.label} ↗
+                    </button>
+                  ) : (
+                    <a key={i} href={s.url} target="_blank" rel="noreferrer"
+                      className={`block p-4 border-2 border-black font-heavy-block text-xs uppercase tracking-wider text-center paper-shadow-sm transition-all hover:-translate-y-1 hover:rotate-0 hover:scale-105 ${s.color} ${s.tilt}`}
+                    >
+                      {s.label} ↗
+                    </a>
+                  )
                 ))}
               </div>
             </div>

@@ -1,7 +1,8 @@
 from pathlib import Path
 from typing import Optional
 
-from fastapi import FastAPI, File, Form, HTTPException, Header, UploadFile, Response
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Header, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.models.schemas import (
     ChatRequest,
@@ -11,27 +12,24 @@ from app.models.schemas import (
     ClearResponse,
     UploadResponse,
 )
-from app.services import chat_history, vector_store
+from app.services import vector_store
 from app.services.llm import generate_answer, generate_vision_answer
 from app.utils.config import (
     CV_PATH,
     DEFAULT_CHUNK_OVERLAP,
     DEFAULT_CHUNK_SIZE,
+    INTERNAL_API_SECRET,
     RAG_COLLECTION_ID,
-    UPLOAD_TOKEN,
 )
 from app.utils.text import extract_text_from_file, split_text
 
-from fastapi.middleware.cors import CORSMiddleware
-
 app = FastAPI(
-    title="LLM RAG Service",
+    title="LLM Compute Worker",
     description=(
-        "RAG chatbot backed by ChromaDB (ephemeral vector store), "
-        "Upstash Redis (short-term chat memory), and MongoDB Atlas "
-        "(permanent chat archive). Deployed on Hugging Face Spaces."
+        "Stateless RAG & Vision compute worker backed by ChromaDB. "
+        "Session persistence and database management are delegated to the API Gateway."
     ),
-    version="1.0.0",
+    version="2.0.0",
 )
 
 app.add_middleware(
@@ -54,6 +52,17 @@ IMAGE_MIME_MAP = {
     ".webp": "image/webp",
 }
 
+
+def verify_internal_secret(
+    x_internal_secret: Optional[str] = Header(default=None, alias="X-Internal-Secret")
+):
+    if INTERNAL_API_SECRET and x_internal_secret != INTERNAL_API_SECRET:
+        raise HTTPException(
+            status_code=401,
+            detail="Unauthorized: Invalid internal secret.",
+        )
+
+
 def validate_upload(filename: str, data: bytes):
     ext = Path(filename).suffix.lower()
     if ext not in ALLOWED_UPLOAD_EXTENSIONS:
@@ -71,28 +80,31 @@ def validate_upload(filename: str, data: bytes):
             status_code=400,
             detail="File .doc belum didukung. Gunakan .docx, .pdf, atau .txt.",
         )
+
+
 @app.get("/")
 def root():
     return {
-        "service": "LLM RAG Service",
+        "service": "LLM Compute Worker",
         "status": "running",
-        "note": (
-            "Documents are stored on local ephemeral disk and will be "
-            "lost when the Space restarts."
-        ),
+        "mode": "stateless-worker",
+        "note": "Ephemeral ChromaDB vector store. No external database connections.",
     }
 
 
 @app.get("/healthcheck")
 @app.head("/healthcheck")
-def healthcheck(response: Response):
-    db_status = chat_history.check_health()
-    
+def healthcheck():
+    collections_count = len(vector_store.chroma_client.list_collections())
     return {
         "status": "ok",
         "service": "Hugging Face Space (Active)",
-        "databases": db_status
+        "vector_store": {
+            "status": "ready",
+            "active_collections": collections_count,
+        },
     }
+
 
 @app.on_event("startup")
 def index_cv_on_startup():
@@ -112,42 +124,7 @@ def index_cv_on_startup():
     vector_store.ingest_chunks(RAG_COLLECTION_ID, chunks, source=cv_file.name)
 
 
-@app.post("/upload", response_model=UploadResponse)
-async def upload_document(
-    file: UploadFile = File(...),
-    session_id: str = Form(RAG_COLLECTION_ID),
-    chunk_size: int = Form(DEFAULT_CHUNK_SIZE),
-    chunk_overlap: int = Form(DEFAULT_CHUNK_OVERLAP),
-    x_upload_token: Optional[str] = Header(default=None, alias="X-Upload-Token"),
-):
-    if not UPLOAD_TOKEN:
-        raise HTTPException(status_code=403, detail="Upload disabled.")
-    if x_upload_token != UPLOAD_TOKEN:
-        raise HTTPException(status_code=401, detail="Invalid upload token.")
-
-    filename = file.filename or "upload"
-    data = await file.read()
-    validate_upload(filename, data)
-    text = extract_text_from_file(filename, data)
-    if not text.strip():
-        raise HTTPException(status_code=400, detail="No text extracted from file.")
-
-    chunks = split_text(text, chunk_size, chunk_overlap)
-    if not chunks:
-        raise HTTPException(status_code=400, detail="No valid text chunks found.")
-
-    count = vector_store.ingest_chunks(session_id, chunks, source=filename)
-    collection = vector_store.get_collection(session_id)
-
-    return UploadResponse(
-        status="ok",
-        filename=filename,
-        chunks_added=count,
-        collection=collection.name,
-    )
-
-
-@app.post("/upload-task", response_model=UploadResponse)
+@app.post("/upload-task", response_model=UploadResponse, dependencies=[Depends(verify_internal_secret)])
 async def upload_client_task(
     file: UploadFile = File(...),
     session_id: str = Form("default"),
@@ -176,9 +153,10 @@ async def upload_client_task(
         collection=collection.name,
     )
 
-@app.post("/chat", response_model=ChatResponse)
+
+@app.post("/chat", response_model=ChatResponse, dependencies=[Depends(verify_internal_secret)])
 def chat(request: ChatRequest):
-    # 1. Retrieve relevant document chunks
+    # 1. Retrieve relevant document chunks from CV + client task collection
     cv_documents = vector_store.search(
         RAG_COLLECTION_ID, request.question, request.top_k
     )
@@ -188,31 +166,26 @@ def chat(request: ChatRequest):
     )
     documents = cv_documents + client_documents
 
-    # 2. Get Chat History
-    history = chat_history.get_history(request.session_id, limit=6)
-
-    # 3. Generate answer via LLM
+    # 2. Generate answer via LLM using passed history
     try:
-        answer = generate_answer(request.question, documents, history=history)
+        answer = generate_answer(
+            question=request.question,
+            context_chunks=documents,
+            history=request.history,
+        )
     except ValueError as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
-    # 3. Persist prompt + response to chat history DB
-    chat_history.ensure_conversation(
-        request.session_id, title=request.question[:80]
-    )
-    chat_history.save_user_message(request.session_id, request.question)
-    msg_id = chat_history.save_assistant_message(request.session_id, answer)
-
-    return ChatResponse(answer=answer, context=documents, message_id=msg_id)
+    return ChatResponse(answer=answer, context=documents)
 
 
-@app.post("/chat-vision", response_model=ChatVisionResponse)
+@app.post("/chat-vision", response_model=ChatVisionResponse, dependencies=[Depends(verify_internal_secret)])
 async def chat_vision(
     file: UploadFile = File(...),
     question: str = Form(""),
     session_id: str = Form("default"),
     top_k: int = Form(3),
+    _auth: None = Depends(verify_internal_secret),
 ):
     """Analyse an uploaded image using Vision AI."""
     filename = file.filename or "image"
@@ -251,31 +224,17 @@ async def chat_vision(
     except ValueError as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
-    # Persist to chat history
-    display_question = question.strip() or f"[Mengirim gambar: {filename}]"
-    chat_history.ensure_conversation(session_id, title=display_question[:80])
-    chat_history.save_user_message(session_id, display_question)
-    chat_history.save_assistant_message(session_id, answer)
-
     return ChatVisionResponse(answer=answer, filename=filename)
 
 
-@app.post("/clear", response_model=ClearResponse)
+@app.post("/clear", response_model=ClearResponse, dependencies=[Depends(verify_internal_secret)])
 def clear_collection(request: ClearRequest):
-    cleared = vector_store.clear(request.session_id)
+    # Clear both base collection and client task collection
+    cleared_base = vector_store.clear(request.session_id)
+    cleared_client = vector_store.clear(f"client_{request.session_id}")
     name = f"chat_{vector_store.normalize_session_id(request.session_id)}"
-    return ClearResponse(status="ok", cleared=cleared, collection=name)
-
-
-@app.get("/history/{session_id}")
-def get_history(session_id: str, limit: int = 50):
-    """Return stored messages for a conversation, ordered by time."""
-    messages = chat_history.get_history(session_id, limit=limit)
-    return {"session_id": session_id, "messages": messages}
-
-
-@app.get("/conversations")
-def list_conversations(limit: int = 20):
-    """List recent conversations."""
-    convos = chat_history.list_conversations(limit=limit)
-    return {"conversations": convos}
+    return ClearResponse(
+        status="ok",
+        cleared=cleared_base or cleared_client,
+        collection=name,
+    )

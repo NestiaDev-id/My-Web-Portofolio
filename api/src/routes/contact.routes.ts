@@ -3,7 +3,11 @@ import { z } from "zod";
 import { sendContactEmail } from "../services/email.service.js";
 import { saveContactToMongo } from "../services/mongo.service.js";
 import { verifyTurnstileToken } from "../services/turnstile.service.js";
-import { isDisposableEmail } from "../services/disposable-email.service.js";
+import {
+  isDisposableEmail,
+  isSuspiciousEmailPattern,
+  hasValidMxRecord,
+} from "../services/email-validation.service.js";
 
 const contactSchema = z.object({
   name: z
@@ -72,12 +76,36 @@ contactRoutes.post("/", async (c) => {
     );
   }
 
-  // Layer 3: Disposable Email Filter
+  // Layer 5a: Disposable Email Filter
   if (isDisposableEmail(data.email)) {
     return c.json(
       {
         success: false,
         error: "Alamat email sementara (disposable/throwaway email) tidak diizinkan. Silakan gunakan email aktif Anda.",
+      },
+      400,
+    );
+  }
+
+  // Layer 5b: Anti-Keyboard Mash & Pattern Filter
+  const patternCheck = isSuspiciousEmailPattern(data.email);
+  if (!patternCheck.valid) {
+    return c.json(
+      {
+        success: false,
+        error: patternCheck.reason ?? "Format alamat email tidak wajar.",
+      },
+      400,
+    );
+  }
+
+  // Layer 5c: DNS MX Record Verification
+  const mxCheck = await hasValidMxRecord(data.email);
+  if (!mxCheck.valid) {
+    return c.json(
+      {
+        success: false,
+        error: mxCheck.reason ?? "Domain email tidak memiliki server penerima aktif.",
       },
       400,
     );

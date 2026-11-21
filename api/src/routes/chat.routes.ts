@@ -8,6 +8,7 @@ import {
   saveMessage,
 } from "../services/chat-history.service.js";
 import {
+  clearLlmServiceSession,
   generateChatAnswer,
   generateVisionAnswer,
   uploadTaskDocument,
@@ -124,7 +125,10 @@ chatRoutes.get("/history/:sessionId", async (c) => {
 
 chatRoutes.post("/clear", validateJson(z.object({ sessionId: z.string().min(1).max(120) })), async (c) => {
   const { sessionId } = c.get("validatedBody");
-  await clearHistory(sessionId);
+  await Promise.allSettled([
+    clearHistory(sessionId),
+    clearLlmServiceSession(sessionId),
+  ]);
   return c.json({
     success: true,
     data: { sessionId, cleared: true },

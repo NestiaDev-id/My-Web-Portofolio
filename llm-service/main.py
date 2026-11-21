@@ -1,8 +1,11 @@
+import asyncio
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Optional
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Header, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 
 from app.models.schemas import (
     ChatRequest,
@@ -12,8 +15,21 @@ from app.models.schemas import (
     ClearResponse,
     UploadResponse,
 )
+from app.models.vtuber import (
+    AudioChunkEvent,
+    ScriptReadyEvent,
+    StreamEndEvent,
+    VTuberChatRequest,
+    VTuberChatResponse,
+)
 from app.services import vector_store
-from app.services.llm import generate_answer, generate_vision_answer
+from app.services.llm import (
+    generate_answer,
+    generate_director_script,
+    generate_vision_answer,
+)
+from app.services.tts_router import MultiEngineTTSRouter
+from app.services.vtuber_parser import parse_and_coalesce_segments
 from app.utils.config import (
     CV_PATH,
     DEFAULT_CHUNK_OVERLAP,
@@ -23,13 +39,52 @@ from app.utils.config import (
 )
 from app.utils.text import extract_text_from_file, split_text
 
+# Inference semaphore to isolate threads and protect 2 vCPU Hugging Face Free Tier
+cpu_inference_lock = asyncio.Semaphore(1)
+tts_router: Optional[MultiEngineTTSRouter] = None
+
+
+def index_cv_on_startup():
+    """Ingest CV document into ChromaDB upon worker startup."""
+    cv_file = Path(CV_PATH)
+    if not cv_file.exists():
+        return
+
+    text = cv_file.read_text(encoding="utf-8").strip()
+    if not text:
+        return
+
+    vector_store.clear(RAG_COLLECTION_ID)
+    chunks = split_text(text, DEFAULT_CHUNK_SIZE, DEFAULT_CHUNK_OVERLAP)
+    if not chunks:
+        return
+
+    vector_store.ingest_chunks(RAG_COLLECTION_ID, chunks, source=cv_file.name)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Warm-in-RAM lifespan context: initialize ChromaDB and TTS models once."""
+    global tts_router
+    index_cv_on_startup()
+    tts_router = MultiEngineTTSRouter(
+        reference_voice_path="app/data/voices/character_voice.mp3",
+        omp_threads=2,
+    )
+    await tts_router.warmup()
+    yield
+    if tts_router:
+        await tts_router.shutdown()
+
+
 app = FastAPI(
-    title="LLM Compute Worker",
+    title="LLM & VTuber Compute Worker",
     description=(
-        "Stateless RAG & Vision compute worker backed by ChromaDB. "
+        "Stateless RAG, Vision & VTuber Expressive AI worker backed by ChromaDB and Edge-TTS. "
         "Session persistence and database management are delegated to the API Gateway."
     ),
-    version="2.0.0",
+    version="2.1.0",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -85,10 +140,11 @@ def validate_upload(filename: str, data: bytes):
 @app.get("/")
 def root():
     return {
-        "service": "LLM Compute Worker",
+        "service": "LLM & VTuber Compute Worker",
         "status": "running",
         "mode": "stateless-worker",
-        "note": "Ephemeral ChromaDB vector store. No external database connections.",
+        "vtuber_engine": "active",
+        "note": "Ephemeral ChromaDB vector store. Zero external database connections.",
     }
 
 
@@ -103,25 +159,11 @@ def healthcheck():
             "status": "ready",
             "active_collections": collections_count,
         },
+        "tts_router": {
+            "warm": tts_router._is_warm if tts_router else False,
+            "edge_tts_available": tts_router._edge_tts_available if tts_router else False,
+        },
     }
-
-
-@app.on_event("startup")
-def index_cv_on_startup():
-    cv_file = Path(CV_PATH)
-    if not cv_file.exists():
-        return
-
-    text = cv_file.read_text(encoding="utf-8").strip()
-    if not text:
-        return
-
-    vector_store.clear(RAG_COLLECTION_ID)
-    chunks = split_text(text, DEFAULT_CHUNK_SIZE, DEFAULT_CHUNK_OVERLAP)
-    if not chunks:
-        return
-
-    vector_store.ingest_chunks(RAG_COLLECTION_ID, chunks, source=cv_file.name)
 
 
 @app.post("/upload-task", response_model=UploadResponse, dependencies=[Depends(verify_internal_secret)])
@@ -156,7 +198,6 @@ async def upload_client_task(
 
 @app.post("/chat", response_model=ChatResponse, dependencies=[Depends(verify_internal_secret)])
 def chat(request: ChatRequest):
-    # 1. Retrieve relevant document chunks from CV + client task collection
     cv_documents = vector_store.search(
         RAG_COLLECTION_ID, request.question, request.top_k
     )
@@ -166,7 +207,6 @@ def chat(request: ChatRequest):
     )
     documents = cv_documents + client_documents
 
-    # 2. Generate answer via LLM using passed history
     try:
         answer = generate_answer(
             question=request.question,
@@ -207,7 +247,6 @@ async def chat_vision(
 
     mime_type = IMAGE_MIME_MAP.get(ext, "image/jpeg")
 
-    # Optionally retrieve RAG context if question is provided
     context_chunks: list[str] = []
     if question.strip():
         cv_docs = vector_store.search(RAG_COLLECTION_ID, question, top_k)
@@ -229,7 +268,6 @@ async def chat_vision(
 
 @app.post("/clear", response_model=ClearResponse, dependencies=[Depends(verify_internal_secret)])
 def clear_collection(request: ClearRequest):
-    # Clear both base collection and client task collection
     cleared_base = vector_store.clear(request.session_id)
     cleared_client = vector_store.clear(f"client_{request.session_id}")
     name = f"chat_{vector_store.normalize_session_id(request.session_id)}"
@@ -237,4 +275,90 @@ def clear_collection(request: ClearRequest):
         status="ok",
         cleared=cleared_base or cleared_client,
         collection=name,
+    )
+
+
+# ════════════════════════════════════════════════════════════
+# VTuber Expressive AI & Multilingual Streaming Endpoints
+# ════════════════════════════════════════════════════════════
+
+@app.post("/vtuber/chat/stream", dependencies=[Depends(verify_internal_secret)])
+async def vtuber_chat_stream(payload: VTuberChatRequest):
+    """Stream expressive multilingual dialog script & audio chunks via Server-Sent Events (SSE)."""
+    async def event_generator():
+        # 1. Generate director script from LLM (<600ms)
+        raw_text = generate_director_script(
+            question=payload.user_message,
+            history=payload.history,
+            persona=payload.persona_mode,
+        )
+
+        # 2. Parse and coalesce segments into sequential speech & paralinguistic units
+        segments = parse_and_coalesce_segments(raw_text)
+
+        # 3. Emit script_ready event
+        script_ready = ScriptReadyEvent(
+            session_id=payload.session_id,
+            raw_annotated_text=raw_text,
+            total_segments=len(segments),
+        )
+        yield f"data: {script_ready.model_dump_json()}\n\n"
+
+        # 4. Synthesize and emit audio_chunk events
+        total_duration = 0
+        for idx, seg in enumerate(segments, start=1):
+            if payload.enable_tts and tts_router:
+                async with cpu_inference_lock:
+                    chunk_event = await tts_router.synthesize_segment(idx, seg)
+            else:
+                chunk_event = seg.to_silent_event(idx)
+
+            total_duration += chunk_event.duration_ms
+            yield f"data: {chunk_event.model_dump_json()}\n\n"
+
+        # 5. Emit stream_end event
+        stream_end = StreamEndEvent(
+            session_id=payload.session_id,
+            total_duration_ms=total_duration,
+        )
+        yield f"data: {stream_end.model_dump_json()}\n\n"
+
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
+
+
+@app.post("/vtuber/chat", response_model=VTuberChatResponse, dependencies=[Depends(verify_internal_secret)])
+async def vtuber_chat(payload: VTuberChatRequest):
+    """Non-streaming complete response for VTuber dialog."""
+    raw_text = generate_director_script(
+        question=payload.user_message,
+        history=payload.history,
+        persona=payload.persona_mode,
+    )
+    segments = parse_and_coalesce_segments(raw_text)
+
+    chunks = []
+    total_duration = 0
+    for idx, seg in enumerate(segments, start=1):
+        if payload.enable_tts and tts_router:
+            async with cpu_inference_lock:
+                chunk_event = await tts_router.synthesize_segment(idx, seg)
+        else:
+            chunk_event = seg.to_silent_event(idx)
+
+        total_duration += chunk_event.duration_ms
+        chunks.append(chunk_event)
+
+    return VTuberChatResponse(
+        session_id=payload.session_id,
+        raw_annotated_text=raw_text,
+        total_duration_ms=total_duration,
+        chunks=chunks,
     )

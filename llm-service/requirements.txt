@@ -12,3 +12,4 @@ PyPDF2
 python-docx
 python-multipart
 requests
+edge-tts

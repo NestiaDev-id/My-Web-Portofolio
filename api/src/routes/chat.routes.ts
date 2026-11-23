@@ -15,14 +15,27 @@ import {
 } from "../services/llm.service.js";
 import { validateJson } from "../middleware/validator.js";
 import { verifyTurnstileToken } from "../services/turnstile.service.js";
+import { isTurnstileSessionVerified, markTurnstileSessionVerified } from "../services/redis.service.js";
 
-async function requireTurnstile(c: any, token: string | undefined) {
+async function requireTurnstile(
+  c: any,
+  token: string | undefined,
+  sessionId?: string,
+  allowVerifiedSession = false,
+) {
+  if (allowVerifiedSession && sessionId && !token && await isTurnstileSessionVerified(sessionId)) {
+    return null;
+  }
+
   const ip =
     c.req.header("cf-connecting-ip") ??
     c.req.header("x-forwarded-for")?.split(",")[0]?.trim() ??
     "127.0.0.1";
   const result = await verifyTurnstileToken(token, ip);
-  if (result.ok) return null;
+  if (result.ok) {
+    if (sessionId) await markTurnstileSessionVerified(sessionId);
+    return null;
+  }
 
   return c.json(
     {
@@ -45,13 +58,14 @@ const chatSchema = z.object({
 export const chatRoutes = new Hono();
 
 chatRoutes.post("/", validateJson(chatSchema), async (c) => {
+  const { question, sessionId } = c.get("validatedBody");
   const turnstileFailure = await requireTurnstile(
     c,
     c.req.header("x-turnstile-token") ?? undefined,
+    sessionId,
+    true,
   );
   if (turnstileFailure) return turnstileFailure;
-
-  const { question, sessionId } = c.get("validatedBody");
   const history = await getActiveHistory(sessionId, 20);
   const generated = await generateChatAnswer(question, sessionId, history);
   const userMessage = await saveMessage(sessionId, "user", question);

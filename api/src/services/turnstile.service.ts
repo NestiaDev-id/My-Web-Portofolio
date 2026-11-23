@@ -35,10 +35,12 @@ export async function verifyTurnstileToken(
 
     const data = (await response.json()) as {
       success: boolean;
+      hostname?: string;
       "error-codes"?: string[];
     };
 
-    if (!data.success) {
+    const allowedHostnames = new Set(["nestia.my.id", "www.nestia.my.id"]);
+    if (!data.success || (env.NODE_ENV === "production" && !data.hostname) || (data.hostname && !allowedHostnames.has(data.hostname))) {
       const codes = data["error-codes"]?.join(", ") ?? "unknown";
       console.warn(`[Turnstile] Verification failed: ${codes} (IP: ${remoteIp})`);
       return {

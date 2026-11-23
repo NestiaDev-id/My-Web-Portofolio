@@ -14,6 +14,7 @@ function safeInt(defaultValue: number, min = 1, max = 10_000) {
 
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+  ALLOWED_ORIGINS: z.string().default("https://nestia.my.id,https://www.nestia.my.id"),
   FRONTEND_URL: z.preprocess(
     (val) => (typeof val === "string" ? val.trim().replace(/\/+$/, "") : val),
     z.string().url().optional(),

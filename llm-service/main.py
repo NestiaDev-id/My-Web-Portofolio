@@ -111,7 +111,7 @@ IMAGE_MIME_MAP = {
 def verify_internal_secret(
     x_internal_secret: Optional[str] = Header(default=None, alias="X-Internal-Secret")
 ):
-    if INTERNAL_API_SECRET and x_internal_secret != INTERNAL_API_SECRET:
+    if not INTERNAL_API_SECRET or x_internal_secret != INTERNAL_API_SECRET:
         raise HTTPException(
             status_code=401,
             detail="Unauthorized: Invalid internal secret.",

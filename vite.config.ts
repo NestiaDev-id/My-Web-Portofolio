@@ -2,9 +2,16 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
+import { loadEnv } from "vite";
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => {
+  const viteEnv = loadEnv(mode, process.cwd(), "");
+  if (mode === "production" && (!viteEnv.VITE_TURNSTILE_SITE_KEY || viteEnv.VITE_TURNSTILE_SITE_KEY.startsWith("1x0000"))) {
+    throw new Error("VITE_TURNSTILE_SITE_KEY production is required and must not use a Turnstile test key.");
+  }
+
+  return {
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
@@ -55,4 +62,5 @@ export default defineConfig({
       },
     },
   },
+  };
 });

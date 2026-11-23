@@ -86,7 +86,7 @@ const ContactFormCard = ({ prefill = "Diskusi Proyek / Kolaborasi" }: ContactFor
   const turnstileRef = useRef<TurnstileInstance | undefined>(undefined);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const turnstileSiteKey =
-    import.meta.env.VITE_TURNSTILE_SITE_KEY || "1x00000000000000000000AA";
+    import.meta.env.VITE_TURNSTILE_SITE_KEY;
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -318,8 +318,7 @@ const ChatApp = () => {
   const [isVtuberActive, setIsVtuberActive] = useState(false);
   const chatTurnstileRef = useRef<TurnstileInstance | undefined>(undefined);
   const [chatTurnstileToken, setChatTurnstileToken] = useState<string | null>(null);
-  const chatTurnstileSiteKey =
-    import.meta.env.VITE_TURNSTILE_SITE_KEY || "1x00000000000000000000AA";
+  const chatTurnstileSiteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY || (import.meta.env.DEV ? "1x00000000000000000000AA" : undefined);
   const [vtuberSubtitle, setVtuberSubtitle] = useState("");
   const [vtuberSpeaking, setVtuberSpeaking] = useState(false);
 

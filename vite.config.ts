@@ -7,8 +7,16 @@ import { loadEnv } from "vite";
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const viteEnv = loadEnv(mode, process.cwd(), "");
-  if (mode === "production" && (!viteEnv.VITE_TURNSTILE_SITE_KEY || viteEnv.VITE_TURNSTILE_SITE_KEY.startsWith("1x0000"))) {
-    throw new Error("VITE_TURNSTILE_SITE_KEY production is required and must not use a Turnstile test key.");
+  const turnstileSiteKey =
+    process.env.VITE_TURNSTILE_SITE_KEY ?? viteEnv.VITE_TURNSTILE_SITE_KEY;
+
+  if (
+    mode === "production" &&
+    (!turnstileSiteKey || turnstileSiteKey.startsWith("1x0000"))
+  ) {
+    throw new Error(
+      "VITE_TURNSTILE_SITE_KEY is missing or is a Turnstile test key. Set it in Vercel Project Settings → Environment Variables for Production.",
+    );
   }
 
   return {

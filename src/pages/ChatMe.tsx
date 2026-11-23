@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { uploadTask, clearChatSession, getApiUrl } from "@/utils/rag";
@@ -29,6 +29,8 @@ import {
   DropdownMenuContent,
 } from "@/components/ui/dropdown-menu";
 import "@/styles/pixel-chat.css";
+
+const VTuberStage = lazy(() => import("@/components/vtuber/VTuberStage"));
 
 type Message = {
   id: number;
@@ -313,6 +315,21 @@ const ChatApp = () => {
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [isAttachOpen, setIsAttachOpen] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [isVtuberActive, setIsVtuberActive] = useState(false);
+  const chatTurnstileRef = useRef<TurnstileInstance | undefined>(undefined);
+  const [chatTurnstileToken, setChatTurnstileToken] = useState<string | null>(null);
+  const chatTurnstileSiteKey =
+    import.meta.env.VITE_TURNSTILE_SITE_KEY || "1x00000000000000000000AA";
+  const [vtuberSubtitle, setVtuberSubtitle] = useState("");
+  const [vtuberSpeaking, setVtuberSpeaking] = useState(false);
+
+  const handleToggleVtuber = () => {
+    // Live2D is strictly for desktop screens
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      return;
+    }
+    setIsVtuberActive((prev) => !prev);
+  };
 
   // Image preview state
   const [pendingImage, setPendingImage] = useState<File | null>(null);
@@ -448,7 +465,13 @@ const ChatApp = () => {
       const activeSessionId = refreshAndGetSessionId();
       setSessionId(activeSessionId);
 
-      const result = await uploadTask(file, activeSessionId);
+      if (!chatTurnstileToken) {
+        throw new Error("Verifikasi keamanan belum selesai. Silakan tunggu sebentar lalu coba lagi.");
+      }
+
+      const result = await uploadTask(file, activeSessionId, chatTurnstileToken);
+      chatTurnstileRef.current?.reset();
+      setChatTurnstileToken(null);
 
       setMessages((prev) => [
         ...prev,
@@ -598,6 +621,10 @@ const ChatApp = () => {
     setIsTyping(true);
 
     try {
+      if (!chatTurnstileToken) {
+        throw new Error("Verifikasi keamanan belum selesai. Silakan tunggu sebentar lalu coba lagi.");
+      }
+
       let aiText: string;
       const activeSessionId = refreshAndGetSessionId();
       setSessionId(activeSessionId);
@@ -606,7 +633,10 @@ const ChatApp = () => {
         question: currentInput,
         sessionId: activeSessionId,
         image: currentImage,
+        turnstileToken: chatTurnstileToken,
       });
+      chatTurnstileRef.current?.reset();
+      setChatTurnstileToken(null);
       aiText = aiResponse.answer || "Maaf, aku tidak bisa menjawab.";
 
       const botMessage: Message = {
@@ -617,6 +647,15 @@ const ChatApp = () => {
         avatar: BOT_AVATAR,
       };
       setMessages((prev) => [...prev, botMessage]);
+
+      if (isVtuberActive) {
+        setVtuberSubtitle(aiText);
+        setVtuberSpeaking(true);
+        setTimeout(
+          () => setVtuberSpeaking(false),
+          Math.min(8000, Math.max(1800, aiText.length * 50))
+        );
+      }
     } catch (error) {
       const message =
         error instanceof Error
@@ -638,15 +677,23 @@ const ChatApp = () => {
   };
 
   return (
-    <section className="relative w-full min-h-[calc(100vh-70px)] pt-14 pb-14 px-2 sm:px-4 md:px-6 flex items-center justify-center">
-      {/* ── Main Responsive Pixel Window ── */}
+    <section className="relative w-full min-h-[calc(100vh-70px)] pt-10 pb-10 px-2 sm:px-4 md:px-6 flex items-center justify-center">
+      {/* ── Two Standalone Window Frames Container ── */}
       <div
-        className={`pixel-chat-frame w-full flex flex-col transition-all duration-200 overflow-hidden ${
+        className={`w-full transition-all duration-300 flex items-stretch justify-center gap-3 sm:gap-4 lg:gap-5 ${
           isFullScreen
             ? "fixed inset-2 z-50 h-[calc(100vh-16px)] max-w-none"
-            : "max-w-4xl h-[min(680px,calc(100vh-140px))] min-h-[500px]"
+            : isVtuberActive
+              ? "max-w-[1360px] 2xl:max-w-[1520px] h-[min(740px,calc(100vh-100px))] min-h-[500px]"
+              : "max-w-4xl 2xl:max-w-5xl h-[min(680px,calc(100vh-130px))] min-h-[500px]"
         }`}
       >
+        {/* ── FRAME 1 (LEFT): Chat with My Assistant ── */}
+        <div
+          className={`pixel-chat-frame flex flex-col transition-all duration-300 overflow-hidden h-full ${
+            isVtuberActive ? "flex-1 min-w-0" : "w-full"
+          }`}
+        >
         {/* ── Retro Window Titlebar ── */}
         <div className="bg-[#f8a5c2] border-b-2 sm:border-b-4 border-[#4a2034] px-2.5 sm:px-4 py-1.5 sm:py-2 flex items-center justify-between select-none shrink-0 font-pixel-freddy">
           {/* Left: Pixel Bot Icon + Window Title + Active Users Badge */}
@@ -737,6 +784,42 @@ const ChatApp = () => {
                 <span className="text-sm">📩</span>
                 <span className="mt-2 text-[12px] ">/KONTAK</span>
               </button>
+
+              {/* VTuber Stage Toggle Button */}
+              <button
+                onClick={handleToggleVtuber}
+                className={`pixel-btn w-full p-2 rounded flex items-center justify-between text-xs font-semibold text-left transition-colors cursor-pointer ${
+                  isVtuberActive
+                    ? "bg-[#059669] text-white shadow-[2px_2px_0px_#024731]"
+                    : "bg-[#ffffff] hover:bg-[#fff0f4] text-[#893760]"
+                }`}
+                title="Buka / Tutup Panggung AI VTuber"
+              >
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm">🎭</span>
+                  <span className="mt-1 text-[11px] font-bold">AI VTUBER</span>
+                </div>
+                <span
+                  className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${
+                    isVtuberActive
+                      ? "bg-white/20 text-white"
+                      : "bg-gray-100 text-[#4a2034]"
+                  }`}
+                >
+                  {isVtuberActive ? "ON" : "OFF"}
+                </span>
+              </button>
+
+              <div className="overflow-hidden max-w-[160px]">
+                <Turnstile
+                  ref={chatTurnstileRef}
+                  siteKey={chatTurnstileSiteKey}
+                  onSuccess={(token) => setChatTurnstileToken(token)}
+                  onError={() => setChatTurnstileToken(null)}
+                  onExpire={() => setChatTurnstileToken(null)}
+                  options={{ size: "compact" }}
+                />
+              </div>
 
               {/* Status Box */}
               <div className="border-2 border-[#4a2034] bg-[#ffffff] p-2.5 rounded text-[11px] text-[#893760] space-y-1.5 shadow-[2px_2px_0px_#4a2034]">
@@ -1102,7 +1185,28 @@ const ChatApp = () => {
           </div>
         </div>
       </div>
-    </section>
+
+      {/* ── FRAME 2 (RIGHT): AI VTuber Stage (Hiyori Pro) — Desktop Only ── */}
+      {isVtuberActive && (
+        <div className="hidden md:flex w-[320px] lg:w-[380px] xl:w-[420px] 2xl:w-[460px] shrink-0 h-full flex-col min-h-0 animate-in fade-in slide-in-from-right-4 duration-300">
+          <Suspense
+            fallback={
+              <div className="w-full h-full flex flex-col items-center justify-center bg-[#180d13] border-2 sm:border-4 border-[#4a2034] rounded-lg p-4 text-center font-pixel-freddy text-[#fadadd]">
+                <div className="w-10 h-10 rounded-full border-4 border-[#f4b8c4] border-t-transparent animate-spin mb-3" />
+                <span className="text-xs">MEMUAT AI VTUBER STAGE...</span>
+              </div>
+            }
+          >
+            <VTuberStage
+              onClose={() => setIsVtuberActive(false)}
+              externalSubtitle={vtuberSubtitle}
+              externalSpeaking={vtuberSpeaking}
+            />
+          </Suspense>
+        </div>
+      )}
+    </div>
+  </section>
   );
 };
 

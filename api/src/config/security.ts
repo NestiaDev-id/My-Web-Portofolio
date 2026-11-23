@@ -4,6 +4,7 @@ const staticOrigins = new Set([
   "http://localhost:5173",
   "http://localhost:4173",
   "https://nestiadev.vercel.app",
+  "https://nestia.my.id",
 ]);
 
 export function isAllowedOrigin(origin: string): boolean {

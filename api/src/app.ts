@@ -23,7 +23,7 @@ app.use(
   "*",
   cors({
     origin: (origin) => (isAllowedOrigin(origin) ? origin : null),
-    allowHeaders: ["Content-Type", "Authorization"],
+    allowHeaders: ["Content-Type", "Authorization", "X-Turnstile-Token"],
     allowMethods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     maxAge: 86400,
   }),

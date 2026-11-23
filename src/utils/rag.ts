@@ -53,11 +53,13 @@ async function handleApiResponse<T>(response: Response): Promise<T> {
 export const chatWithRag = async (
   question: string,
   sessionId: string,
+  turnstileToken?: string,
 ): Promise<{ answer: string; sessionId: string }> => {
   const response = await fetch(getApiUrl("/api/v1/chat"), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      ...(turnstileToken ? { "X-Turnstile-Token": turnstileToken } : {}),
     },
     body: JSON.stringify({
       question,
@@ -76,6 +78,7 @@ export const chatWithVision = async (
   imageFile: File,
   sessionId: string,
   question: string = "",
+  turnstileToken?: string,
 ): Promise<{ answer: string; filename?: string }> => {
   const formData = new FormData();
   formData.append("file", imageFile);
@@ -86,6 +89,7 @@ export const chatWithVision = async (
 
   const response = await fetch(getApiUrl("/api/v1/chat/vision"), {
     method: "POST",
+    headers: turnstileToken ? { "X-Turnstile-Token": turnstileToken } : undefined,
     body: formData,
   });
 
@@ -99,6 +103,7 @@ export const chatWithVision = async (
 export const uploadTask = async (
   file: File,
   sessionId: string,
+  turnstileToken?: string,
 ): Promise<UploadTaskData> => {
   const formData = new FormData();
   formData.append("file", file);
@@ -106,6 +111,7 @@ export const uploadTask = async (
 
   const response = await fetch(getApiUrl("/api/v1/chat/upload-task"), {
     method: "POST",
+    headers: turnstileToken ? { "X-Turnstile-Token": turnstileToken } : undefined,
     body: formData,
   });
 

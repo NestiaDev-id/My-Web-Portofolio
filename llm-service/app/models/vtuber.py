@@ -16,12 +16,18 @@ class AudioChunkEvent(BaseModel):
     seq: int
     type: Literal["speech", "paralinguistic"]
     text: Optional[str] = None
+    normalized_text: Optional[str] = None
     lang: Optional[Literal["id", "ja", "en"]] = "id"
+    mood: str = "warm"
     paralinguistic_event: Optional[str] = None
+    tts_token: Optional[str] = None
+    sfx_asset: Optional[str] = None
     engine: Literal["pocket-tts-id", "kokoro-82m-onnx", "chatterbox-nano", "edge-tts"] = "edge-tts"
     emotion: str = "friendly"
     live2d_expression: str = "f01_smile"
     duration_ms: int = 500
+    start_ms: int = 0
+    end_ms: int = 500
     audio_base64: Optional[str] = None
 
 
@@ -44,24 +50,35 @@ class DialogSegment(BaseModel):
     """Internal parsed representation of a single speech or paralinguistic unit."""
     type: Literal["speech", "paralinguistic"]
     text: Optional[str] = None
+    normalized_text: Optional[str] = None
     lang: Optional[Literal["id", "ja", "en"]] = "id"
+    mood: str = "warm"
     paralinguistic_event: Optional[str] = None
+    tts_token: Optional[str] = None
+    sfx_asset: Optional[str] = None
     emotion: str = "friendly"
     live2d_expression: str = "f01_smile"
     estimated_duration_ms: int = 600
 
-    def to_silent_event(self, seq: int) -> AudioChunkEvent:
+    def to_silent_event(self, seq: int, start_ms: int = 0) -> AudioChunkEvent:
         """Create a silent chunk event with preserved timing and visual expression metadata."""
+        end_ms = start_ms + self.estimated_duration_ms
         return AudioChunkEvent(
             seq=seq,
             type=self.type,
             text=self.text,
+            normalized_text=self.normalized_text or self.text,
             lang=self.lang,
+            mood=self.mood,
             paralinguistic_event=self.paralinguistic_event,
+            tts_token=self.tts_token,
+            sfx_asset=self.sfx_asset,
             engine="edge-tts",
             emotion=self.emotion,
             live2d_expression=self.live2d_expression,
             duration_ms=self.estimated_duration_ms,
+            start_ms=start_ms,
+            end_ms=end_ms,
             audio_base64=None,
         )
 

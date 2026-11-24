@@ -313,7 +313,10 @@ async def vtuber_chat_stream(payload: VTuberChatRequest):
             else:
                 chunk_event = seg.to_silent_event(idx)
 
-            total_duration += chunk_event.duration_ms
+            start_ms = total_duration
+            chunk_event.start_ms = start_ms
+            chunk_event.end_ms = start_ms + chunk_event.duration_ms
+            total_duration = chunk_event.end_ms
             yield f"data: {chunk_event.model_dump_json()}\n\n"
 
         # 5. Emit stream_end event
@@ -351,9 +354,15 @@ async def vtuber_chat(payload: VTuberChatRequest):
             async with cpu_inference_lock:
                 chunk_event = await tts_router.synthesize_segment(idx, seg)
         else:
-            chunk_event = seg.to_silent_event(idx)
+            chunk_event = seg.to_silent_event(idx, total_duration)
 
-        total_duration += chunk_event.duration_ms
+        if chunk_event.start_ms == 0 and total_duration > 0:
+            chunk_event.start_ms = total_duration
+            chunk_event.end_ms = total_duration + chunk_event.duration_ms
+        elif chunk_event.start_ms == 0:
+            chunk_event.end_ms = chunk_event.duration_ms
+
+        total_duration = chunk_event.end_ms
         chunks.append(chunk_event)
 
     return VTuberChatResponse(

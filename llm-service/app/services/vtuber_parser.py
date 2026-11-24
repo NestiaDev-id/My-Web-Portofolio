@@ -3,11 +3,27 @@ import re
 from typing import List, Tuple
 from app.models.vtuber import DialogSegment
 
-# Paralinguistic tag pattern: [chuckle], [laugh], [giggle], [tease], [sigh], [pout], [thinking], [gasp]
+MOOD_TO_EXPRESSION = {
+    "smug": "f02_smug",
+    "pout": "f03_pout",
+    "laugh": "f04_happy_laugh",
+    "thinking": "f05_thinking",
+    "warm": "f01_smile",
+}
+
+MOOD_PATTERN = re.compile(r"\[mood:(smug|pout|laugh|thinking|warm)\]", re.IGNORECASE)
+
+# Paralinguistic tag pattern: [chuckle], [laugh], [sigh]
 PARALINGUISTIC_PATTERN = re.compile(
-    r"\[(chuckle|laugh|giggle|tease|sigh|pout|thinking|gasp)\]",
+    r"\[(chuckle|laugh|sigh)\]",
     re.IGNORECASE,
 )
+
+SFX_MAP = {
+    "chuckle": "assets/audio/sfx/chuckle_01.wav",
+    "laugh": "assets/audio/sfx/laugh_01.wav",
+    "sigh": "assets/audio/sfx/sigh_01.wav",
+}
 
 # Language wrapper pattern: <ja>...</ja> or <en>...</en>
 LANG_TAG_PATTERN = re.compile(
@@ -19,16 +35,32 @@ LANG_TAG_PATTERN = re.compile(
 EMOTION_MAP = {
     "chuckle": ("joy_playful", "f04_happy_laugh", 450),
     "laugh": ("joy_playful", "f04_happy_laugh", 750),
-    "giggle": ("joy_playful", "f04_happy_laugh", 400),
-    "tease": ("teasing", "f02_smug", 500),
-    "thinking": ("curious", "f05_thinking", 650),
     "sigh": ("embarrassed", "f03_pout", 550),
-    "pout": ("embarrassed", "f03_pout", 500),
-    "gasp": ("surprised", "f06_surprised", 400),
 }
 
 DEFAULT_EMOTION = "friendly"
 DEFAULT_EXPRESSION = "f01_smile"
+
+JA_PHONETIC_MAP = {
+    "daijoubu": "daijobu",
+    "chotto": "cotto",
+}
+
+
+def normalize_phonetics(text: str) -> str:
+    def replace_romaji(match: re.Match[str]) -> str:
+        inner = match.group(1).strip()
+        return JA_PHONETIC_MAP.get(inner.lower(), inner)
+
+    normalized = re.sub(r"<ja>(.*?)</ja>", replace_romaji, text, flags=re.IGNORECASE | re.DOTALL)
+    normalized = re.sub(r"</?(?:ja|en)>", "", normalized, flags=re.IGNORECASE)
+    normalized = re.sub(
+        r"\b(?:daijoubu|chotto)\b",
+        lambda match: JA_PHONETIC_MAP.get(match.group(0).lower(), match.group(0)),
+        normalized,
+        flags=re.IGNORECASE,
+    )
+    return re.sub(r"\s+", " ", normalized).strip()
 
 
 def estimate_speech_duration_ms(text: str) -> int:
@@ -56,9 +88,11 @@ def parse_and_coalesce_segments(raw_text: str) -> List[DialogSegment]:
 
     text = raw_text.strip()
 
-    # Step 1: Tokenize by language tags and paralinguistic tags
-    # We find all matches and their spans
-    tokens: List[Tuple[int, int, str, str]] = []  # (start, end, token_type, payload)
+    # Step 1: Tokenize mood, language, and paralinguistic tags.
+    tokens: List[Tuple[int, int, str, str]] = []
+
+    for match in MOOD_PATTERN.finditer(text):
+        tokens.append((match.start(), match.end(), "mood", match.group(1).lower()))
 
     for match in PARALINGUISTIC_PATTERN.finditer(text):
         tokens.append((match.start(), match.end(), "paralinguistic", match.group(1).lower()))
@@ -73,6 +107,7 @@ def parse_and_coalesce_segments(raw_text: str) -> List[DialogSegment]:
 
     segments: List[DialogSegment] = []
     current_pos = 0
+    current_mood = "warm"
     current_emotion = DEFAULT_EMOTION
     current_expression = DEFAULT_EXPRESSION
 
@@ -88,20 +123,26 @@ def parse_and_coalesce_segments(raw_text: str) -> List[DialogSegment]:
                         DialogSegment(
                             type="speech",
                             text=clean_text,
+                            normalized_text=normalize_phonetics(clean_text),
                             lang="id",
+                            mood=current_mood,
                             emotion=current_emotion,
                             live2d_expression=current_expression,
                             estimated_duration_ms=estimate_speech_duration_ms(clean_text),
                         )
                     )
 
-        if token_type == "paralinguistic":
+        if token_type == "mood":
+            current_mood = payload
+            current_emotion = "joy_playful" if payload == "smug" else "curious" if payload == "thinking" else "embarrassed" if payload == "pout" else "joyful" if payload == "laugh" else "friendly"
+            current_expression = MOOD_TO_EXPRESSION.get(payload, DEFAULT_EXPRESSION)
+
+        elif token_type == "paralinguistic":
             event_name = payload
             emotion, expression, dur = EMOTION_MAP.get(
                 event_name,
                 (DEFAULT_EMOTION, DEFAULT_EXPRESSION, 500),
             )
-            # Update state for following speech
             current_emotion = emotion
             current_expression = expression
 
@@ -109,6 +150,9 @@ def parse_and_coalesce_segments(raw_text: str) -> List[DialogSegment]:
                 DialogSegment(
                     type="paralinguistic",
                     paralinguistic_event=event_name,
+                    tts_token=f"[{event_name}]",
+                    sfx_asset=SFX_MAP[event_name],
+                    mood="laugh" if event_name == "laugh" else "smug" if event_name == "chuckle" else "pout",
                     emotion=emotion,
                     live2d_expression=expression,
                     estimated_duration_ms=dur,
@@ -123,7 +167,9 @@ def parse_and_coalesce_segments(raw_text: str) -> List[DialogSegment]:
                     DialogSegment(
                         type="speech",
                         text=content,
-                        lang=lang_code,  # "ja" or "en"
+                        normalized_text=normalize_phonetics(content),
+                        lang=lang_code,
+                        mood=current_mood,
                         emotion=current_emotion,
                         live2d_expression=current_expression,
                         estimated_duration_ms=estimate_speech_duration_ms(content),
@@ -141,7 +187,9 @@ def parse_and_coalesce_segments(raw_text: str) -> List[DialogSegment]:
                 DialogSegment(
                     type="speech",
                     text=clean_remaining,
+                    normalized_text=normalize_phonetics(clean_remaining),
                     lang="id",
+                    mood=current_mood,
                     emotion=current_emotion,
                     live2d_expression=current_expression,
                     estimated_duration_ms=estimate_speech_duration_ms(clean_remaining),
@@ -175,7 +223,9 @@ def parse_and_coalesce_segments(raw_text: str) -> List[DialogSegment]:
                 DialogSegment(
                     type="speech",
                     text=clean_fallback,
+                    normalized_text=normalize_phonetics(clean_fallback),
                     lang="id",
+                    mood="warm",
                     emotion=DEFAULT_EMOTION,
                     live2d_expression=DEFAULT_EXPRESSION,
                     estimated_duration_ms=estimate_speech_duration_ms(clean_fallback),

@@ -19,6 +19,8 @@ from app.models.vtuber import (
     AudioChunkEvent,
     ScriptReadyEvent,
     StreamEndEvent,
+    TTSBenchmarkRequest,
+    TTSBenchmarkResponse,
     VTuberChatRequest,
     VTuberChatResponse,
 )
@@ -162,6 +164,8 @@ def healthcheck():
         "tts_router": {
             "warm": tts_router._is_warm if tts_router else False,
             "edge_tts_available": tts_router._edge_tts_available if tts_router else False,
+            "pocket_tts_loaded": tts_router._pocket_tts is not None if tts_router else False,
+            "chatterbox_nano_loaded": tts_router._chatterbox_model is not None if tts_router else False,
         },
     }
 
@@ -282,6 +286,21 @@ def clear_collection(request: ClearRequest):
 # VTuber Expressive AI & Multilingual Streaming Endpoints
 # ════════════════════════════════════════════════════════════
 
+@app.post("/tts/benchmark", response_model=TTSBenchmarkResponse, dependencies=[Depends(verify_internal_secret)])
+async def benchmark_tts(payload: TTSBenchmarkRequest):
+    """Benchmark edge-TTS, Pocket-TTS Indonesian, or Chatterbox-Nano."""
+    if not tts_router:
+        raise HTTPException(status_code=503, detail="TTS router belum siap.")
+
+    async with cpu_inference_lock:
+        result = await tts_router.benchmark_engine(
+            text=payload.text,
+            engine=payload.engine,
+            lang=payload.lang,
+        )
+    return TTSBenchmarkResponse(**result)
+
+
 @app.post("/vtuber/chat/stream", dependencies=[Depends(verify_internal_secret)])
 async def vtuber_chat_stream(payload: VTuberChatRequest):
     """Stream expressive multilingual dialog script & audio chunks via Server-Sent Events (SSE)."""
@@ -309,7 +328,11 @@ async def vtuber_chat_stream(payload: VTuberChatRequest):
         for idx, seg in enumerate(segments, start=1):
             if payload.enable_tts and tts_router:
                 async with cpu_inference_lock:
-                    chunk_event = await tts_router.synthesize_segment(idx, seg)
+                    chunk_event = await tts_router.synthesize_segment(
+                        idx,
+                        seg,
+                        engine=payload.tts_engine,
+                    )
             else:
                 chunk_event = seg.to_silent_event(idx)
 
@@ -352,7 +375,11 @@ async def vtuber_chat(payload: VTuberChatRequest):
     for idx, seg in enumerate(segments, start=1):
         if payload.enable_tts and tts_router:
             async with cpu_inference_lock:
-                chunk_event = await tts_router.synthesize_segment(idx, seg)
+                chunk_event = await tts_router.synthesize_segment(
+                idx,
+                seg,
+                engine=payload.tts_engine,
+            )
         else:
             chunk_event = seg.to_silent_event(idx, total_duration)
 

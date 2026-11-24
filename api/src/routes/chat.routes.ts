@@ -8,8 +8,10 @@ import {
   saveMessage,
 } from "../services/chat-history.service.js";
 import {
+  benchmarkVTuberTTS,
   clearLlmServiceSession,
   generateChatAnswer,
+  generateVTuberChatAnswer,
   generateVisionAnswer,
   uploadTaskDocument,
 } from "../services/llm.service.js";
@@ -82,6 +84,65 @@ chatRoutes.post("/", validateJson(chatSchema), async (c) => {
       messageId: assistantMessage.id,
       userMessageId: userMessage.id,
     },
+    meta: { timestamp: new Date().toISOString() },
+  });
+});
+
+const vtuberChatSchema = z.object({
+  question: z.string().trim().min(1).max(10_000),
+  sessionId: z.string().trim().min(1).max(120),
+  enableTts: z.boolean().optional().default(true),
+  ttsEngine: z.enum(["pocket-tts-id", "edge-tts", "chatterbox-nano"]).optional().default("pocket-tts-id"),
+});
+
+const vtuberBenchmarkSchema = z.object({
+  text: z.string().trim().min(1).max(2_000),
+  engine: z.enum(["pocket-tts-id", "edge-tts", "chatterbox-nano"]),
+  lang: z.enum(["id", "ja", "en"]).optional().default("id"),
+});
+
+chatRoutes.post("/vtuber/benchmark", validateJson(vtuberBenchmarkSchema), async (c) => {
+  const turnstileFailure = await requireTurnstile(
+    c,
+    c.req.header("x-turnstile-token") ?? undefined,
+  );
+  if (turnstileFailure) return turnstileFailure;
+
+  const { text, engine, lang } = c.get("validatedBody");
+  const benchmark = await benchmarkVTuberTTS(text, engine, lang);
+  return c.json({
+    success: true,
+    data: benchmark,
+    meta: { timestamp: new Date().toISOString() },
+  });
+});
+
+chatRoutes.post("/vtuber", validateJson(vtuberChatSchema), async (c) => {
+  const { question, sessionId, enableTts, ttsEngine } = c.get("validatedBody");
+  const turnstileFailure = await requireTurnstile(
+    c,
+    c.req.header("x-turnstile-token") ?? undefined,
+    sessionId,
+    true,
+  );
+  if (turnstileFailure) return turnstileFailure;
+
+  const history = await getActiveHistory(sessionId, 20);
+  const generated = await generateVTuberChatAnswer(
+    question,
+    sessionId,
+    history,
+    enableTts,
+    ttsEngine,
+  );
+  await saveMessage(sessionId, "user", question);
+  await saveMessage(sessionId, "assistant", generated.rawAnnotatedText, {
+    modelUsed: `vtuber-${ttsEngine}`,
+  });
+
+  return c.json({
+    success: true,
+    data: generated,
     meta: { timestamp: new Date().toISOString() },
   });
 });

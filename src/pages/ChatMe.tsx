@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { uploadTask, clearChatSession, getApiUrl } from "@/utils/rag";
+import { uploadTask, clearChatSession, getApiUrl, chatVTuber } from "@/utils/rag";
 import { requestAi } from "@/utils/aiRouter";
 import { useChatPresence } from "@/hooks/useChatPresence";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
@@ -628,15 +628,27 @@ const ChatApp = () => {
       const activeSessionId = refreshAndGetSessionId();
       setSessionId(activeSessionId);
 
-      const aiResponse = await requestAi({
-        question: currentInput,
-        sessionId: activeSessionId,
-        image: currentImage,
-        turnstileToken: chatTurnstileToken,
-      });
+      let vtuberDurationMs = 0;
+      if (isVtuberActive) {
+        const vtuberResponse = await chatVTuber(
+          currentInput,
+          activeSessionId,
+          chatTurnstileToken,
+          { enableTts: true, ttsEngine: "pocket-tts-id" },
+        );
+        aiText = vtuberResponse.rawAnnotatedText || "Maaf, aku tidak bisa menjawab.";
+        vtuberDurationMs = vtuberResponse.totalDurationMs;
+      } else {
+        const aiResponse = await requestAi({
+          question: currentInput,
+          sessionId: activeSessionId,
+          image: currentImage,
+          turnstileToken: chatTurnstileToken,
+        });
+        aiText = aiResponse.answer || "Maaf, aku tidak bisa menjawab.";
+      }
       chatTurnstileRef.current?.reset();
       setChatTurnstileToken(null);
-      aiText = aiResponse.answer || "Maaf, aku tidak bisa menjawab.";
 
       const botMessage: Message = {
         id: messages.length + 2,
@@ -652,7 +664,7 @@ const ChatApp = () => {
         setVtuberSpeaking(true);
         setTimeout(
           () => setVtuberSpeaking(false),
-          Math.min(8000, Math.max(1800, aiText.length * 50))
+          Math.min(12000, Math.max(1800, vtuberDurationMs || aiText.length * 50))
         );
       }
     } catch (error) {

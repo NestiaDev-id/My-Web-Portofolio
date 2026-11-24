@@ -8,6 +8,7 @@ class VTuberChatRequest(BaseModel):
     history: List[dict] = Field(default_factory=list)
     persona_mode: str = "playful_mentor"
     enable_tts: bool = True
+    tts_engine: Literal["pocket-tts-id", "edge-tts", "chatterbox-nano"] = "pocket-tts-id"
 
 
 class AudioChunkEvent(BaseModel):
@@ -89,3 +90,19 @@ class VTuberChatResponse(BaseModel):
     raw_annotated_text: str
     total_duration_ms: int
     chunks: List[AudioChunkEvent]
+
+
+class TTSBenchmarkRequest(BaseModel):
+    text: str
+    engine: Literal["edge-tts", "pocket-tts-id", "chatterbox-nano"] = "pocket-tts-id"
+    lang: Literal["id", "ja", "en"] = "id"
+
+
+class TTSBenchmarkResponse(BaseModel):
+    engine: str
+    text: str
+    duration_ms: int
+    synthesis_ms: int
+    sample_rate: Optional[int] = None
+    audio_base64: Optional[str] = None
+    error: Optional[str] = None

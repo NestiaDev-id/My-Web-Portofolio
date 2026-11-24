@@ -13,3 +13,7 @@ python-docx
 python-multipart
 requests
 edge-tts
+numpy
+soundfile
+pocket-tts
+git+https://github.com/resemble-ai/chatterbox.git

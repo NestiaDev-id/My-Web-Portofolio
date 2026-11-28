@@ -270,14 +270,14 @@ const ContactFormCard = ({ prefill = "Diskusi Proyek / Kolaborasi" }: ContactFor
             {isLoading ? (
               <>
                 <span className="pixel-text-align">MENGIRIM...</span>
-                <span>⏳</span>
+                <span className="pixel-emoji">⏳</span>
               </>
             ) : cooldown > 0 ? (
               <span className="pixel-text-align">TUNGGU ({cooldown}s)</span>
             ) : (
               <>
                 <span className="pixel-text-align">KIRIM EMAIL</span>
-                <span>➤</span>
+                <span className="pixel-emoji">➤</span>
               </>
             )}
           </button>
@@ -789,7 +789,7 @@ const ChatApp = () => {
                 className="pixel-btn bg-[#ffffff] hover:bg-[#fff0f4] text-[#893760] w-full p-2 rounded flex items-center gap-2 text-xs font-semibold text-left"
                 title="Buka Formulir Kontak"
               >
-                <span className="text-sm leading-none shrink-0">📩</span>
+                <span className="pixel-emoji text-sm shrink-0">📩</span>
                 <span className="pixel-text-align text-[12px]">/KONTAK</span>
               </button>
 
@@ -803,7 +803,7 @@ const ChatApp = () => {
                 title="Fitur AI VTuber sedang dalam tahap optimisasi (Maintenance)"
               >
                 <div className="flex items-center gap-1.5 w-full">
-                  <span className="text-sm leading-none grayscale shrink-0">🎭</span>
+                  <span className="pixel-emoji text-sm grayscale shrink-0">🎭</span>
                   <span className="pixel-text-align text-[11px] font-bold whitespace-nowrap">
                     AI VTUBER
                   </span>
@@ -894,7 +894,7 @@ const ChatApp = () => {
                   className="pixel-btn bg-white hover:bg-[#feddde] text-[#4a2034] text-xs px-2.5 py-1 rounded-full shrink-0 inline-flex items-center gap-1.5 transition-colors font-pixel-freddy tracking-wide"
                 >
                   <span className="pixel-text-align">{item.label}</span>
-                  <span className="text-xs sm:text-sm leading-none inline-block">
+                  <span className="pixel-emoji text-xs sm:text-sm">
                     {item.emoji}
                   </span>
                 </button>

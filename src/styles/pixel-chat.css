@@ -25,6 +25,15 @@
   transform: translateY(0.24em);
 }
 
+/* Isolate emoji spans from the pixel font's shifted ascent metrics so flex items-center centers them. */
+.pixel-emoji {
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
 .pixel-chat-frame {
   border: 4px solid #4a2034;
   box-shadow: 6px 6px 0px #4a2034;

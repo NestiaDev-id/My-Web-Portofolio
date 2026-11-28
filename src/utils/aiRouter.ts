@@ -6,6 +6,7 @@ export interface AiRequest {
   question: string;
   sessionId: string;
   image?: File | null;
+  turnstileToken?: string;
 }
 
 export function chooseAiRoute(_question: string, image?: File | null): AiRoute {
@@ -17,15 +18,16 @@ export async function requestAi({
   question,
   sessionId,
   image,
+  turnstileToken,
 }: AiRequest): Promise<{
   answer: string;
   route: AiRoute;
 }> {
   if (image) {
-    const response = await chatWithVision(image, sessionId, question);
+    const response = await chatWithVision(image, sessionId, question, turnstileToken);
     return { answer: response.answer, route: "gateway-vision" };
   }
 
-  const response = await chatWithRag(question, sessionId);
+  const response = await chatWithRag(question, sessionId, turnstileToken);
   return { answer: response.answer, route: "gateway-chat" };
 }

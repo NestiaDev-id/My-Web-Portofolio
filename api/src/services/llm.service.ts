@@ -153,6 +153,81 @@ export async function uploadTaskDocument(
   );
 }
 
+export type VTuberChunk = {
+  seq: number;
+  type: "speech" | "paralinguistic";
+  text?: string;
+  normalized_text?: string;
+  lang?: "id" | "ja" | "en";
+  mood?: string;
+  paralinguistic_event?: string;
+  tts_token?: string;
+  sfx_asset?: string;
+  engine?: "pocket-tts-id" | "kokoro-82m-onnx" | "chatterbox-nano" | "edge-tts";
+  emotion?: string;
+  live2d_expression?: string;
+  duration_ms: number;
+  start_ms: number;
+  end_ms: number;
+  audio_base64?: string;
+};
+
+export async function generateVTuberChatAnswer(
+  question: string,
+  sessionId: string,
+  history: ChatMessage[],
+  enableTts = true,
+  ttsEngine: "pocket-tts-id" | "edge-tts" | "chatterbox-nano" = "pocket-tts-id",
+): Promise<{ sessionId: string; rawAnnotatedText: string; totalDurationMs: number; chunks: VTuberChunk[] }> {
+  if (!env.LLM_SERVICE_URL) {
+    throw new Error("LLM_SERVICE_URL must be configured for VTuber requests.");
+  }
+
+  const payload = await executeWithQueue(async () =>
+    parseResponse(
+      await fetch(serviceUrl("/vtuber/chat"), {
+        method: "POST",
+        headers: internalHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify({
+          session_id: sessionId,
+          user_message: question,
+          history: history.map(({ role, content }) => ({ role, content })),
+          persona_mode: "playful_mentor",
+          enable_tts: enableTts,
+          tts_engine: ttsEngine,
+        }),
+      }),
+    ),
+  );
+
+  return {
+    sessionId: String(payload.session_id ?? sessionId),
+    rawAnnotatedText: String(payload.raw_annotated_text ?? ""),
+    totalDurationMs: Number(payload.total_duration_ms ?? 0),
+    chunks: (payload.chunks ?? []) as VTuberChunk[],
+  };
+}
+
+export async function benchmarkVTuberTTS(
+  text: string,
+  engine: "pocket-tts-id" | "edge-tts" | "chatterbox-nano",
+  lang: "id" | "ja" | "en" = "id",
+): Promise<Record<string, unknown>> {
+  if (!env.LLM_SERVICE_URL) {
+    throw new Error("LLM_SERVICE_URL must be configured for TTS benchmark requests.");
+  }
+
+  return executeWithQueue(async () =>
+    parseResponse(
+      await fetch(serviceUrl("/tts/benchmark"), {
+        method: "POST",
+        headers: internalHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify({ text, engine, lang }),
+      }),
+    ),
+  );
+}
+
 export async function clearLlmServiceSession(sessionId: string): Promise<void> {
   if (!env.LLM_SERVICE_URL) return;
   try {

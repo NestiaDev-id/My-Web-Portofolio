@@ -1,6 +1,14 @@
 from pydantic import BaseModel
 
 from app.utils.config import DEFAULT_TOP_K
+from app.models.vtuber import (  # noqa: F401
+    AudioChunkEvent,
+    DialogSegment,
+    ScriptReadyEvent,
+    StreamEndEvent,
+    VTuberChatRequest,
+    VTuberChatResponse,
+)
 
 
 class ChatRequest(BaseModel):

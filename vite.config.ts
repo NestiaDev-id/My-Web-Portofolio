@@ -2,9 +2,24 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
+import { loadEnv } from "vite";
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => {
+  const viteEnv = loadEnv(mode, process.cwd(), "");
+  const turnstileSiteKey =
+    process.env.VITE_TURNSTILE_SITE_KEY ?? viteEnv.VITE_TURNSTILE_SITE_KEY;
+
+  if (
+    mode === "production" &&
+    (!turnstileSiteKey || turnstileSiteKey.startsWith("1x0000"))
+  ) {
+    throw new Error(
+      "VITE_TURNSTILE_SITE_KEY is missing or is a Turnstile test key. Set it in Vercel Project Settings → Environment Variables for Production.",
+    );
+  }
+
+  return {
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
@@ -55,4 +70,5 @@ export default defineConfig({
       },
     },
   },
+  };
 });

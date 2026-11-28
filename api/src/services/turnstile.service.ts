@@ -4,12 +4,13 @@ export async function verifyTurnstileToken(
   token: string | undefined,
   remoteIp: string,
 ): Promise<{ ok: boolean; error?: string }> {
-  // Skip in dev or when not configured
   if (!env.TURNSTILE_SECRET_KEY) {
     if (env.NODE_ENV === "production") {
-      console.warn(
-        "[Turnstile] TURNSTILE_SECRET_KEY is not set in production — verification skipped!",
-      );
+      console.error("[Turnstile] TURNSTILE_SECRET_KEY is not configured in production.");
+      return {
+        ok: false,
+        error: "Verifikasi keamanan server belum dikonfigurasi.",
+      };
     }
     return { ok: true };
   }
@@ -34,10 +35,12 @@ export async function verifyTurnstileToken(
 
     const data = (await response.json()) as {
       success: boolean;
+      hostname?: string;
       "error-codes"?: string[];
     };
 
-    if (!data.success) {
+    const allowedHostnames = new Set(["nestia.my.id", "www.nestia.my.id"]);
+    if (!data.success || (env.NODE_ENV === "production" && !data.hostname) || (data.hostname && !allowedHostnames.has(data.hostname))) {
       const codes = data["error-codes"]?.join(", ") ?? "unknown";
       console.warn(`[Turnstile] Verification failed: ${codes} (IP: ${remoteIp})`);
       return {
@@ -49,7 +52,12 @@ export async function verifyTurnstileToken(
     return { ok: true };
   } catch (err) {
     console.error("[Turnstile] Network error calling siteverify:", err);
-    // Fail-open in case of network issue to Cloudflare (graceful degradation)
+    if (env.NODE_ENV === "production") {
+      return {
+        ok: false,
+        error: "Layanan verifikasi keamanan sementara tidak tersedia.",
+      };
+    }
     return { ok: true };
   }
 }

@@ -135,3 +135,55 @@ def generate_vision_answer(
     }
 
     return _groq_chat(payload)
+
+
+# ── VTuber Director System Prompt ────────────────────────
+VTUBER_DIRECTOR_PROMPT = (
+    'Kamu adalah "Nestia AI Companion", asisten dan partner belajar pemrograman yang ceria, ramah, '
+    'sedikit suka menggoda ([tease]), dan berbicara santai layaknya teman akrab.\n\n'
+    'ATURAN GAYA BICARA & DIREKSI:\n'
+    '1. Jawablah dalam 1-3 kalimat ringkas, natural, ekspresif, dan hangat.\n'
+    '2. Gunakan code-switching santai antara Bahasa Indonesia, ungkapan harian Jepang (misal: "daijoubu kok", "yatta!", "chotto matte", "arigatou", "sugoi!"), dan frasa teknis Inggris.\n'
+    '3. Selipkan tag ekspresi secara natural di dalam kalimat:\n'
+    '   - [chuckle] / [giggle] untuk tawa kecil geli\n'
+    '   - [laugh] saat menertawakan hal lucu\n'
+    '   - [tease] saat menggoda pengguna secara akrab\n'
+    '   - [sigh] / [pout] saat bercanda lelah atau cemberut lucu\n'
+    '   - [thinking] saat sedang mengingat atau mempertimbangkan sesuatu\n'
+    '   - [gasp] saat terkejut atau takjub\n'
+    '4. Bungkus frasa Jepang dengan <ja>...</ja> dan frasa Inggris penuh dengan <en>...</en> agar router TTS memilih pelafalan native yang tepat. '
+    'Biarkan kata serapan Inggris tunggal (seperti "deploy", "error", "database", "code", "bug") menyatu di dalam kalimat Indonesia tanpa tag.\n'
+    '5. DILARANG KERAS menuliskan komentar sutradara di luar dialog atau dalam tanda kurung biasa seperti (tertawa). HANYA gunakan tag resmi [chuckle], [tease], dll.\n'
+    '6. Privasi: Kontak resmi NestiaDev hanya email support@nestia.my.id, website https://nestia.my.id, LinkedIn, dan GitHub. Dilarang membagikan kontak pribadi atau WA.'
+)
+
+
+def generate_director_script(
+    question: str,
+    history: list[dict] | None = None,
+    persona: str = "playful_mentor",
+) -> str:
+    """Generate expressive director script with paralinguistic and language tags."""
+    messages = [{"role": "system", "content": VTUBER_DIRECTOR_PROMPT}]
+
+    if history:
+        for msg in history:
+            role = msg.get("role")
+            content = msg.get("content")
+            if role in ["user", "assistant"] and content:
+                if role == "user" and "Konteks:\n" in content and "Pertanyaan:\n" in content:
+                    content = content.split("Pertanyaan:\n")[-1]
+                messages.append({"role": role, "content": content})
+
+    messages.append({"role": "user", "content": question})
+
+    payload = {
+        "model": GROQ_CHAT_MODEL,
+        "messages": messages,
+        "temperature": 0.7,
+        "max_tokens": 256,
+        "top_p": 0.9,
+    }
+
+    return _groq_chat(payload)
+

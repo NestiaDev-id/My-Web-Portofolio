@@ -49,9 +49,23 @@ function sessionTtlSeconds(): number {
   return env.REDIS_SESSION_TTL_MINUTES * 60;
 }
 
+function verifiedSessionKey(sessionId: string): string {
+  return `chat:${sessionId}:turnstile-verified`;
+}
+
+export async function isTurnstileSessionVerified(sessionId: string): Promise<boolean> {
+  const redis = await getRedisClient();
+  return (await redis.get(verifiedSessionKey(sessionId))) === "1";
+}
+
+export async function markTurnstileSessionVerified(sessionId: string): Promise<void> {
+  const redis = await getRedisClient();
+  await redis.set(verifiedSessionKey(sessionId), "1", { EX: 30 * 60 });
+}
+
 export async function clearRedisHistory(sessionId: string): Promise<void> {
   const redis = await getRedisClient();
-  await redis.del(redisKey(sessionId));
+  await Promise.all([redis.del(redisKey(sessionId)), redis.del(verifiedSessionKey(sessionId))]);
 }
 
 export async function saveMessageToRedis(

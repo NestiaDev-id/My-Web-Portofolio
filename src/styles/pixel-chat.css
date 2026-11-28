@@ -1,9 +1,37 @@
 @import './pomodoro-base.css';
 
+@font-face {
+  font-family: "Five Fonts at Freddy's Chat";
+  src: url("/pomodoro/font/FiveFontsatFreddy's-Regular.ttf") format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+  ascent-override: 155%;
+  descent-override: 0%;
+  line-gap-override: 0%;
+}
+
 .font-pixel-freddy {
-  font-family: "Five Fonts at Freddy's", 'VT323', "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", monospace;
+  font-family: "Five Fonts at Freddy's Chat", "Five Fonts at Freddy's", 'VT323', "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", monospace;
   -webkit-font-smoothing: none;
   font-smooth: never;
+}
+
+/* Five Fonts at Freddy's glyphs sit high in the em-box (yMin=960, yMax=2304);
+   nudge inline labels down so caps center cleanly against icons and borders. */
+.pixel-text-align {
+  display: inline-block;
+  line-height: 1;
+  transform: translateY(0.24em);
+}
+
+/* Isolate emoji spans from the pixel font's shifted ascent metrics so flex items-center centers them. */
+.pixel-emoji {
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 
 .pixel-chat-frame {
@@ -103,7 +131,7 @@
 }
 
 .pixel-bubble-text {
-  font-family: "Five Fonts at Freddy's", 'VT323', "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", monospace;
+  font-family: "Five Fonts at Freddy's Chat", "Five Fonts at Freddy's", 'VT323', "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", monospace;
   letter-spacing: 0.02em;
   line-height: 1.35;
 }
@@ -125,4 +153,32 @@ em-emoji-picker {
   box-shadow: 4px 4px 0px #4a2034 !important;
   background-color: #feddde !important;
   color: #4a2034 !important;
+}
+
+/* ── VTuber Stage Custom Animations ── */
+.vtuber-stage-grid {
+  background-color: rgba(18, 18, 18, 0.92);
+  background-image: 
+    linear-gradient(to right, rgba(244, 184, 196, 0.12) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(244, 184, 196, 0.12) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+@keyframes vtuber-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+}
+
+.vtuber-idle {
+  animation: vtuber-float 3.5s ease-in-out infinite;
+}
+
+@keyframes vtuber-blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  96% { transform: scaleY(0.08); }
+}
+
+.vtuber-eyes-blink {
+  transform-origin: center 122px;
+  animation: vtuber-blink 4.2s infinite;
 }

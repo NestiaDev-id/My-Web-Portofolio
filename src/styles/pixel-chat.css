@@ -1,9 +1,28 @@
 @import './pomodoro-base.css';
 
+@font-face {
+  font-family: "Five Fonts at Freddy's Chat";
+  src: url("/pomodoro/font/FiveFontsatFreddy's-Regular.ttf") format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+  ascent-override: 155%;
+  descent-override: 0%;
+  line-gap-override: 0%;
+}
+
 .font-pixel-freddy {
-  font-family: "Five Fonts at Freddy's", 'VT323', "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", monospace;
+  font-family: "Five Fonts at Freddy's Chat", "Five Fonts at Freddy's", 'VT323', "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", monospace;
   -webkit-font-smoothing: none;
   font-smooth: never;
+}
+
+/* Five Fonts at Freddy's glyphs sit high in the em-box (yMin=960, yMax=2304);
+   nudge inline labels down so caps center cleanly against icons and borders. */
+.pixel-text-align {
+  display: inline-block;
+  line-height: 1;
+  transform: translateY(0.24em);
 }
 
 .pixel-chat-frame {
@@ -103,7 +122,7 @@
 }
 
 .pixel-bubble-text {
-  font-family: "Five Fonts at Freddy's", 'VT323', "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", monospace;
+  font-family: "Five Fonts at Freddy's Chat", "Five Fonts at Freddy's", 'VT323', "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", monospace;
   letter-spacing: 0.02em;
   line-height: 1.35;
 }

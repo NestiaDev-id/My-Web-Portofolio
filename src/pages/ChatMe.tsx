@@ -269,14 +269,14 @@ const ContactFormCard = ({ prefill = "Diskusi Proyek / Kolaborasi" }: ContactFor
           >
             {isLoading ? (
               <>
-                <span>MENGIRIM...</span>
+                <span className="pixel-text-align">MENGIRIM...</span>
                 <span>⏳</span>
               </>
             ) : cooldown > 0 ? (
-              <span>TUNGGU ({cooldown}s)</span>
+              <span className="pixel-text-align">TUNGGU ({cooldown}s)</span>
             ) : (
               <>
-                <span>KIRIM EMAIL</span>
+                <span className="pixel-text-align">KIRIM EMAIL</span>
                 <span>➤</span>
               </>
             )}
@@ -323,11 +323,8 @@ const ChatApp = () => {
   const [vtuberSpeaking, setVtuberSpeaking] = useState(false);
 
   const handleToggleVtuber = () => {
-    // Live2D is strictly for desktop screens
-    if (typeof window !== "undefined" && window.innerWidth < 768) {
-      return;
-    }
-    setIsVtuberActive((prev) => !prev);
+    // Temporarily disabled during VTuber TTS optimization & maintenance
+    return;
   };
 
   // Image preview state
@@ -708,20 +705,20 @@ const ChatApp = () => {
         {/* ── Retro Window Titlebar ── */}
         <div className="bg-[#f8a5c2] border-b-2 sm:border-b-4 border-[#4a2034] px-2.5 sm:px-4 py-1.5 sm:py-2 flex items-center justify-between select-none shrink-0 font-pixel-freddy">
           {/* Left: Pixel Bot Icon + Window Title + Active Users Badge */}
-          <div className="flex items-center gap-2 mt-2">
-            <span className="text-[#4a2034] text-xs sm:text-base font-bold tracking-wider">
+          <div className="flex items-center gap-2">
+            <span className="pixel-text-align text-[#4a2034] text-xs sm:text-base font-bold tracking-wider">
               Chat with My Assistant
             </span>
             <div
               title={`${activeUsers} pengguna aktif di ChatMe. Sistem dilindungi antrean pintar.`}
-              className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-white border border-[#4a2034] text-[#4a2034] rounded shadow-[1px_1px_0px_#4a2034] select-none"
+              className="inline-flex items-center gap-1.5 px-2 py-1 bg-white border border-[#4a2034] text-[#4a2034] rounded shadow-[1px_1px_0px_#4a2034] select-none"
             >
-              <Users className="w-3 h-3 text-[#4a2034]" />
-              <span className="relative flex h-2 w-2">
+              <Users className="w-3 h-3 text-[#4a2034] shrink-0" />
+              <span className="relative flex h-2 w-2 shrink-0">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
               </span>
-              <span className="text-[9px] sm:text-[10px] font-pixel-freddy tracking-wider uppercase">
+              <span className="pixel-text-align text-[10px] font-pixel-freddy tracking-wider uppercase">
                 {activeUsers} {activeUsers === 1 ? "USER" : "USERS"}
               </span>
             </div>
@@ -773,8 +770,8 @@ const ChatApp = () => {
 
               {/* Active Chat Tab */}
               <div className="pixel-btn bg-[#f8a5c2] text-[#4a2034] p-2 rounded flex items-center gap-2 cursor-pointer font-bold text-sm">
-                <MessageSquare className="w-4 h-4" />
-                <span className="mt-2 text-[12px] ">AI CHAT</span>
+                <MessageSquare className="w-4 h-4 shrink-0" />
+                <span className="pixel-text-align text-[12px]">AI CHAT</span>
               </div>
 
               {/* Reset Session Tab */}
@@ -782,8 +779,8 @@ const ChatApp = () => {
                 onClick={handleResetSession}
                 className="pixel-btn bg-[#ffffff] hover:bg-[#fff0f4] text-[#893760] w-full p-2 rounded flex items-center gap-2 text-xs font-semibold text-left"
               >
-                <RotateCcw className="w-4 h-4" />
-                <span className="mt-2 text-[12px] ">NEW CHAT</span>
+                <RotateCcw className="w-4 h-4 shrink-0" />
+                <span className="pixel-text-align text-[12px]">NEW CHAT</span>
               </button>
 
               {/* Quick Contact Form Tab */}
@@ -792,33 +789,31 @@ const ChatApp = () => {
                 className="pixel-btn bg-[#ffffff] hover:bg-[#fff0f4] text-[#893760] w-full p-2 rounded flex items-center gap-2 text-xs font-semibold text-left"
                 title="Buka Formulir Kontak"
               >
-                <span className="text-sm">📩</span>
-                <span className="mt-2 text-[12px] ">/KONTAK</span>
+                <span className="text-sm leading-none shrink-0">📩</span>
+                <span className="pixel-text-align text-[12px]">/KONTAK</span>
               </button>
 
-              {/* VTuber Stage Toggle Button */}
+              {/* VTuber Stage Toggle Button (Maintenance) */}
               <button
+                type="button"
+                disabled
+                aria-disabled="true"
                 onClick={handleToggleVtuber}
-                className={`pixel-btn w-full p-2 rounded flex items-center justify-between text-xs font-semibold text-left transition-colors cursor-pointer ${
-                  isVtuberActive
-                    ? "bg-[#059669] text-white shadow-[2px_2px_0px_#024731]"
-                    : "bg-[#ffffff] hover:bg-[#fff0f4] text-[#893760]"
-                }`}
-                title="Buka / Tutup Panggung AI VTuber"
+                className="pixel-btn w-full p-2 rounded flex flex-col gap-1.5 text-xs font-semibold text-left bg-[#f5eef1] text-[#893760]/80 opacity-85 cursor-not-allowed"
+                title="Fitur AI VTuber sedang dalam tahap optimisasi (Maintenance)"
               >
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm">🎭</span>
-                  <span className="mt-1 text-[11px] font-bold">AI VTUBER</span>
+                <div className="flex items-center gap-1.5 w-full">
+                  <span className="text-sm leading-none grayscale shrink-0">🎭</span>
+                  <span className="pixel-text-align text-[11px] font-bold whitespace-nowrap">
+                    AI VTUBER
+                  </span>
                 </div>
-                <span
-                  className={`text-[9px] px-1.5 py-0.5 rounded font-bold ${
-                    isVtuberActive
-                      ? "bg-white/20 text-white"
-                      : "bg-gray-100 text-[#4a2034]"
-                  }`}
-                >
-                  {isVtuberActive ? "ON" : "OFF"}
-                </span>
+                <div className="w-full flex items-center justify-center gap-1.5 px-1.5 py-1 rounded bg-[#fff3cd] border border-[#4a2034]/60 text-[#7c4a03]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
+                  <span className="pixel-text-align text-[9px] font-bold tracking-wider uppercase">
+                    MAINTENANCE
+                  </span>
+                </div>
               </button>
 
               <div className="overflow-hidden max-w-[160px]">
@@ -834,26 +829,26 @@ const ChatApp = () => {
 
               {/* Status Box */}
               <div className="border-2 border-[#4a2034] bg-[#ffffff] p-2.5 rounded text-[11px] text-[#893760] space-y-1.5 shadow-[2px_2px_0px_#4a2034]">
-                <div className="flex justify-between font-bold">
-                  <span>TIME</span>
-                  <span>{time || "12:00"}</span>
+                <div className="flex items-center justify-between font-bold">
+                  <span className="pixel-text-align">TIME</span>
+                  <span className="pixel-text-align">{time || "12:00"}</span>
                 </div>
-                <div className="flex justify-between font-bold">
-                  <span>USERS</span>
+                <div className="flex items-center justify-between font-bold">
+                  <span className="pixel-text-align">USERS</span>
                   <span className="text-emerald-600 flex items-center gap-1 font-bold">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block" />
-                    {activeUsers} Online
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block shrink-0" />
+                    <span className="pixel-text-align">{activeUsers} Online</span>
                   </span>
                 </div>
                 {queueInfo && (
-                  <div className="flex justify-between font-bold text-[10px]">
-                    <span>AI QUEUE</span>
+                  <div className="flex items-center justify-between font-bold text-[10px]">
+                    <span className="pixel-text-align">AI QUEUE</span>
                     <span
-                      className={
+                      className={`pixel-text-align ${
                         queueInfo.queuedCount > 0
                           ? "text-amber-600 font-bold"
                           : "text-emerald-600"
-                      }
+                      }`}
                     >
                       {queueInfo.queuedCount > 0
                         ? `${queueInfo.queuedCount} Antre`
@@ -861,24 +856,24 @@ const ChatApp = () => {
                     </span>
                   </div>
                 )}
-                <div className="flex justify-between font-bold">
-                  <span>SESSION</span>
-                  <span className="text-emerald-600">ACTIVE</span>
+                <div className="flex items-center justify-between font-bold">
+                  <span className="pixel-text-align">SESSION</span>
+                  <span className="pixel-text-align text-emerald-600">ACTIVE</span>
                 </div>
               </div>
             </div>
 
             {/* Bottom Profile Widget */}
-            <div className="border-2 border-[#4a2034] bg-[#ffeef2] p-2.5 rounded flex flex-col items-center text-center shadow-[2px_2px_0px_#4a2034]">
+            <div className="border-2 border-[#4a2034] bg-[#ffeef2] p-2.5 rounded flex flex-col items-center text-center gap-1 shadow-[2px_2px_0px_#4a2034]">
               <img
                 src={BOT_AVATAR}
                 alt="Nestia Bot"
-                className="w-11 h-11 rounded-full object-cover border-2 border-[#4a2034] mb-1.5 shadow-sm"
+                className="w-11 h-11 rounded-full object-cover border-2 border-[#4a2034] mb-1 shadow-sm"
               />
-              <span className="text-[11px] text-[#893760] font-bold">
+              <span className="pixel-text-align text-[11px] text-[#893760] font-bold">
                 Nestia Bot v1.1
               </span>
-              <span className="text-[9px] text-emerald-600 font-bold uppercase tracking-wide">
+              <span className="pixel-text-align text-[9px] text-emerald-600 font-bold uppercase tracking-wide pb-0.5">
                 Ready to Help
               </span>
             </div>
@@ -889,7 +884,8 @@ const ChatApp = () => {
             {/* Quick Suggestion Chips (Desktop & Mobile) */}
             <div className="bg-[#ffe8ef] border-b-2 border-[#4a2034] px-3 py-2 overflow-x-auto no-scrollbar flex items-center gap-2 shrink-0">
               <span className="font-pixel-freddy text-xs text-[#893760] font-bold flex items-center gap-1 shrink-0">
-                <Sparkles className="w-3.5 h-3.5 text-[#f47fa2]" /> TANYA CEPAT:
+                <Sparkles className="w-3.5 h-3.5 text-[#f47fa2] shrink-0" />
+                <span className="pixel-text-align">TANYA CEPAT:</span>
               </span>
               {SUGGESTIONS.map((item, idx) => (
                 <button
@@ -897,10 +893,8 @@ const ChatApp = () => {
                   onClick={() => sendMessage(item.text)}
                   className="pixel-btn bg-white hover:bg-[#feddde] text-[#4a2034] text-xs px-2.5 py-1 rounded-full shrink-0 inline-flex items-center gap-1.5 transition-colors font-pixel-freddy tracking-wide"
                 >
-                  <span className="leading-tight translate-y-[0.5px]">
-                    {item.label}
-                  </span>
-                  <span className="text-xs sm:text-sm leading-none inline-block -translate-y-[3px]">
+                  <span className="pixel-text-align">{item.label}</span>
+                  <span className="text-xs sm:text-sm leading-none inline-block">
                     {item.emoji}
                   </span>
                 </button>
@@ -921,7 +915,7 @@ const ChatApp = () => {
                     >
                       {/* Retro AI Avatar Badge */}
                       <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border-[2.5px] border-[#2D1B22] bg-[#FCE7EE] shrink-0 overflow-hidden flex items-center justify-center mt-1 shadow-[1px_1px_0px_#2D1B22]">
-                        <span className="font-pixel-freddy text-[11px] font-bold text-[#2D1B22]">
+                        <span className="font-pixel-freddy pixel-text-align text-[11px] font-bold text-[#2D1B22]">
                           AI
                         </span>
                       </div>
@@ -1189,8 +1183,8 @@ const ChatApp = () => {
                     : "pixel-btn-disabled bg-[#feddde] text-[#9c5974]"
                 }`}
               >
-                <span>KIRIM</span>
-                <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="pixel-text-align">KIRIM</span>
+                <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0" />
               </button>
             </div>
           </div>
